@@ -11,6 +11,9 @@
 		100000000000000000000051 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000041 /* AppDelegate.swift */; };
 		100000000000000000000052 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000042 /* AppConfiguration.swift */; };
 		100000000000000000000053 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000043 /* AppConfigurationTests.swift */; };
+		10000000000000000000005A /* HotCornerGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000047 /* HotCornerGeometryTests.swift */; };
+		100000000000000000000054 /* TriggerCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000045 /* TriggerCorner.swift */; };
+		10000000000000000000005B /* HotCornerGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000046 /* HotCornerGeometry.swift */; };
 		100000000000000000000055 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F1 /* AppKit.framework */; };
 		100000000000000000000056 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F2 /* SwiftUI.framework */; };
 		100000000000000000000057 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F3 /* XCTest.framework */; };
@@ -27,6 +30,9 @@
 		100000000000000000000042 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		100000000000000000000043 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
 		100000000000000000000044 /* CornerPetLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetLaunchTests.swift; sourceTree = "<group>"; };
+		100000000000000000000047 /* HotCornerGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerGeometryTests.swift; sourceTree = "<group>"; };
+		100000000000000000000045 /* TriggerCorner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerCorner.swift; sourceTree = "<group>"; };
+		100000000000000000000046 /* HotCornerGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerGeometry.swift; sourceTree = "<group>"; };
 		1000000000000000000000F1 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1000000000000000000000F2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		1000000000000000000000F3 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
@@ -85,8 +91,18 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000007 /* App */,
+				100000000000000000000008 /* HotCorner */,
 			);
 			path = CornerPet;
+			sourceTree = "<group>";
+		};
+		100000000000000000000008 /* HotCorner */ = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000045 /* TriggerCorner.swift */,
+				100000000000000000000046 /* HotCornerGeometry.swift */,
+			);
+			path = HotCorner;
 			sourceTree = "<group>";
 		};
 		100000000000000000000007 /* App */ = {
@@ -103,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000043 /* AppConfigurationTests.swift */,
+				100000000000000000000047 /* HotCornerGeometryTests.swift */,
 			);
 			path = CornerPetTests;
 			sourceTree = "<group>";
@@ -276,6 +293,8 @@
 				100000000000000000000050 /* CornerPetApp.swift in Sources */,
 				100000000000000000000051 /* AppDelegate.swift in Sources */,
 				100000000000000000000052 /* AppConfiguration.swift in Sources */,
+				100000000000000000000054 /* TriggerCorner.swift in Sources */,
+				10000000000000000000005B /* HotCornerGeometry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +303,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000053 /* AppConfigurationTests.swift in Sources */,
+				10000000000000000000005A /* HotCornerGeometryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
