@@ -1,0 +1,17 @@
+.DS_Store
+
+# Xcode user state and local build output
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Local agent state and isolated worktrees
+.superpowers/
+.worktrees/
