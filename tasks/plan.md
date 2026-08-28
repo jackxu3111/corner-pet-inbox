@@ -2,13 +2,15 @@
 
 ## Overview
 
-构建 macOS 14+、Apple Silicon only 的原生角落想法收件箱。先证明 L 形热角、600 ms 停留、全屏悬浮、焦点恢复和可逆动画成立；通过风险门槛后，再交付草稿、事项、归档收藏、置顶、多显示器和宠物提醒。
+构建 macOS 14+、Apple Silicon only 的原生角落想法收件箱。先证明 L 形热角、400 ms 停留、全屏悬浮、焦点恢复和可逆动画成立；通过风险门槛后，再交付草稿、事项、归档收藏、置顶、多显示器和宠物提醒。
 
 ## Source of Truth
 
 - [产品定位](../docs/ideas/corner-pet-inbox.md)
 - [已批准交互规格](../docs/superpowers/specs/2026-08-25-hot-corner-capture-interaction-design.md)
 - [逐步 TDD 计划](../docs/superpowers/plans/2026-08-25-corner-pet-inbox-mvp.md)
+- [Atoll-style 触发设计](../docs/superpowers/specs/2026-08-26-atoll-style-corner-trigger-design.md)
+- [Atoll-style 触发 TDD 计划](../docs/superpowers/plans/2026-08-26-atoll-style-corner-trigger.md)
 
 ## Architecture
 
@@ -29,10 +31,10 @@
 
 ## Phase 0: Native Risk Gate
 
-- [ ] Task 1: macOS 14、arm64 工程与测试基线
-- [ ] Task 2: 四角 43×6 pt L 形热区几何
-- [ ] Task 3: 500/600/700 ms 停留与鼠标适配
-- [ ] Task 4: 320×400 pt 全屏面板和角落生长动画原型
+- [x] Task 1: macOS 14、arm64 工程与测试基线
+- [x] Task 2: 主屏左上角 86×20 + 20×86 pt L 形触发几何
+- [x] Task 3: 400 ms 停留、100 ms 收回防抖与 tracking-panel 适配
+- [x] Task 4: 360×450 pt、贴左边与菜单栏下沿的全屏面板和角落生长动画原型
 
 ### Checkpoint A
 
@@ -45,10 +47,10 @@
 
 ## Phase 1: Reliable Capture Loop
 
-- [ ] Task 5: SwiftData IdeaItem 与唯一 Draft
-- [ ] Task 6: 自动聚焦、草稿恢复、Return 条件提交与错误恢复
-- [ ] Task 7: 输入优先布局与收件箱
-- [ ] Task 8: 归档、五秒撤销、收藏、搜索、编辑、永久删除
+- [x] Task 5: SwiftData IdeaItem 与唯一 Draft
+- [x] Task 6: 自动聚焦、草稿恢复、Return 条件提交与错误恢复
+- [x] Task 7: 输入优先布局与收件箱
+- [x] Task 8: 归档、五秒撤销、收藏、搜索、编辑、永久删除
 
 ### Checkpoint B
 
@@ -60,7 +62,7 @@
 
 ## Phase 2: Window and System Integration
 
-- [ ] Task 9: 面板状态机、120 ms 防抖、置顶移动缩放
+- [x] Task 9: 面板状态机、120 ms 防抖、置顶移动缩放
 - [ ] Task 10: 四角设置、主屏/所有屏与动态重排
 - [ ] Task 11: 其余设置、冲突帮助、登录启动
 - [ ] Task 12: 每日提醒、休眠补发、稍后提醒、小猫
@@ -90,7 +92,7 @@
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| 热角误触 | High | 43×6 pt L 形、三档停留、Phase 0 验证 |
+| 热角误触/菜单栏拦截 | High | 86×20 + 20×86 pt L 形、400 ms 停留、Apple 菜单手测门槛 |
 | 全屏/焦点异常 | High | AppKit 原型先行，跨应用实测 |
 | 草稿丢失 | High | 独立 DraftStore，成功提交后才清空 |
 | 状态冲突 | High | 单一 PanelStateMachine |
@@ -105,3 +107,23 @@
 - 每个任务执行红灯测试 → 最小实现 → 绿灯测试 → 构建检查。
 - 每 3–4 个任务人工验收。
 - 未经 Jack 授权，不提交、不推送、不创建 PR。
+
+## Current Trigger Rewrite (2026-08-26)
+
+- [x] 热角状态机保留 400 ms dwell 与陈旧 token 拒绝；面板收回迁移到 Task 9 的唯一 120 ms lifecycle owner。
+- [x] 两块透明置顶 nonactivating `NSPanel`，只用 tracking-area enter/exit。
+- [x] coordinator 注入时钟、指针和 scheduler，并按 L 并集复核。
+- [x] capture panel 与两条触发臂共同组成 keep-open；Escape 关闭。
+- [x] 删除 Input Monitoring 权限门控、`MouseMonitor` 和 mouseMoved monitor。
+- [ ] 主屏桌面与全屏 Space 人工演示；自动化与 Debug 构建已完成，不涉及持久化/任务内容。
+
+执行以 2026-08-26 的设计与 TDD 计划为准；当前 dirty worktree、签名设置和 Panel 文件均需原位保留。
+
+## Task 8–9 Completion (2026-08-28)
+
+- [x] Task 8：事项完整生命周期、五秒撤销、收藏/取消收藏、双列表搜索、共享行内编辑与确认永久删除。
+- [x] Task 9：八状态面板 reducer、唯一 120 ms 自动隐藏 owner、外部焦点契约、置顶移动缩放、尺寸持久化与取消置顶归位。
+- [x] `build-for-testing`、直接 XCTest 249/249、arm64 Debug build、`git diff --check` 与旧 100 ms owner 扫描通过。
+- [ ] Library/Pinning UI Runner 在首个用例前无法初始化 automation mode；需在真实 Mac 完成搜索/编辑/删除、拖拽缩放、全屏/Spaces 与 unpin/retrigger 手测。
+
+详细来源：`docs/superpowers/plans/2026-08-28-task-8-9-lifecycle-pinning.md`。

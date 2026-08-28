@@ -52,15 +52,12 @@ Rejected alternatives:
 
 | Parameter | MVP value |
 |---|---:|
-| Trigger arm length | 43 pt per edge, approximately 1.5 cm |
+| Trigger arm length | 86 pt per edge, approximately 3 cm |
 | Trigger thickness | 6 pt, approximately 2 mm |
-| Fast dwell preset | 500 ms |
-| Standard dwell preset | 600 ms |
-| Conservative dwell preset | 700 ms |
-| Default dwell preset | Standard, 600 ms |
+| Fixed dwell duration | 400 ms |
 | Empty-panel exit debounce | 120 ms |
 | Post-close trigger debounce | 80 ms |
-| Default panel size | 320 × 400 pt |
+| Default panel size | 360 × 450 pt |
 | Minimum pinned size | 280 × 320 pt |
 | Maximum pinned size | 480 × 640 pt |
 | Open animation | 260 ms |
@@ -73,7 +70,7 @@ The centimeter values are approximate. macOS behavior is defined in logical poin
 
 ## Trigger-Zone Geometry
 
-The trigger zone consists of two 43 × 6 pt rectangles that share the selected corner:
+The trigger zone consists of two 86 × 6 pt rectangles that share the selected corner:
 
 - At top-left, one rectangle runs right along the top edge and the other runs down along the left edge.
 - At top-right, the geometry mirrors horizontally.
@@ -92,20 +89,20 @@ The zone:
 
 1. The pointer enters either arm of the L-shaped trigger zone.
 2. The pointer may move within the combined L shape without resetting the dwell timer.
-3. Leaving the combined L shape before the selected dwell duration cancels the candidate.
+3. Leaving the combined L shape before the fixed dwell duration cancels the candidate.
 4. Re-entering starts a new dwell timer.
 5. Reaching the dwell duration requests panel presentation exactly once.
 6. A fully closed panel has an 80 ms debounce before a new dwell candidate may begin.
 7. If the panel is still closing when the zone triggers again, the close animation reverses from its current progress; it does not snap closed or wait for a fixed cooldown.
 
-The dwell setting exposes only three presets: 500, 600, and 700 ms. The MVP does not expose a continuous slider.
+The dwell duration is fixed at 400 ms. The MVP exposes neither presets nor a continuous slider.
 
 ## Panel Placement and Size
 
 Default behavior:
 
-- The panel is 320 × 400 pt.
-- It is placed eight points inside the safe visible area of the selected corner.
+- The panel is 360 × 450 pt and its top-left anchor is flush with the screen's left edge and the menu bar's lower edge.
+- It is flush with the safe visible area's selected corner; at top-left, this means the screen's left edge and the menu bar's lower edge.
 - Its animation origin matches the selected corner.
 - It does not cover the full desktop or become a conventional main application window.
 
@@ -432,7 +429,7 @@ Keyboard input
 ### Unit Tests
 
 - All four L-shaped geometries and boundary points.
-- 500, 600, and 700 ms dwell boundaries.
+- The 399/400 ms dwell boundary.
 - Leaving and re-entering the trigger.
 - 120 ms exit cancellation.
 - 80 ms post-close debounce.
@@ -476,7 +473,7 @@ Keyboard input
 
 Before persistence, archive, Favorites, or cat animation proceeds, a throwaway-quality but representative native prototype must prove:
 
-1. The L-shaped trigger feels intentional at 600 ms.
+1. The L-shaped trigger feels intentional at 400 ms.
 2. Normal usage does not produce unacceptable false triggers.
 3. The panel appears above full-screen applications without switching Space.
 4. The input receives focus reliably.

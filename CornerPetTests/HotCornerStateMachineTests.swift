@@ -1,515 +1,185 @@
-import CoreGraphics
 import XCTest
 
 @testable import CornerPet
 
 final class HotCornerStateMachineTests: XCTestCase {
-    func testDefaultPresetIsStandard() {
-        XCTAssertEqual(DwellPreset.default, .standard)
+    private let outside = HotCornerPointerPresence(
+        isInsideTrigger: false,
+        isInsidePanel: false
+    )
+    private let inTrigger = HotCornerPointerPresence(
+        isInsideTrigger: true,
+        isInsidePanel: false
+    )
+
+    func testDwellPresentsOnceAtExactlyFourHundredMilliseconds() throws {
+        var machine = HotCornerStateMachine()
+        let deadline = try XCTUnwrap(
+            machine.handle(.presenceChanged(inTrigger, at: 10)).scheduledDeadline
+        )
+
+        XCTAssertEqual(
+            machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.399)),
+            []
+        )
+        XCTAssertEqual(
+            machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400)),
+            [.present]
+        )
+        XCTAssertEqual(machine.state, .opening)
     }
 
-    func testFastPresetRequiresExactly500Milliseconds() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .fast)
-        let target = makeTarget()
+    func testLeavingBeforeDwellCancelsAndStaleDeadlineCannotPresent() throws {
+        var machine = HotCornerStateMachine()
+        let deadline = try XCTUnwrap(
+            machine.handle(.presenceChanged(inTrigger, at: 10)).scheduledDeadline
+        )
 
+        XCTAssertEqual(machine.handle(.presenceChanged(outside, at: 10.200)), [.cancelDeadline])
         XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target])),
-            .none
+            machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400)),
+            []
         )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.499, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.5, targets: [target])),
-            .present(screenID: target.screenID)
-        )
+        XCTAssertEqual(machine.state, .idle)
     }
 
-    func testStandardPresetRequiresExactly600Milliseconds() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget()
+    func testMovingBetweenTriggerArmsPreservesOriginalDwellDeadline() throws {
+        var machine = HotCornerStateMachine()
+        let deadline = try XCTUnwrap(
+            machine.handle(.presenceChanged(inTrigger, at: 10)).scheduledDeadline
+        )
+        let otherArm = HotCornerPointerPresence(isInsideTrigger: true, isInsidePanel: false)
 
+        XCTAssertEqual(machine.handle(.presenceChanged(otherArm, at: 10.250)), [])
+        XCTAssertEqual(machine.nextDeadline, deadline)
         XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.599, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.6, targets: [target])),
-            .present(screenID: target.screenID)
-        )
-    }
-
-    func testConservativePresetRequiresExactly700Milliseconds() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .conservative)
-        let target = makeTarget()
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.699, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.7, targets: [target])),
-            .present(screenID: target.screenID)
+            machine.handle(.deadlineReached(deadline, presence: otherArm, at: 10.400)),
+            [.present]
         )
     }
 
-    func testMovingBetweenArmsPreservesTheOriginalDwellStart() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(
-            regions: [
-                CGRect(x: 0, y: 0, width: 43, height: 6),
-                CGRect(x: 0, y: 0, width: 6, height: 43)
-            ]
+    func testPanelBeginningToOpenCancelsAnyPendingDwell() throws {
+        var machine = HotCornerStateMachine()
+        let deadline = try XCTUnwrap(
+            machine.handle(.presenceChanged(inTrigger, at: 10)).scheduledDeadline
         )
 
         XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 20, y: 3), at: 0, targets: [target])),
-            .none
+            machine.handle(.panelBeganOpening(at: 10.100)),
+            [.cancelDeadline]
         )
+        XCTAssertEqual(machine.state, .opening)
+        XCTAssertNil(machine.nextDeadline)
         XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 3, y: 20), at: 0.599, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 3, y: 20), at: 0.6, targets: [target])),
-            .present(screenID: target.screenID)
+            machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400)),
+            []
         )
     }
 
-    func testLeavingTheCombinedRegionsResetsAndReentryStartsANewDwell() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget()
+    func testTriggerReducerNeverOwnsAnOpenPanelDeadline() {
+        var machine = HotCornerStateMachine()
+        _ = machine.handle(.presenceChanged(inTrigger, at: 10))
+        _ = machine.handle(.deadlineReached(
+            HotCornerDeadline(generation: 1, dueAt: 10.400),
+            presence: inTrigger,
+            at: 10.400
+        ))
+        _ = machine.handle(.panelBeganOpening(at: 10.401))
+        _ = machine.handle(.panelDidOpen(at: 10.661))
 
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 20, y: 20), at: 0.599, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.599, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.6, targets: [target])),
-            .present(screenID: target.screenID)
-        )
+        XCTAssertEqual(machine.handle(.presenceChanged(outside, at: 20)), [])
+        XCTAssertNil(machine.nextDeadline)
+        XCTAssertEqual(machine.state, .open)
     }
 
-    func testPresentationIsRequestedOnlyOnceUntilTheLifecycleChanges() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget()
+    func testClosingReentryRequestsOneReverse() {
+        var machine = HotCornerStateMachine()
+        _ = machine.handle(.presenceChanged(inTrigger, at: 10))
+        let deadline = HotCornerDeadline(generation: 1, dueAt: 10.400)
+        _ = machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400))
+        _ = machine.handle(.panelDidOpen(at: 10.500))
+        _ = machine.handle(.panelBeganClosing(at: 11))
 
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.6, targets: [target])),
-            .present(screenID: target.screenID)
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.2, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .presentRequested(screenID: target.screenID))
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
+        XCTAssertEqual(machine.handle(.presenceChanged(inTrigger, at: 11.010)), [.reverseClosing])
+        XCTAssertEqual(machine.handle(.presenceChanged(inTrigger, at: 11.020)), [])
     }
 
-    func testChangingScreenCornerOrRegionsRestartsTheDwell() {
-        let original = makeTarget(screenID: 1, corner: .topLeft)
-        let variants = [
-            makeTarget(screenID: 2, corner: .topLeft),
-            makeTarget(screenID: 1, corner: .bottomRight),
-            makeTarget(
-                screenID: 1,
-                corner: .topLeft,
-                regions: [CGRect(x: 0, y: 0, width: 7, height: 6)]
-            )
-        ]
+    func testClosingReentryTransitionsBackThroughOpeningBeforeTheNextClose() {
+        var machine = HotCornerStateMachine()
+        _ = machine.handle(.presenceChanged(inTrigger, at: 10))
+        let deadline = HotCornerDeadline(generation: 1, dueAt: 10.400)
+        _ = machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400))
+        _ = machine.handle(.panelDidOpen(at: 10.500))
+        _ = machine.handle(.panelBeganClosing(at: 11))
+        _ = machine.handle(.presenceChanged(inTrigger, at: 11.010))
 
-        for variant in variants {
-            var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-            XCTAssertEqual(
-                stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [original])),
-                .none
-            )
-            XCTAssertEqual(
-                stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.3, targets: [variant])),
-                .none
-            )
-            XCTAssertEqual(
-                stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.899, targets: [variant])),
-                .none
-            )
-            XCTAssertEqual(
-                stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.9, targets: [variant])),
-                .present(screenID: variant.screenID)
-            )
+        _ = machine.handle(.panelBeganOpening(at: 11.020))
+        XCTAssertEqual(machine.state, .opening)
+        _ = machine.handle(.panelDidOpen(at: 11.280))
+        XCTAssertEqual(machine.state, .open)
+
+        _ = machine.handle(.panelBeganClosing(at: 12))
+        XCTAssertEqual(machine.state, .closing(reverseRequested: false))
+        _ = machine.handle(.panelDidClose(at: 12.180))
+        XCTAssertEqual(machine.state, .suppressedUntilTriggerExit)
+    }
+
+    func testCloseCompletionRecoversEvenWhenARequestedReverseDoesNotComplete() {
+        var machine = HotCornerStateMachine()
+        _ = machine.handle(.presenceChanged(inTrigger, at: 10))
+        let deadline = HotCornerDeadline(generation: 1, dueAt: 10.400)
+        _ = machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400))
+        _ = machine.handle(.panelDidOpen(at: 10.500))
+        _ = machine.handle(.panelBeganClosing(at: 11))
+        _ = machine.handle(.presenceChanged(inTrigger, at: 11.010))
+
+        _ = machine.handle(.panelDidClose(at: 11.180))
+
+        XCTAssertEqual(machine.state, .suppressedUntilTriggerExit)
+        _ = machine.handle(.presenceChanged(outside, at: 11.200))
+        XCTAssertEqual(machine.state, .idle)
+    }
+
+    func testCloseLifecycleSuppressesImmediateReopenUntilTriggerExit() {
+        var machine = HotCornerStateMachine()
+        _ = machine.handle(.presenceChanged(inTrigger, at: 10))
+        let deadline = HotCornerDeadline(generation: 1, dueAt: 10.400)
+        _ = machine.handle(.deadlineReached(deadline, presence: inTrigger, at: 10.400))
+        _ = machine.handle(.panelDidOpen(at: 10.500))
+        _ = machine.handle(.panelBeganClosing(at: 11))
+        _ = machine.handle(.panelDidClose(at: 11.180))
+
+        XCTAssertEqual(machine.state, .suppressedUntilTriggerExit)
+        XCTAssertEqual(machine.handle(.presenceChanged(inTrigger, at: 11.200)), [])
+        XCTAssertEqual(machine.handle(.presenceChanged(outside, at: 11.220)), [])
+        XCTAssertEqual(machine.state, .idle)
+    }
+
+    func testBackwardAndNonFiniteTimeNeverPresent() throws {
+        var machine = HotCornerStateMachine()
+        let deadline = try XCTUnwrap(
+            machine.handle(.presenceChanged(inTrigger, at: 10)).scheduledDeadline
+        )
+
+        XCTAssertEqual(machine.handle(.presenceChanged(inTrigger, at: 9)), [])
+        if case .dwelling = machine.state {
+            // A stale sample must not corrupt an active dwell.
+        } else {
+            XCTFail("A backward timestamp must preserve the active dwell")
         }
-    }
-
-    func testOverlappingTargetsPreferCurrentDwellingTargetBeforeProviderOrder() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let first = makeTarget(screenID: 1)
-        let second = makeTarget(screenID: 2)
-
         XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [first, second])),
-            .none
+            machine.handle(.deadlineReached(deadline, presence: inTrigger, at: .infinity)),
+            []
         )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.599, targets: [second, first])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.6, targets: [second, first])),
-            .present(screenID: first.screenID)
-        )
-    }
-
-    func testClosingOnTheTriggerScreenReversesImmediatelyAndOnlyOnce() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        moveStateMachineToOpen(&stateMachine, target: target)
-
-        XCTAssertEqual(
-            stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .closing(screenID: 1, reverseRequested: false))
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.001, targets: [target])),
-            .reverseClosing(screenID: 1)
-        )
-        XCTAssertEqual(stateMachine.state, .closing(screenID: 1, reverseRequested: true))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.002, targets: [target])),
-            .none
-        )
-    }
-
-    func testClosingOnAnotherScreenDoesNotReverseTheCurrentPanel() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let currentTarget = makeTarget(screenID: 1)
-        let otherTarget = makeTarget(screenID: 2)
-        moveStateMachineToOpen(&stateMachine, target: currentTarget)
-
-        _ = stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.001, targets: [otherTarget])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .closing(screenID: 1, reverseRequested: false))
-    }
-
-    func testLifecycleStatesSuppressPointerActions() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.6, targets: [target])),
-            .present(screenID: 1)
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.panelBeganOpening(screenID: 1, at: 0.61)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .opening(screenID: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.7, targets: [target])),
-            .none
-        )
-
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidOpen(screenID: 1, at: 0.87)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .open(screenID: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.9, targets: [target])),
-            .none
-        )
-
-        XCTAssertEqual(
-            stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .closing(screenID: 1, reverseRequested: false))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 20, y: 20), at: 1.01, targets: [target])),
-            .none
-        )
-    }
-
-    func testReversingAClosingPanelCanEnterOpeningStateAgain() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        moveStateMachineToOpen(&stateMachine, target: target)
-
-        _ = stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.001, targets: [target])),
-            .reverseClosing(screenID: 1)
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.panelBeganOpening(screenID: 1, at: 1.002)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .opening(screenID: 1))
-    }
-
-    func testLatePanelDidCloseCannotReplaceOpeningAfterReverse() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        moveStateMachineToOpen(&stateMachine, target: target)
-
-        _ = stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.001, targets: [target])),
-            .reverseClosing(screenID: 1)
-        )
-        _ = stateMachine.handle(.panelBeganOpening(screenID: 1, at: 1.002))
-        XCTAssertEqual(stateMachine.state, .opening(screenID: 1))
-
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidClose(at: 1.003)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .opening(screenID: 1))
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-
-        _ = stateMachine.handle(.panelDidOpen(screenID: 1, at: 1.004))
-        XCTAssertEqual(stateMachine.state, .open(screenID: 1))
-    }
-
-    func testPanelDidCloseStartsAn80MillisecondDebounceBeforeAFullDwell() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        moveStateMachineToOpen(&stateMachine, target: target)
-        _ = stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1))
-
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidClose(at: 10)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .postCloseDebounce(until: 10.08))
-        XCTAssertEqual(stateMachine.nextEvaluationDeadline, 10.08)
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 10.079, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .postCloseDebounce(until: 10.08))
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 10.08, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .dwelling(target: target, enteredAt: 10.08))
-        XCTAssertEqual(stateMachine.nextEvaluationDeadline, 10.68)
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 10.679, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 10.68, targets: [target])),
-            .present(screenID: 1)
-        )
-    }
-
-    func testPanelDidCloseOutsideClosingLifecycleIsIgnored() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidClose(at: 0.3)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .dwelling(target: target, enteredAt: 0))
-        XCTAssertEqual(stateMachine.nextEvaluationDeadline, 0.6)
-    }
-
-    func testADeadlineThatWasCancelledByLeavingCannotPresentLater() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 20, y: 20), at: 0.3, targets: [target])),
-            .none
-        )
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 20, y: 20), at: 0.6, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-    }
-
-    func testBackwardTimeInvalidatesDwellWithoutPresentingEarly() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1, targets: [target]))
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.2, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.1, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 1.5, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 2.099, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 2.1, targets: [target])),
-            .present(screenID: 1)
-        )
-    }
-
-    func testNonFinitePointerTimeInvalidatesDwell() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: .nan, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-    }
-
-    func testDwellDeadlineOverflowSafelyRejectsTheSampleAndCanRecover() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        let largestFiniteTime = Double.greatestFiniteMagnitude
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(
-                location: CGPoint(x: 1, y: 1),
-                at: largestFiniteTime,
-                targets: [target]
-            )),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(stateMachine.state, .dwelling(target: target, enteredAt: 0))
-        XCTAssertEqual(stateMachine.nextEvaluationDeadline, 0.6)
-    }
-
-    func testPostCloseDebounceOverflowSafelyRejectsTheSampleAndCanRecover() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        let largestFiniteTime = Double.greatestFiniteMagnitude
-        moveStateMachineToOpen(&stateMachine, target: target)
-
-        _ = stateMachine.handle(.panelBeganClosing(screenID: 1, at: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidClose(at: largestFiniteTime)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .idle)
-        XCTAssertNil(stateMachine.nextEvaluationDeadline)
-
-        _ = stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target]))
-        XCTAssertEqual(stateMachine.state, .dwelling(target: target, enteredAt: 0))
-        XCTAssertEqual(stateMachine.nextEvaluationDeadline, 0.6)
-    }
-
-    func testInvalidTimeDoesNotDestroyAnOpenLifecycleState() {
-        var stateMachine = HotCornerStateMachine(dwellPreset: .standard)
-        let target = makeTarget(screenID: 1)
-        moveStateMachineToOpen(&stateMachine, target: target)
-
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: -.infinity, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .open(screenID: 1))
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidClose(at: .infinity)),
-            .none
-        )
-        XCTAssertEqual(stateMachine.state, .open(screenID: 1))
-    }
-
-    private func makeTarget(
-        screenID: UInt32 = 42,
-        corner: TriggerCorner = .topLeft,
-        regions: [CGRect] = [CGRect(x: 0, y: 0, width: 6, height: 6)]
-    ) -> HotCornerTarget {
-        HotCornerTarget(
-            screenID: screenID,
-            corner: corner,
-            regions: regions
-        )
-    }
-
-    private func moveStateMachineToOpen(
-        _ stateMachine: inout HotCornerStateMachine,
-        target: HotCornerTarget
-    ) {
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0, targets: [target])),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.pointerObserved(location: CGPoint(x: 1, y: 1), at: 0.6, targets: [target])),
-            .present(screenID: target.screenID)
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.panelBeganOpening(screenID: target.screenID, at: 0.61)),
-            .none
-        )
-        XCTAssertEqual(
-            stateMachine.handle(.panelDidOpen(screenID: target.screenID, at: 0.87)),
-            .none
-        )
+        XCTAssertEqual(machine.handle(.presenceChanged(inTrigger, at: .nan)), [])
     }
 }
 
-@MainActor
-final class MouseMonitorTests: XCTestCase {
-    func testStartAndStopAreIdempotent() {
-        let monitor = MouseMonitor(
-            dwellPreset: .standard,
-            clock: { 0 },
-            targetsProvider: { [] },
-            actionHandler: { _ in }
-        )
-
-        XCTAssertTrue(monitor.start())
-        XCTAssertTrue(monitor.start())
-        XCTAssertTrue(monitor.isRunning)
-
-        monitor.stop()
-        monitor.stop()
-        XCTAssertFalse(monitor.isRunning)
+private extension Array where Element == HotCornerEffect {
+    var scheduledDeadline: HotCornerDeadline? {
+        compactMap { effect in
+            guard case let .schedule(deadline) = effect else { return nil }
+            return deadline
+        }.first
     }
 }

@@ -10,34 +10,34 @@ final class HotCornerGeometryTests: XCTestCase {
             (
                 .topLeft,
                 [
-                    CGRect(x: -100, y: 994, width: 43, height: 6),
-                    CGRect(x: -100, y: 957, width: 6, height: 43)
+                    CGRect(x: -100, y: 980, width: 86, height: 20),
+                    CGRect(x: -100, y: 914, width: 20, height: 86)
                 ],
-                CGRect(x: -100, y: 994, width: 6, height: 6)
+                CGRect(x: -100, y: 980, width: 20, height: 20)
             ),
             (
                 .topRight,
                 [
-                    CGRect(x: 857, y: 994, width: 43, height: 6),
-                    CGRect(x: 894, y: 957, width: 6, height: 43)
+                    CGRect(x: 814, y: 980, width: 86, height: 20),
+                    CGRect(x: 880, y: 914, width: 20, height: 86)
                 ],
-                CGRect(x: 894, y: 994, width: 6, height: 6)
+                CGRect(x: 880, y: 980, width: 20, height: 20)
             ),
             (
                 .bottomLeft,
                 [
-                    CGRect(x: -100, y: 200, width: 43, height: 6),
-                    CGRect(x: -100, y: 200, width: 6, height: 43)
+                    CGRect(x: -100, y: 200, width: 86, height: 20),
+                    CGRect(x: -100, y: 200, width: 20, height: 86)
                 ],
-                CGRect(x: -100, y: 200, width: 6, height: 6)
+                CGRect(x: -100, y: 200, width: 20, height: 20)
             ),
             (
                 .bottomRight,
                 [
-                    CGRect(x: 857, y: 200, width: 43, height: 6),
-                    CGRect(x: 894, y: 200, width: 6, height: 43)
+                    CGRect(x: 814, y: 200, width: 86, height: 20),
+                    CGRect(x: 880, y: 200, width: 20, height: 86)
                 ],
-                CGRect(x: 894, y: 200, width: 6, height: 6)
+                CGRect(x: 880, y: 200, width: 20, height: 20)
             )
         ]
 
@@ -53,29 +53,29 @@ final class HotCornerGeometryTests: XCTestCase {
         let frame = CGRect(x: -100, y: 200, width: 1000, height: 800)
         let fixtures: [(corner: TriggerCorner, label: String, point: CGPoint)] = [
             (.topLeft, "physical corner", CGPoint(x: -100, y: 1000)),
-            (.topLeft, "horizontal far end", CGPoint(x: -57, y: 1000)),
-            (.topLeft, "horizontal inner long edge", CGPoint(x: -75, y: 994)),
-            (.topLeft, "vertical far end", CGPoint(x: -100, y: 957)),
-            (.topLeft, "vertical inner long edge", CGPoint(x: -94, y: 975)),
-            (.topLeft, "overlap", CGPoint(x: -94, y: 994)),
+            (.topLeft, "horizontal far end", CGPoint(x: -14, y: 1000)),
+            (.topLeft, "horizontal inner long edge", CGPoint(x: -75, y: 980)),
+            (.topLeft, "vertical far end", CGPoint(x: -100, y: 914)),
+            (.topLeft, "vertical inner long edge", CGPoint(x: -80, y: 975)),
+            (.topLeft, "overlap", CGPoint(x: -80, y: 980)),
             (.topRight, "physical corner", CGPoint(x: 900, y: 1000)),
-            (.topRight, "horizontal far end", CGPoint(x: 857, y: 1000)),
-            (.topRight, "horizontal inner long edge", CGPoint(x: 875, y: 994)),
-            (.topRight, "vertical far end", CGPoint(x: 900, y: 957)),
-            (.topRight, "vertical inner long edge", CGPoint(x: 894, y: 975)),
-            (.topRight, "overlap", CGPoint(x: 894, y: 994)),
+            (.topRight, "horizontal far end", CGPoint(x: 814, y: 1000)),
+            (.topRight, "horizontal inner long edge", CGPoint(x: 875, y: 980)),
+            (.topRight, "vertical far end", CGPoint(x: 900, y: 914)),
+            (.topRight, "vertical inner long edge", CGPoint(x: 880, y: 975)),
+            (.topRight, "overlap", CGPoint(x: 880, y: 980)),
             (.bottomLeft, "physical corner", CGPoint(x: -100, y: 200)),
-            (.bottomLeft, "horizontal far end", CGPoint(x: -57, y: 200)),
-            (.bottomLeft, "horizontal inner long edge", CGPoint(x: -75, y: 206)),
-            (.bottomLeft, "vertical far end", CGPoint(x: -100, y: 243)),
-            (.bottomLeft, "vertical inner long edge", CGPoint(x: -94, y: 225)),
-            (.bottomLeft, "overlap", CGPoint(x: -94, y: 206)),
+            (.bottomLeft, "horizontal far end", CGPoint(x: -14, y: 200)),
+            (.bottomLeft, "horizontal inner long edge", CGPoint(x: -75, y: 220)),
+            (.bottomLeft, "vertical far end", CGPoint(x: -100, y: 286)),
+            (.bottomLeft, "vertical inner long edge", CGPoint(x: -80, y: 225)),
+            (.bottomLeft, "overlap", CGPoint(x: -80, y: 220)),
             (.bottomRight, "physical corner", CGPoint(x: 900, y: 200)),
-            (.bottomRight, "horizontal far end", CGPoint(x: 857, y: 200)),
-            (.bottomRight, "horizontal inner long edge", CGPoint(x: 875, y: 206)),
-            (.bottomRight, "vertical far end", CGPoint(x: 900, y: 243)),
-            (.bottomRight, "vertical inner long edge", CGPoint(x: 894, y: 225)),
-            (.bottomRight, "overlap", CGPoint(x: 894, y: 206))
+            (.bottomRight, "horizontal far end", CGPoint(x: 814, y: 200)),
+            (.bottomRight, "horizontal inner long edge", CGPoint(x: 875, y: 220)),
+            (.bottomRight, "vertical far end", CGPoint(x: 900, y: 286)),
+            (.bottomRight, "vertical inner long edge", CGPoint(x: 880, y: 225)),
+            (.bottomRight, "overlap", CGPoint(x: 880, y: 220))
         ]
 
         for fixture in fixtures {
@@ -90,29 +90,29 @@ final class HotCornerGeometryTests: XCTestCase {
         let frame = CGRect(x: -100, y: 200, width: 1000, height: 800)
         let fixtures: [(corner: TriggerCorner, label: String, point: CGPoint)] = [
             (.topLeft, "physical corner", CGPoint(x: -100.1, y: 1000.1)),
-            (.topLeft, "horizontal far end", CGPoint(x: -56.9, y: 1000)),
-            (.topLeft, "horizontal inner long edge", CGPoint(x: -75, y: 993.9)),
-            (.topLeft, "vertical far end", CGPoint(x: -100, y: 956.9)),
-            (.topLeft, "vertical inner long edge", CGPoint(x: -93.9, y: 975)),
-            (.topLeft, "overlap", CGPoint(x: -93.9, y: 993.9)),
+            (.topLeft, "horizontal far end", CGPoint(x: -13.9, y: 1000)),
+            (.topLeft, "horizontal inner long edge", CGPoint(x: -75, y: 979.9)),
+            (.topLeft, "vertical far end", CGPoint(x: -100, y: 913.9)),
+            (.topLeft, "vertical inner long edge", CGPoint(x: -79.9, y: 975)),
+            (.topLeft, "overlap", CGPoint(x: -79.9, y: 979.9)),
             (.topRight, "physical corner", CGPoint(x: 900.1, y: 1000.1)),
-            (.topRight, "horizontal far end", CGPoint(x: 856.9, y: 1000)),
-            (.topRight, "horizontal inner long edge", CGPoint(x: 875, y: 993.9)),
-            (.topRight, "vertical far end", CGPoint(x: 900, y: 956.9)),
-            (.topRight, "vertical inner long edge", CGPoint(x: 893.9, y: 975)),
-            (.topRight, "overlap", CGPoint(x: 893.9, y: 993.9)),
+            (.topRight, "horizontal far end", CGPoint(x: 813.9, y: 1000)),
+            (.topRight, "horizontal inner long edge", CGPoint(x: 875, y: 979.9)),
+            (.topRight, "vertical far end", CGPoint(x: 900, y: 913.9)),
+            (.topRight, "vertical inner long edge", CGPoint(x: 879.9, y: 975)),
+            (.topRight, "overlap", CGPoint(x: 879.9, y: 979.9)),
             (.bottomLeft, "physical corner", CGPoint(x: -100.1, y: 199.9)),
-            (.bottomLeft, "horizontal far end", CGPoint(x: -56.9, y: 200)),
-            (.bottomLeft, "horizontal inner long edge", CGPoint(x: -75, y: 206.1)),
-            (.bottomLeft, "vertical far end", CGPoint(x: -100, y: 243.1)),
-            (.bottomLeft, "vertical inner long edge", CGPoint(x: -93.9, y: 225)),
-            (.bottomLeft, "overlap", CGPoint(x: -93.9, y: 206.1)),
+            (.bottomLeft, "horizontal far end", CGPoint(x: -13.9, y: 200)),
+            (.bottomLeft, "horizontal inner long edge", CGPoint(x: -75, y: 220.1)),
+            (.bottomLeft, "vertical far end", CGPoint(x: -100, y: 286.1)),
+            (.bottomLeft, "vertical inner long edge", CGPoint(x: -79.9, y: 225)),
+            (.bottomLeft, "overlap", CGPoint(x: -79.9, y: 220.1)),
             (.bottomRight, "physical corner", CGPoint(x: 900.1, y: 199.9)),
-            (.bottomRight, "horizontal far end", CGPoint(x: 856.9, y: 200)),
-            (.bottomRight, "horizontal inner long edge", CGPoint(x: 875, y: 206.1)),
-            (.bottomRight, "vertical far end", CGPoint(x: 900, y: 243.1)),
-            (.bottomRight, "vertical inner long edge", CGPoint(x: 893.9, y: 225)),
-            (.bottomRight, "overlap", CGPoint(x: 893.9, y: 206.1))
+            (.bottomRight, "horizontal far end", CGPoint(x: 813.9, y: 200)),
+            (.bottomRight, "horizontal inner long edge", CGPoint(x: 875, y: 220.1)),
+            (.bottomRight, "vertical far end", CGPoint(x: 900, y: 286.1)),
+            (.bottomRight, "vertical inner long edge", CGPoint(x: 879.9, y: 225)),
+            (.bottomRight, "overlap", CGPoint(x: 879.9, y: 220.1))
         ]
 
         for fixture in fixtures {

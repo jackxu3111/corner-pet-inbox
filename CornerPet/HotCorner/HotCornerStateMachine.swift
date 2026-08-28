@@ -1,268 +1,218 @@
-import CoreGraphics
 import Foundation
 
-struct HotCornerTarget: Equatable {
-    let screenID: UInt32
-    let corner: TriggerCorner
-    let regions: [CGRect]
+struct HotCornerPointerPresence: Equatable {
+    let isInsideTrigger: Bool
+    let isInsidePanel: Bool
+
+    var isInsideKeepOpen: Bool {
+        isInsideTrigger || isInsidePanel
+    }
 }
 
-enum HotCornerAction: Equatable {
-    case none
-    case present(screenID: UInt32)
-    case reverseClosing(screenID: UInt32)
+struct HotCornerDeadline: Equatable {
+    let kind: Kind
+    let generation: Int
+    let dueAt: TimeInterval
+
+    enum Kind: Equatable {
+        case dwell
+    }
+
+    init(kind: Kind = .dwell, generation: Int, dueAt: TimeInterval) {
+        self.kind = kind
+        self.generation = generation
+        self.dueAt = dueAt
+    }
 }
 
-enum HotCornerEvent {
-    case pointerObserved(location: CGPoint, at: TimeInterval, targets: [HotCornerTarget])
-    case panelBeganOpening(screenID: UInt32, at: TimeInterval)
-    case panelDidOpen(screenID: UInt32, at: TimeInterval)
-    case panelBeganClosing(screenID: UInt32, at: TimeInterval)
+enum HotCornerEvent: Equatable {
+    case presenceChanged(HotCornerPointerPresence, at: TimeInterval)
+    case deadlineReached(HotCornerDeadline, presence: HotCornerPointerPresence, at: TimeInterval)
+    case panelBeganOpening(at: TimeInterval)
+    case panelDidOpen(at: TimeInterval)
+    case panelBeganClosing(at: TimeInterval)
     case panelDidClose(at: TimeInterval)
+    case escapePressed(at: TimeInterval)
+}
+
+enum HotCornerEffect: Equatable {
+    case schedule(HotCornerDeadline)
+    case cancelDeadline
+    case present
+    case reverseClosing
 }
 
 enum HotCornerState: Equatable {
     case idle
-    case dwelling(target: HotCornerTarget, enteredAt: TimeInterval)
-    case presentRequested(screenID: UInt32)
-    case opening(screenID: UInt32)
-    case open(screenID: UInt32)
-    case closing(screenID: UInt32, reverseRequested: Bool)
-    case postCloseDebounce(until: TimeInterval)
+    case dwelling(startedAt: TimeInterval, deadline: HotCornerDeadline)
+    case opening
+    case open
+    case closing(reverseRequested: Bool)
+    case suppressedUntilTriggerExit
 }
 
 struct HotCornerStateMachine {
     private let dwellDuration: TimeInterval
-    private var lastObservedTime: TimeInterval?
+    private var nextGeneration = 0
+    private var lastAcceptedTime: TimeInterval?
+    private var lastPresence = HotCornerPointerPresence(
+        isInsideTrigger: false,
+        isInsidePanel: false
+    )
 
     private(set) var state: HotCornerState = .idle
-    private(set) var nextEvaluationDeadline: TimeInterval?
+    private(set) var nextDeadline: HotCornerDeadline?
 
-    init(dwellPreset: DwellPreset = .standard) {
-        dwellDuration = dwellPreset.rawValue
+    init(dwellDuration: TimeInterval = DwellTiming.duration) {
+        self.dwellDuration = dwellDuration
     }
 
-    mutating func handle(_ event: HotCornerEvent) -> HotCornerAction {
+    mutating func handle(_ event: HotCornerEvent) -> [HotCornerEffect] {
         switch event {
-        case let .pointerObserved(location, at, targets):
-            handlePointerObserved(location: location, at: at, targets: targets)
-        case let .panelBeganOpening(screenID, at):
-            handlePanelBeganOpening(screenID: screenID, at: at)
-        case let .panelDidOpen(screenID, at):
-            handlePanelDidOpen(screenID: screenID, at: at)
-        case let .panelBeganClosing(screenID, at):
-            handlePanelBeganClosing(screenID: screenID, at: at)
-        case let .panelDidClose(at):
-            handlePanelDidClose(at: at)
+        case let .presenceChanged(presence, at: time):
+            return handlePresenceChanged(presence, at: time)
+        case let .deadlineReached(deadline, presence, at: time):
+            return handleDeadlineReached(deadline, presence: presence, at: time)
+        case let .panelBeganOpening(at: time):
+            return handlePanelBeganOpening(at: time)
+        case let .panelDidOpen(at: time):
+            return handlePanelDidOpen(at: time)
+        case let .panelBeganClosing(at: time):
+            return handlePanelBeganClosing(at: time)
+        case let .panelDidClose(at: time):
+            return handlePanelDidClose(at: time)
+        case let .escapePressed(at: time):
+            _ = accept(time: time)
+            return []
         }
     }
 
-    private mutating func handlePointerObserved(
-        location: CGPoint,
-        at time: TimeInterval,
-        targets: [HotCornerTarget]
-    ) -> HotCornerAction {
+    private mutating func handlePresenceChanged(
+        _ presence: HotCornerPointerPresence,
+        at time: TimeInterval
+    ) -> [HotCornerEffect] {
         guard accept(time: time) else {
-            if case .dwelling = state {
-                state = .idle
-                nextEvaluationDeadline = nil
-            }
-            return .none
+            return []
         }
 
-        let target: HotCornerTarget?
-        if case let .dwelling(currentTarget, _) = state,
-           targets.contains(currentTarget),
-           contains(location: location, in: currentTarget.regions) {
-            target = currentTarget
-        } else {
-            target = targets.first { target in
-                contains(location: location, in: target.regions)
-            }
-        }
-
+        lastPresence = presence
         switch state {
         case .idle:
-            guard let target else {
-                return .none
+            guard presence.isInsideTrigger else { return [] }
+            guard let deadline = makeDwellDeadline(at: time) else { return [] }
+            state = .dwelling(startedAt: time, deadline: deadline)
+            nextDeadline = deadline
+            return [.schedule(deadline)]
+        case .dwelling:
+            guard !presence.isInsideTrigger else { return [] }
+            state = .idle
+            nextDeadline = nil
+            return [.cancelDeadline]
+        case .closing where presence.isInsideTrigger:
+            guard case let .closing(reverseRequested) = state, !reverseRequested else {
+                return []
             }
-            guard let deadline = finiteDeadline(from: time, adding: dwellDuration) else {
-                invalidateTiming()
-                return .none
-            }
-
-            state = .dwelling(target: target, enteredAt: time)
-            nextEvaluationDeadline = deadline
-            return .none
-
-        case let .dwelling(currentTarget, enteredAt):
-            guard let target else {
-                state = .idle
-                nextEvaluationDeadline = nil
-                return .none
-            }
-
-            guard target == currentTarget else {
-                guard let deadline = finiteDeadline(from: time, adding: dwellDuration) else {
-                    invalidateTiming()
-                    return .none
-                }
-                state = .dwelling(target: target, enteredAt: time)
-                nextEvaluationDeadline = deadline
-                return .none
-            }
-
-            guard let deadline = finiteDeadline(from: enteredAt, adding: dwellDuration) else {
-                invalidateTiming()
-                return .none
-            }
-            guard time >= deadline else {
-                return .none
-            }
-
-            state = .presentRequested(screenID: target.screenID)
-            nextEvaluationDeadline = nil
-            return .present(screenID: target.screenID)
-
-        case .presentRequested, .opening, .open:
-            return .none
-
-        case let .postCloseDebounce(until):
-            guard time >= until else {
-                return .none
-            }
-
-            guard let target else {
-                state = .idle
-                nextEvaluationDeadline = nil
-                return .none
-            }
-            guard let deadline = finiteDeadline(from: time, adding: dwellDuration) else {
-                invalidateTiming()
-                return .none
-            }
-
-            state = .dwelling(target: target, enteredAt: time)
-            nextEvaluationDeadline = deadline
-            return .none
-
-        case let .closing(screenID, reverseRequested):
-            guard !reverseRequested,
-                  targets.contains(where: { target in
-                      target.screenID == screenID && contains(location: location, in: target.regions)
-                  }) else {
-                return .none
-            }
-
-            state = .closing(screenID: screenID, reverseRequested: true)
-            return .reverseClosing(screenID: screenID)
+            state = .closing(reverseRequested: true)
+            return [.reverseClosing]
+        case .suppressedUntilTriggerExit:
+            guard !presence.isInsideTrigger else { return [] }
+            state = .idle
+            return []
+        case .opening, .open, .closing:
+            return []
         }
     }
 
-    private mutating func handlePanelBeganOpening(screenID: UInt32, at time: TimeInterval) -> HotCornerAction {
-        guard accept(time: time) else {
-            invalidateDwellIfNeeded()
-            return .none
+    private mutating func handleDeadlineReached(
+        _ deadline: HotCornerDeadline,
+        presence: HotCornerPointerPresence,
+        at time: TimeInterval
+    ) -> [HotCornerEffect] {
+        guard nextDeadline == deadline,
+              deadline.kind == .dwell,
+              time.isFinite,
+              lastAcceptedTime.map({ time >= $0 }) ?? true,
+              time >= deadline.dueAt else {
+            return []
         }
 
+        lastAcceptedTime = time
+        nextDeadline = nil
+        guard case let .dwelling(_, currentDeadline) = state,
+              currentDeadline == deadline else {
+            return []
+        }
+
+        lastPresence = presence
+        guard presence.isInsideTrigger else {
+            state = .idle
+            return [.cancelDeadline]
+        }
+        state = .opening
+        return [.present]
+    }
+
+    private mutating func handlePanelDidOpen(at time: TimeInterval) -> [HotCornerEffect] {
+        guard accept(time: time) else { return [] }
+        if case .opening = state {
+            state = .open
+        }
+        return []
+    }
+
+    private mutating func handlePanelBeganOpening(at time: TimeInterval) -> [HotCornerEffect] {
+        guard accept(time: time) else { return [] }
+        if case .dwelling = state {
+            nextDeadline = nil
+            state = .opening
+            return [.cancelDeadline]
+        }
+        if case .closing(reverseRequested: true) = state {
+            state = .opening
+        }
+        return []
+    }
+
+    private mutating func handlePanelBeganClosing(at time: TimeInterval) -> [HotCornerEffect] {
+        guard accept(time: time) else { return [] }
         switch state {
-        case let .presentRequested(requestedScreenID) where requestedScreenID == screenID:
-            state = .opening(screenID: screenID)
-            nextEvaluationDeadline = nil
-        case let .closing(closingScreenID, reverseRequested)
-            where closingScreenID == screenID && reverseRequested:
-            state = .opening(screenID: screenID)
-            nextEvaluationDeadline = nil
-        default:
+        case .opening, .open:
+            nextDeadline = nil
+            state = .closing(reverseRequested: false)
+        case .closing, .idle, .dwelling, .suppressedUntilTriggerExit:
             break
         }
-
-        return .none
+        return []
     }
 
-    private mutating func handlePanelDidOpen(screenID: UInt32, at time: TimeInterval) -> HotCornerAction {
-        guard accept(time: time) else {
-            invalidateDwellIfNeeded()
-            return .none
-        }
-
-        if case let .opening(openingScreenID) = state, openingScreenID == screenID {
-            state = .open(screenID: screenID)
-            nextEvaluationDeadline = nil
-        }
-
-        return .none
+    private mutating func handlePanelDidClose(at time: TimeInterval) -> [HotCornerEffect] {
+        guard accept(time: time) else { return [] }
+        guard case .closing = state else { return [] }
+        nextDeadline = nil
+        state = lastPresence.isInsideTrigger
+            ? .suppressedUntilTriggerExit
+            : .idle
+        return []
     }
 
-    private mutating func handlePanelBeganClosing(screenID: UInt32, at time: TimeInterval) -> HotCornerAction {
-        guard accept(time: time) else {
-            invalidateDwellIfNeeded()
-            return .none
+    private mutating func makeDwellDeadline(at time: TimeInterval) -> HotCornerDeadline? {
+        guard time.isFinite,
+              dwellDuration.isFinite,
+              dwellDuration > 0 else {
+            return nil
         }
-
-        if case let .open(openScreenID) = state, openScreenID == screenID {
-            state = .closing(screenID: screenID, reverseRequested: false)
-            nextEvaluationDeadline = nil
-        }
-
-        return .none
-    }
-
-    private mutating func handlePanelDidClose(at time: TimeInterval) -> HotCornerAction {
-        guard accept(time: time) else {
-            invalidateDwellIfNeeded()
-            return .none
-        }
-        guard case .closing(_, reverseRequested: false) = state else {
-            return .none
-        }
-
-        guard let deadline = finiteDeadline(from: time, adding: 0.080) else {
-            invalidateTiming()
-            return .none
-        }
-        state = .postCloseDebounce(until: deadline)
-        nextEvaluationDeadline = deadline
-        return .none
+        let dueAt = time + dwellDuration
+        guard dueAt.isFinite, dueAt > time else { return nil }
+        nextGeneration += 1
+        return HotCornerDeadline(generation: nextGeneration, dueAt: dueAt)
     }
 
     private mutating func accept(time: TimeInterval) -> Bool {
-        guard time.isFinite else {
+        guard time.isFinite,
+              lastAcceptedTime.map({ time >= $0 }) ?? true else {
             return false
         }
-        guard lastObservedTime.map({ time >= $0 }) ?? true else {
-            return false
-        }
-
-        lastObservedTime = time
+        lastAcceptedTime = time
         return true
-    }
-
-    private mutating func invalidateDwellIfNeeded() {
-        if case .dwelling = state {
-            state = .idle
-            nextEvaluationDeadline = nil
-        }
-    }
-
-    private mutating func invalidateTiming() {
-        state = .idle
-        nextEvaluationDeadline = nil
-        lastObservedTime = nil
-    }
-
-    private func finiteDeadline(from time: TimeInterval, adding duration: TimeInterval) -> TimeInterval? {
-        let deadline = time + duration
-        guard deadline.isFinite, deadline > time else {
-            return nil
-        }
-        return deadline
-    }
-
-    private func contains(location: CGPoint, in regions: [CGRect]) -> Bool {
-        regions.contains { region in
-            location.x >= region.minX && location.x <= region.maxX
-                && location.y >= region.minY && location.y <= region.maxY
-        }
     }
 }

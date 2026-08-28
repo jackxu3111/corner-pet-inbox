@@ -1,8 +1,8 @@
 import CoreGraphics
 
 struct HotCornerGeometry {
-    private static let armLength: CGFloat = 43
-    private static let thickness: CGFloat = 6
+    private static let armLength: CGFloat = 86
+    private static let thickness: CGFloat = 20
 
     static func regions(frame: CGRect, corner: TriggerCorner) -> [CGRect] {
         switch corner {

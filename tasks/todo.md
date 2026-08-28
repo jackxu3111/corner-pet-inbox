@@ -1,5 +1,17 @@
 # CornerPet MVP Task Checklist
 
+## Current Progress (2026-08-28)
+
+- [x] Task 1–4：原生工程、L 形触发、400 ms 停留与 360×450 面板原型
+- [x] Task 5：SwiftData 正式事项与唯一草稿持久化
+- [x] Task 6：输入、条件提交、草稿恢复与精确错误重试
+- [x] Task 7：输入优先面板、最新优先收件箱与双语占位导航
+- [x] Task 8：五秒撤销、收藏与搜索、共享行内编辑、确认永久删除
+- [x] Task 9：八状态面板生命周期、唯一 120 ms 收回、置顶移动缩放与尺寸持久化
+- [ ] Task 10–14：多显示器、设置、提醒、双语无障碍与发布
+
+最新自动验收：`build-for-testing` 成功，直接 XCTest 249/249 通过，arm64 Debug `BUILD SUCCEEDED`，`git diff --check` 与旧 100 ms 收回 owner 扫描通过。Library/Pinning UI Runner 在执行首个用例前无法初始化 automation mode；相关 UI 套件已构建但未记为通过，真实 Mac 的搜索/编辑/删除、拖拽缩放、全屏/Spaces 与 unpin/retrigger 仍需手测。
+
 ## Task 1: Project Baseline
 **Outcome:** macOS 14、arm64 App 和两类测试目标可构建，隐藏启动。
 **Acceptance:** Debug/Release 为 14.0 + arm64；accessory 模式；测试可运行。
@@ -7,19 +19,19 @@
 **Dependencies:** None · **Scope:** M
 
 ## Task 2: L-shaped Geometry
-**Outcome:** 四角由两个 43×6 pt 矩形组成不可见 L 热区。
-**Acceptance:** 四角镜像、交叠、边界正确；外侧 0.1 pt 不命中。
+**Outcome:** 基本演示使用主屏左上角 86×20 + 20×86 pt 不可见 L 触发带。
+**Acceptance:** 两臂贴屏幕边缘、20×20 交叠、边界正确；外侧 0.1 pt 不命中。
 **Verification:** HotCornerGeometryTests。
 **Dependencies:** Task 1 · **Scope:** S
 
 ## Task 3: Dwell and Mouse Adapter
-**Outcome:** 三档停留、离开取消、80 ms 防抖、反转请求和本地/全局鼠标监听。
-**Acceptance:** 默认 600 ms 仅触发一次；区内移动不重置；不请求 Accessibility。
-**Verification:** HotCornerStateMachineTests + 前后台鼠标手测。
+**Outcome:** 400 ms 停留、100 ms 收回防抖、反转请求和 tracking-panel 边界适配。
+**Acceptance:** 固定 400 ms 仅触发一次；两臂间移动不重置；不请求 Input Monitoring；不用 mouseMoved monitor。
+**Verification:** HotCornerStateMachineTests、CornerTriggerCoordinatorTests、TriggerZonePanelTests + 前后台鼠标手测。
 **Dependencies:** Task 2 · **Scope:** M
 
 ## Task 4: Full-screen Panel Prototype
-**Outcome:** 320×400 pt 面板在全屏/Spaces 上方从角落生长并恢复焦点。
+**Outcome:** 360×450 pt 面板紧贴左边与菜单栏下沿，在全屏/Spaces 上方从角落生长并恢复焦点。
 **Acceptance:** 260/180 ms 可反转；不退全屏或切 Space；无透明点击层。
 **Verification:** Panel tests + Checkpoint A。
 **Dependencies:** Task 3 · **Scope:** M
@@ -83,3 +95,16 @@
 **Acceptance:** 指标不接收文本；测试矩阵通过；Release BUILD SUCCEEDED。
 **Verification:** clean test、Release build、七天验证表。
 **Dependencies:** Tasks 1–13 · **Scope:** M
+
+## 2026-08-26 Trigger Rewrite Slice
+
+- [x] 纯状态机用 deadline generation 拒绝陈旧回调。
+- [x] 新增两个透明、置顶、nonactivating tracking panels。
+- [x] 注入 clock、pointer provider、deadline scheduler；deadline 时复核指针。
+- [x] trigger + capture panel 组成 keep-open；离开全部区域 100 ms 后关闭，重入取消。
+- [x] Escape 关闭；支持主屏全屏辅助 Space 演示。
+- [x] 删除权限 coordinator、`MouseMonitor`、权限测试和 PBX 引用。
+- [x] 直接 XCTest unit suite 57/57、Debug build、禁用 API 扫描。
+- [ ] full scheme `xcodebuild test`（测试宿主卡在 worker materialization）以及 Apple 菜单、主屏触发、Escape、全屏手测。
+
+详细来源：`docs/superpowers/specs/2026-08-26-atoll-style-corner-trigger-design.md` 与 `docs/superpowers/plans/2026-08-26-atoll-style-corner-trigger.md`。

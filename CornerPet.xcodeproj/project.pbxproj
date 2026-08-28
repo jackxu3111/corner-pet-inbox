@@ -13,9 +13,33 @@
 		100000000000000000000053 /* AppConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000043 /* AppConfigurationTests.swift */; };
 		10000000000000000000005A /* HotCornerGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000047 /* HotCornerGeometryTests.swift */; };
 		10000000000000000000005C /* HotCornerStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000048 /* HotCornerStateMachineTests.swift */; };
-		10000000000000000000005D /* DwellPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000049 /* DwellPreset.swift */; };
+		10000000000000000000005D /* DwellTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000049 /* DwellTiming.swift */; };
 		10000000000000000000005E /* HotCornerStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000004A /* HotCornerStateMachine.swift */; };
-		10000000000000000000005F /* MouseMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000004B /* MouseMonitor.swift */; };
+		100000000000000000000066 /* PanelPositioner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000067 /* PanelPositioner.swift */; };
+		10000000000000000000006B /* CornerPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000006C /* CornerPanel.swift */; };
+		10000000000000000000006D /* PanelAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000006E /* PanelAnimator.swift */; };
+		100000000000000000000090 /* CapturePanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000091 /* CapturePanelController.swift */; };
+		100000000000000000000096 /* CornerTriggerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000094 /* CornerTriggerCoordinator.swift */; };
+		100000000000000000000097 /* TriggerZonePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000095 /* TriggerZonePanel.swift */; };
+		100000000000000000000064 /* PanelPositionerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000065 /* PanelPositionerTests.swift */; };
+		100000000000000000000069 /* PanelAnimatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000000000000000000006A /* PanelAnimatorTests.swift */; };
+		10000000000000000000009A /* CornerTriggerCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000098 /* CornerTriggerCoordinatorTests.swift */; };
+		10000000000000000000009B /* TriggerZonePanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000099 /* TriggerZonePanelTests.swift */; };
+		1000000000000000000000A0 /* Draft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B0 /* Draft.swift */; };
+		1000000000000000000000A1 /* IdeaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* IdeaItem.swift */; };
+		1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* ModelContainerFactory.swift */; };
+		1000000000000000000000A3 /* ModelContainerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* ModelContainerFactoryTests.swift */; };
+		1000000000000000000000A4 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* DraftStore.swift */; };
+		1000000000000000000000A5 /* DraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B5 /* DraftStoreTests.swift */; };
+		1000000000000000000000A6 /* ItemStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B6 /* ItemStore.swift */; };
+		1000000000000000000000A7 /* ItemStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B7 /* ItemStoreTests.swift */; };
+		1000000000000000000000E1 /* CaptureKeyboardPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D1 /* CaptureKeyboardPolicy.swift */; };
+		1000000000000000000000E2 /* CaptureKeyboardPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D2 /* CaptureKeyboardPolicyTests.swift */; };
+		1000000000000000000000E3 /* PostSubmissionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D3 /* PostSubmissionPolicy.swift */; };
+		1000000000000000000000E4 /* PostSubmissionPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D4 /* PostSubmissionPolicyTests.swift */; };
+		1000000000000000000000E5 /* CaptureViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D5 /* CaptureViewModel.swift */; };
+		1000000000000000000000E6 /* CaptureViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D6 /* CaptureViewModelTests.swift */; };
+		1000000000000000000000E7 /* CaptureSubmissionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000D7 /* CaptureSubmissionIntegrationTests.swift */; };
 		100000000000000000000054 /* TriggerCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000045 /* TriggerCorner.swift */; };
 		10000000000000000000005B /* HotCornerGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000046 /* HotCornerGeometry.swift */; };
 		100000000000000000000055 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F1 /* AppKit.framework */; };
@@ -23,6 +47,46 @@
 		100000000000000000000057 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F3 /* XCTest.framework */; };
 		100000000000000000000058 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000F3 /* XCTest.framework */; };
 		100000000000000000000059 /* CornerPetLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 100000000000000000000044 /* CornerPetLaunchTests.swift */; };
+		200000000000000000000101 /* CaptureLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* CaptureLayoutTests.swift */; };
+		200000000000000000000102 /* CaptureDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* CaptureDestination.swift */; };
+		200000000000000000000103 /* CaptureShellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* CaptureShellViewModel.swift */; };
+		200000000000000000000104 /* InboxViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* InboxViewModelTests.swift */; };
+		200000000000000000000105 /* InboxViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* InboxViewModel.swift */; };
+		200000000000000000000106 /* CaptureTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* CaptureTextEditor.swift */; };
+		200000000000000000000107 /* CaptureHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* CaptureHeaderView.swift */; };
+		200000000000000000000108 /* ItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000008 /* ItemRow.swift */; };
+		200000000000000000000109 /* InboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* InboxView.swift */; };
+		20000000000000000000010A /* CaptureNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* CaptureNavigationBar.swift */; };
+		20000000000000000000010B /* CapturePanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* CapturePanelView.swift */; };
+		20000000000000000000010C /* CaptureCompositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* CaptureCompositionTests.swift */; };
+		20000000000000000000010D /* CaptureCompositionRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* CaptureCompositionRoot.swift */; };
+		20000000000000000000010E /* CaptureFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* CaptureFlowUITests.swift */; };
+		300000000000000000000102 /* ArchiveViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000002 /* ArchiveViewModelTests.swift */; };
+		300000000000000000000101 /* ArchiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000001 /* ArchiveViewModel.swift */; };
+		300000000000000000000103 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000003 /* ArchiveView.swift */; };
+		300000000000000000000104 /* ArchiveItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000004 /* ArchiveItemRow.swift */; };
+		400000000000000000000001 /* ItemLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000002 /* ItemLifecycleTests.swift */; };
+		400000000000000000000003 /* ArchiveUndoControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000004 /* ArchiveUndoControllerTests.swift */; };
+		400000000000000000000005 /* ArchiveUndoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000006 /* ArchiveUndoController.swift */; };
+		400000000000000000000007 /* LibrarySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000008 /* LibrarySearch.swift */; };
+		400000000000000000000009 /* FavoritesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40000000000000000000000A /* FavoritesViewModel.swift */; };
+		40000000000000000000000B /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40000000000000000000000C /* FavoritesView.swift */; };
+		40000000000000000000000D /* LibraryViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40000000000000000000000E /* LibraryViewModelTests.swift */; };
+		40000000000000000000000F /* ItemEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000010 /* ItemEditViewModel.swift */; };
+		400000000000000000000011 /* InlineItemEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000012 /* InlineItemEditor.swift */; };
+		400000000000000000000013 /* ItemEditViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000014 /* ItemEditViewModelTests.swift */; };
+		400000000000000000000015 /* ItemDeletionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000016 /* ItemDeletionTests.swift */; };
+		400000000000000000000017 /* LibraryFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400000000000000000000018 /* LibraryFlowUITests.swift */; };
+		500000000000000000000001 /* PanelStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500000000000000000000002 /* PanelStateMachine.swift */; };
+		500000000000000000000003 /* PanelStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500000000000000000000004 /* PanelStateMachineTests.swift */; };
+		500000000000000000000005 /* PanelLifecycleCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500000000000000000000006 /* PanelLifecycleCoordinator.swift */; };
+		500000000000000000000007 /* PanelLifecycleCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500000000000000000000008 /* PanelLifecycleCoordinatorTests.swift */; };
+		500000000000000000000009 /* PinnedPanelSizeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50000000000000000000000A /* PinnedPanelSizeStore.swift */; };
+		50000000000000000000000B /* PinnedPanelSizeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50000000000000000000000C /* PinnedPanelSizeStoreTests.swift */; };
+		600000000000000000000001 /* CornerPanelDragRegionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600000000000000000000002 /* CornerPanelDragRegionTests.swift */; };
+		600000000000000000000003 /* CornerPanelDragRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600000000000000000000004 /* CornerPanelDragRegion.swift */; };
+		600000000000000000000005 /* CornerPanelDragRegionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600000000000000000000006 /* CornerPanelDragRegionView.swift */; };
+		50000000000000000000000E /* PinningFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50000000000000000000000F /* PinningFlowUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,14 +100,78 @@
 		100000000000000000000044 /* CornerPetLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetLaunchTests.swift; sourceTree = "<group>"; };
 		100000000000000000000047 /* HotCornerGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerGeometryTests.swift; sourceTree = "<group>"; };
 		100000000000000000000048 /* HotCornerStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerStateMachineTests.swift; sourceTree = "<group>"; };
-		100000000000000000000049 /* DwellPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellPreset.swift; sourceTree = "<group>"; };
+		100000000000000000000049 /* DwellTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellTiming.swift; sourceTree = "<group>"; };
 		10000000000000000000004A /* HotCornerStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerStateMachine.swift; sourceTree = "<group>"; };
-		10000000000000000000004B /* MouseMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseMonitor.swift; sourceTree = "<group>"; };
+		100000000000000000000067 /* PanelPositioner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPositioner.swift; sourceTree = "<group>"; };
+		10000000000000000000006C /* CornerPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanel.swift; sourceTree = "<group>"; };
+		10000000000000000000006E /* PanelAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAnimator.swift; sourceTree = "<group>"; };
+		100000000000000000000091 /* CapturePanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanelController.swift; sourceTree = "<group>"; };
+		100000000000000000000094 /* CornerTriggerCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerTriggerCoordinator.swift; sourceTree = "<group>"; };
+		100000000000000000000095 /* TriggerZonePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerZonePanel.swift; sourceTree = "<group>"; };
+		100000000000000000000065 /* PanelPositionerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPositionerTests.swift; sourceTree = "<group>"; };
+		10000000000000000000006A /* PanelAnimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAnimatorTests.swift; sourceTree = "<group>"; };
+		100000000000000000000098 /* CornerTriggerCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerTriggerCoordinatorTests.swift; sourceTree = "<group>"; };
+		100000000000000000000099 /* TriggerZonePanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerZonePanelTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000B0 /* Draft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Draft.swift; sourceTree = "<group>"; };
+		1000000000000000000000B1 /* IdeaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdeaItem.swift; sourceTree = "<group>"; };
+		1000000000000000000000B2 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
+		1000000000000000000000B3 /* ModelContainerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactoryTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000B4 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
+		1000000000000000000000B5 /* DraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStoreTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000B6 /* ItemStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemStore.swift; sourceTree = "<group>"; };
+		1000000000000000000000B7 /* ItemStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemStoreTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000D1 /* CaptureKeyboardPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureKeyboardPolicy.swift; sourceTree = "<group>"; };
+		1000000000000000000000D2 /* CaptureKeyboardPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureKeyboardPolicyTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000D3 /* PostSubmissionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSubmissionPolicy.swift; sourceTree = "<group>"; };
+		1000000000000000000000D4 /* PostSubmissionPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostSubmissionPolicyTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000D5 /* CaptureViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureViewModel.swift; sourceTree = "<group>"; };
+		1000000000000000000000D6 /* CaptureViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureViewModelTests.swift; sourceTree = "<group>"; };
+		1000000000000000000000D7 /* CaptureSubmissionIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSubmissionIntegrationTests.swift; sourceTree = "<group>"; };
 		100000000000000000000045 /* TriggerCorner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerCorner.swift; sourceTree = "<group>"; };
 		100000000000000000000046 /* HotCornerGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerGeometry.swift; sourceTree = "<group>"; };
 		1000000000000000000000F1 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1000000000000000000000F2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		1000000000000000000000F3 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		200000000000000000000001 /* CaptureLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureLayoutTests.swift; sourceTree = "<group>"; };
+		200000000000000000000002 /* CaptureDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDestination.swift; sourceTree = "<group>"; };
+		200000000000000000000003 /* CaptureShellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureShellViewModel.swift; sourceTree = "<group>"; };
+		200000000000000000000004 /* InboxViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxViewModelTests.swift; sourceTree = "<group>"; };
+		200000000000000000000005 /* InboxViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxViewModel.swift; sourceTree = "<group>"; };
+		200000000000000000000006 /* CaptureTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureTextEditor.swift; sourceTree = "<group>"; };
+		200000000000000000000007 /* CaptureHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureHeaderView.swift; sourceTree = "<group>"; };
+		200000000000000000000008 /* ItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemRow.swift; sourceTree = "<group>"; };
+		200000000000000000000009 /* InboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InboxView.swift; sourceTree = "<group>"; };
+		20000000000000000000000A /* CaptureNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureNavigationBar.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* CapturePanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanelView.swift; sourceTree = "<group>"; };
+		20000000000000000000000C /* CaptureCompositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCompositionTests.swift; sourceTree = "<group>"; };
+		20000000000000000000000D /* CaptureCompositionRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCompositionRoot.swift; sourceTree = "<group>"; };
+		20000000000000000000000E /* CaptureFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureFlowUITests.swift; sourceTree = "<group>"; };
+		300000000000000000000002 /* ArchiveViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveViewModelTests.swift; sourceTree = "<group>"; };
+		300000000000000000000001 /* ArchiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveViewModel.swift; sourceTree = "<group>"; };
+		300000000000000000000003 /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
+		300000000000000000000004 /* ArchiveItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveItemRow.swift; sourceTree = "<group>"; };
+		400000000000000000000002 /* ItemLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemLifecycleTests.swift; sourceTree = "<group>"; };
+		400000000000000000000004 /* ArchiveUndoControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveUndoControllerTests.swift; sourceTree = "<group>"; };
+		400000000000000000000006 /* ArchiveUndoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveUndoController.swift; sourceTree = "<group>"; };
+		400000000000000000000008 /* LibrarySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySearch.swift; sourceTree = "<group>"; };
+		40000000000000000000000A /* FavoritesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesViewModel.swift; sourceTree = "<group>"; };
+		40000000000000000000000C /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
+		40000000000000000000000E /* LibraryViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelTests.swift; sourceTree = "<group>"; };
+		400000000000000000000010 /* ItemEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEditViewModel.swift; sourceTree = "<group>"; };
+		400000000000000000000012 /* InlineItemEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineItemEditor.swift; sourceTree = "<group>"; };
+		400000000000000000000014 /* ItemEditViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEditViewModelTests.swift; sourceTree = "<group>"; };
+		400000000000000000000016 /* ItemDeletionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemDeletionTests.swift; sourceTree = "<group>"; };
+		400000000000000000000018 /* LibraryFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFlowUITests.swift; sourceTree = "<group>"; };
+		500000000000000000000002 /* PanelStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelStateMachine.swift; sourceTree = "<group>"; };
+		500000000000000000000004 /* PanelStateMachineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelStateMachineTests.swift; sourceTree = "<group>"; };
+		500000000000000000000006 /* PanelLifecycleCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelLifecycleCoordinator.swift; sourceTree = "<group>"; };
+		500000000000000000000008 /* PanelLifecycleCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelLifecycleCoordinatorTests.swift; sourceTree = "<group>"; };
+		50000000000000000000000A /* PinnedPanelSizeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPanelSizeStore.swift; sourceTree = "<group>"; };
+		50000000000000000000000C /* PinnedPanelSizeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPanelSizeStoreTests.swift; sourceTree = "<group>"; };
+		50000000000000000000000F /* PinningFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinningFlowUITests.swift; sourceTree = "<group>"; };
+		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
+		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
+		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +228,9 @@
 			children = (
 				100000000000000000000007 /* App */,
 				100000000000000000000008 /* HotCorner */,
+				100000000000000000000068 /* Panel */,
+				1000000000000000000000C0 /* Persistence */,
+				1000000000000000000000D0 /* Capture */,
 			);
 			path = CornerPet;
 			sourceTree = "<group>";
@@ -109,9 +240,10 @@
 			children = (
 				100000000000000000000045 /* TriggerCorner.swift */,
 				100000000000000000000046 /* HotCornerGeometry.swift */,
-				100000000000000000000049 /* DwellPreset.swift */,
+				100000000000000000000049 /* DwellTiming.swift */,
 				10000000000000000000004A /* HotCornerStateMachine.swift */,
-				10000000000000000000004B /* MouseMonitor.swift */,
+				100000000000000000000094 /* CornerTriggerCoordinator.swift */,
+				100000000000000000000095 /* TriggerZonePanel.swift */,
 			);
 			path = HotCorner;
 			sourceTree = "<group>";
@@ -126,12 +258,93 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		100000000000000000000068 /* Panel */ = {
+			isa = PBXGroup;
+			children = (
+				500000000000000000000002 /* PanelStateMachine.swift */,
+				500000000000000000000006 /* PanelLifecycleCoordinator.swift */,
+				50000000000000000000000A /* PinnedPanelSizeStore.swift */,
+				10000000000000000000006C /* CornerPanel.swift */,
+				10000000000000000000006E /* PanelAnimator.swift */,
+				100000000000000000000067 /* PanelPositioner.swift */,
+				100000000000000000000091 /* CapturePanelController.swift */,
+			);
+			path = Panel;
+			sourceTree = "<group>";
+		};
+		1000000000000000000000C0 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				1000000000000000000000B0 /* Draft.swift */,
+				1000000000000000000000B1 /* IdeaItem.swift */,
+				1000000000000000000000B2 /* ModelContainerFactory.swift */,
+				1000000000000000000000B4 /* DraftStore.swift */,
+				1000000000000000000000B6 /* ItemStore.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		1000000000000000000000D0 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				1000000000000000000000D1 /* CaptureKeyboardPolicy.swift */,
+				1000000000000000000000D3 /* PostSubmissionPolicy.swift */,
+				1000000000000000000000D5 /* CaptureViewModel.swift */,
+				200000000000000000000002 /* CaptureDestination.swift */,
+				200000000000000000000003 /* CaptureShellViewModel.swift */,
+				200000000000000000000005 /* InboxViewModel.swift */,
+				300000000000000000000001 /* ArchiveViewModel.swift */,
+				300000000000000000000004 /* ArchiveItemRow.swift */,
+				300000000000000000000003 /* ArchiveView.swift */,
+				200000000000000000000006 /* CaptureTextEditor.swift */,
+				200000000000000000000007 /* CaptureHeaderView.swift */,
+				200000000000000000000008 /* ItemRow.swift */,
+				200000000000000000000009 /* InboxView.swift */,
+				20000000000000000000000A /* CaptureNavigationBar.swift */,
+				20000000000000000000000B /* CapturePanelView.swift */,
+				20000000000000000000000D /* CaptureCompositionRoot.swift */,
+				600000000000000000000004 /* CornerPanelDragRegion.swift */,
+				600000000000000000000006 /* CornerPanelDragRegionView.swift */,
+				400000000000000000000006 /* ArchiveUndoController.swift */,
+				400000000000000000000008 /* LibrarySearch.swift */,
+				40000000000000000000000A /* FavoritesViewModel.swift */,
+				40000000000000000000000C /* FavoritesView.swift */,
+				400000000000000000000010 /* ItemEditViewModel.swift */,
+				400000000000000000000012 /* InlineItemEditor.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
 		100000000000000000000005 /* CornerPetTests */ = {
 			isa = PBXGroup;
 			children = (
 				100000000000000000000043 /* AppConfigurationTests.swift */,
 				100000000000000000000047 /* HotCornerGeometryTests.swift */,
 				100000000000000000000048 /* HotCornerStateMachineTests.swift */,
+				100000000000000000000065 /* PanelPositionerTests.swift */,
+				10000000000000000000006A /* PanelAnimatorTests.swift */,
+				100000000000000000000098 /* CornerTriggerCoordinatorTests.swift */,
+				100000000000000000000099 /* TriggerZonePanelTests.swift */,
+				1000000000000000000000B3 /* ModelContainerFactoryTests.swift */,
+				1000000000000000000000B5 /* DraftStoreTests.swift */,
+				1000000000000000000000B7 /* ItemStoreTests.swift */,
+				1000000000000000000000D2 /* CaptureKeyboardPolicyTests.swift */,
+				1000000000000000000000D4 /* PostSubmissionPolicyTests.swift */,
+				1000000000000000000000D6 /* CaptureViewModelTests.swift */,
+				1000000000000000000000D7 /* CaptureSubmissionIntegrationTests.swift */,
+				200000000000000000000001 /* CaptureLayoutTests.swift */,
+				200000000000000000000004 /* InboxViewModelTests.swift */,
+				300000000000000000000002 /* ArchiveViewModelTests.swift */,
+				20000000000000000000000C /* CaptureCompositionTests.swift */,
+				400000000000000000000002 /* ItemLifecycleTests.swift */,
+				400000000000000000000004 /* ArchiveUndoControllerTests.swift */,
+				40000000000000000000000E /* LibraryViewModelTests.swift */,
+				400000000000000000000014 /* ItemEditViewModelTests.swift */,
+				400000000000000000000016 /* ItemDeletionTests.swift */,
+				500000000000000000000004 /* PanelStateMachineTests.swift */,
+				500000000000000000000008 /* PanelLifecycleCoordinatorTests.swift */,
+				50000000000000000000000C /* PinnedPanelSizeStoreTests.swift */,
+				600000000000000000000002 /* CornerPanelDragRegionTests.swift */,
 			);
 			path = CornerPetTests;
 			sourceTree = "<group>";
@@ -140,6 +353,9 @@
 			isa = PBXGroup;
 			children = (
 				100000000000000000000044 /* CornerPetLaunchTests.swift */,
+				20000000000000000000000E /* CaptureFlowUITests.swift */,
+				400000000000000000000018 /* LibraryFlowUITests.swift */,
+				50000000000000000000000F /* PinningFlowUITests.swift */,
 			);
 			path = CornerPetUITests;
 			sourceTree = "<group>";
@@ -307,9 +523,46 @@
 				100000000000000000000052 /* AppConfiguration.swift in Sources */,
 				100000000000000000000054 /* TriggerCorner.swift in Sources */,
 				10000000000000000000005B /* HotCornerGeometry.swift in Sources */,
-				10000000000000000000005D /* DwellPreset.swift in Sources */,
+				10000000000000000000005D /* DwellTiming.swift in Sources */,
 				10000000000000000000005E /* HotCornerStateMachine.swift in Sources */,
-				10000000000000000000005F /* MouseMonitor.swift in Sources */,
+				100000000000000000000066 /* PanelPositioner.swift in Sources */,
+				10000000000000000000006B /* CornerPanel.swift in Sources */,
+				10000000000000000000006D /* PanelAnimator.swift in Sources */,
+				100000000000000000000090 /* CapturePanelController.swift in Sources */,
+				100000000000000000000096 /* CornerTriggerCoordinator.swift in Sources */,
+				100000000000000000000097 /* TriggerZonePanel.swift in Sources */,
+				1000000000000000000000A0 /* Draft.swift in Sources */,
+				1000000000000000000000A1 /* IdeaItem.swift in Sources */,
+				1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */,
+				1000000000000000000000A4 /* DraftStore.swift in Sources */,
+				1000000000000000000000A6 /* ItemStore.swift in Sources */,
+				1000000000000000000000E1 /* CaptureKeyboardPolicy.swift in Sources */,
+				1000000000000000000000E3 /* PostSubmissionPolicy.swift in Sources */,
+				1000000000000000000000E5 /* CaptureViewModel.swift in Sources */,
+				200000000000000000000102 /* CaptureDestination.swift in Sources */,
+				200000000000000000000103 /* CaptureShellViewModel.swift in Sources */,
+				200000000000000000000105 /* InboxViewModel.swift in Sources */,
+				300000000000000000000101 /* ArchiveViewModel.swift in Sources */,
+				300000000000000000000104 /* ArchiveItemRow.swift in Sources */,
+				300000000000000000000103 /* ArchiveView.swift in Sources */,
+				200000000000000000000106 /* CaptureTextEditor.swift in Sources */,
+				200000000000000000000107 /* CaptureHeaderView.swift in Sources */,
+				200000000000000000000108 /* ItemRow.swift in Sources */,
+				200000000000000000000109 /* InboxView.swift in Sources */,
+				20000000000000000000010A /* CaptureNavigationBar.swift in Sources */,
+				20000000000000000000010B /* CapturePanelView.swift in Sources */,
+				20000000000000000000010D /* CaptureCompositionRoot.swift in Sources */,
+				400000000000000000000005 /* ArchiveUndoController.swift in Sources */,
+				400000000000000000000007 /* LibrarySearch.swift in Sources */,
+				400000000000000000000009 /* FavoritesViewModel.swift in Sources */,
+				40000000000000000000000B /* FavoritesView.swift in Sources */,
+				40000000000000000000000F /* ItemEditViewModel.swift in Sources */,
+				400000000000000000000011 /* InlineItemEditor.swift in Sources */,
+				500000000000000000000001 /* PanelStateMachine.swift in Sources */,
+				500000000000000000000005 /* PanelLifecycleCoordinator.swift in Sources */,
+				500000000000000000000009 /* PinnedPanelSizeStore.swift in Sources */,
+				600000000000000000000003 /* CornerPanelDragRegion.swift in Sources */,
+				600000000000000000000005 /* CornerPanelDragRegionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +573,30 @@
 				100000000000000000000053 /* AppConfigurationTests.swift in Sources */,
 				10000000000000000000005A /* HotCornerGeometryTests.swift in Sources */,
 				10000000000000000000005C /* HotCornerStateMachineTests.swift in Sources */,
+				100000000000000000000064 /* PanelPositionerTests.swift in Sources */,
+				100000000000000000000069 /* PanelAnimatorTests.swift in Sources */,
+				10000000000000000000009A /* CornerTriggerCoordinatorTests.swift in Sources */,
+				10000000000000000000009B /* TriggerZonePanelTests.swift in Sources */,
+				1000000000000000000000A3 /* ModelContainerFactoryTests.swift in Sources */,
+				1000000000000000000000A5 /* DraftStoreTests.swift in Sources */,
+				1000000000000000000000A7 /* ItemStoreTests.swift in Sources */,
+				1000000000000000000000E2 /* CaptureKeyboardPolicyTests.swift in Sources */,
+				1000000000000000000000E4 /* PostSubmissionPolicyTests.swift in Sources */,
+				1000000000000000000000E6 /* CaptureViewModelTests.swift in Sources */,
+				1000000000000000000000E7 /* CaptureSubmissionIntegrationTests.swift in Sources */,
+				200000000000000000000101 /* CaptureLayoutTests.swift in Sources */,
+				200000000000000000000104 /* InboxViewModelTests.swift in Sources */,
+				300000000000000000000102 /* ArchiveViewModelTests.swift in Sources */,
+				20000000000000000000010C /* CaptureCompositionTests.swift in Sources */,
+				400000000000000000000001 /* ItemLifecycleTests.swift in Sources */,
+				400000000000000000000003 /* ArchiveUndoControllerTests.swift in Sources */,
+				40000000000000000000000D /* LibraryViewModelTests.swift in Sources */,
+				400000000000000000000013 /* ItemEditViewModelTests.swift in Sources */,
+				400000000000000000000015 /* ItemDeletionTests.swift in Sources */,
+				500000000000000000000003 /* PanelStateMachineTests.swift in Sources */,
+				500000000000000000000007 /* PanelLifecycleCoordinatorTests.swift in Sources */,
+				50000000000000000000000B /* PinnedPanelSizeStoreTests.swift in Sources */,
+				600000000000000000000001 /* CornerPanelDragRegionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -328,6 +605,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				100000000000000000000059 /* CornerPetLaunchTests.swift in Sources */,
+				20000000000000000000010E /* CaptureFlowUITests.swift in Sources */,
+				400000000000000000000017 /* LibraryFlowUITests.swift in Sources */,
+				50000000000000000000000E /* PinningFlowUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +663,11 @@
 		100000000000000000000082 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BA2HVLXM26;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CornerPet / 角落灵感箱";
@@ -401,6 +686,11 @@
 		100000000000000000000083 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BA2HVLXM26;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "CornerPet / 角落灵感箱";

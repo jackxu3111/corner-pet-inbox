@@ -13,9 +13,9 @@
 ## Global Constraints
 
 - macOS 14.0 minimum; arm64 only.
-- Default corner top-left; geometry uses 43 pt arms and 6 pt thickness.
-- Dwell presets 500/600/700 ms; default 600 ms.
-- Panel 320×400 pt; pinned range 280×320 through 480×640 pt.
+- Default corner top-left; geometry uses 86 pt arms and 6 pt thickness.
+- Dwell is fixed at 400 ms; no alternative presets.
+- Panel 360×450 pt; pinned range 280×320 through 480×640 pt.
 - Open/close 260/180 ms; Reduce Motion 120 ms.
 - Local-only content; no text analytics, accounts, network, or third-party dependencies.
 - Full-screen and Spaces must work before feature expansion.
@@ -44,7 +44,7 @@ docs/validation/           seven-day dogfood
 
 ~~~swift
 enum TriggerCorner: String, CaseIterable { case topLeft, topRight, bottomLeft, bottomRight }
-enum DwellPreset: Double, CaseIterable { case fast = 0.5, standard = 0.6, conservative = 0.7 }
+enum DwellTiming { static let duration: TimeInterval = 0.4 }
 enum DisplayScope: String, CaseIterable { case primary, all }
 enum ItemBucket: String, Codable { case inbox, archive, favorite }
 
@@ -71,13 +71,13 @@ struct ScreenDescriptor: Identifiable, Equatable {
 
 **Files:** Create HotCorner/HotCornerGeometry.swift, TriggerCorner.swift; test HotCornerGeometryTests.swift.
 
-- [ ] Test every corner returns two 43×6 pt rectangles sharing that corner; test overlap, edge inclusion, and outside 0.1 pt exclusion.
+- [ ] Test every corner returns two 86×6 pt rectangles sharing that corner; test overlap, edge inclusion, and outside 0.1 pt exclusion.
 - [ ] Implement:
 
 ~~~swift
 struct HotCornerGeometry {
     static func regions(frame: CGRect, corner: TriggerCorner) -> [CGRect] {
-        let arm: CGFloat = 43
+        let arm: CGFloat = 86
         let thickness: CGFloat = 6
         switch corner {
         case .topLeft:
@@ -109,9 +109,9 @@ struct HotCornerGeometry {
 
 ### Task 3: Dwell State and Mouse Adapter
 
-**Files:** Create HotCorner/DwellPreset.swift, HotCornerStateMachine.swift, MouseMonitor.swift; test HotCornerStateMachineTests.swift.
+**Files:** Create HotCorner/DwellTiming.swift, HotCornerStateMachine.swift, MouseMonitor.swift; test HotCornerStateMachineTests.swift.
 
-- [ ] Test 599 ms does not trigger and 600 ms does; movement inside either arm preserves timer; exit resets; show occurs once; 80 ms post-close debounce applies.
+- [ ] Test 399 ms does not trigger and 400 ms does; movement inside either arm preserves timer; exit resets; show occurs once; 80 ms post-close debounce applies.
 - [ ] Model actions as none, present(screenID), and reverseClosing(screenID). Inject time and regions.
 - [ ] Adapt NSEvent global and local mouseMoved monitors. Do not monitor keys or request Accessibility.
 - [ ] Run tests; manually verify events while CornerPet is active and inactive.
@@ -120,7 +120,7 @@ struct HotCornerGeometry {
 
 **Files:** Create Panel/CornerPanel.swift, PanelPositioner.swift, PanelAnimator.swift, CapturePanelController.swift; test PanelPositionerTests.swift and PanelAnimatorTests.swift.
 
-- [ ] Test 320×400 placement eight points inside each visible safe corner.
+- [ ] Test 360×450 placement flush with each selected visible corner.
 - [ ] Configure a key-capable borderless NSPanel at floating level with canJoinAllSpaces, fullScreenAuxiliary, transient, and ignoresCycle.
 - [ ] Animate shell 260 ms from selected-corner capsule; fade content separately; close 180 ms; reverse current progress when retriggered.
 - [ ] When Reduce Motion is enabled, use 120 ms fade/scale without overshoot.
@@ -188,8 +188,8 @@ struct HotCornerGeometry {
 
 **Files:** Create Settings/AppSettings.swift, SettingsView.swift, HotCornerHelpView.swift, LaunchAtLoginController.swift; test AppSettingsTests.swift.
 
-- [ ] Test defaults top-left, standard 600 ms, primary display, 320×400, reminder 09:00.
-- [ ] Persist corner, dwell enum, display scope, last size, reminder, language.
+- [ ] Test defaults top-left, fixed 400 ms dwell, primary display, 360×450, reminder 09:00.
+- [ ] Persist corner, display scope, last size, reminder, language.
 - [ ] Wrap SMAppService.mainApp register/unregister; UI reflects real status and failures.
 - [ ] Explain System Settings → Desktop & Dock → Hot Corners; never read/change private settings.
 - [ ] Verify logout/login hidden startup.
@@ -233,5 +233,5 @@ xcodebuild -project CornerPet.xcodeproj -scheme CornerPet -configuration Release
 - Tasks 5–8 cover draft, conditional save, layout, item lifecycle, edits, errors, and shortcuts.
 - Tasks 9–12 cover panel state, pinning, displays, settings, login, conflicts, reminders, and cat.
 - Tasks 13–14 cover localization, accessibility, reduced motion, privacy, QA, and release.
-- Stable names align across tasks: TriggerCorner, DwellPreset, DisplayScope, ItemBucket, ScreenDescriptor.
+- Stable names align across tasks: TriggerCorner, DwellTiming, DisplayScope, ItemBucket, ScreenDescriptor.
 - No Not Doing item is introduced.
