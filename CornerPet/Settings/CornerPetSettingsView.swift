@@ -26,16 +26,19 @@ struct CornerPetSettingsView: View {
             }
 
             Section("每日提醒 / Daily reminder") {
+                Toggle("启用每日提醒 / Enable daily reminder", isOn: reminderEnabledBinding)
+                    .accessibilityIdentifier("settings.reminderEnabled")
                 DatePicker(
                     "提醒时间 / Reminder time",
                     selection: reminderDateBinding,
                     displayedComponents: .hourAndMinute
                 )
+                .disabled(!settings.reminderEnabled)
                 .accessibilityIdentifier("settings.reminderTime")
-                Text("目前只保存提醒时间；每日提醒与小猫功能将在后续版本启用。")
+                Text("到点后，小猫会出现在所选触发角对应的屏幕侧边栏；不需要系统通知权限。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Text("The reminder time is saved now. Scheduling and the pet will arrive in a later version.")
+                Text("At reminder time, the cat appears on the screen edge beside the selected corner. No system notification permission is required.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -131,6 +134,13 @@ struct CornerPetSettingsView: View {
                 guard let hour = components.hour, let minute = components.minute else { return }
                 settings.setDailyReminderMinutes(hour * 60 + minute)
             }
+        )
+    }
+
+    private var reminderEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { settings.reminderEnabled },
+            set: settings.setReminderEnabled
         )
     }
 

@@ -20,6 +20,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
 enum AppSettingsStorageKey {
     static let displayScope = "CornerPet.displayScope"
     static let dailyReminderMinutes = "CornerPet.dailyReminderMinutes"
+    static let reminderEnabled = "CornerPet.reminderEnabled"
     static let language = "CornerPet.language"
 }
 
@@ -28,6 +29,7 @@ struct AppSettingsSnapshot: Equatable, Sendable {
     let displayScope: DisplayScope
     let lastPinnedSize: CGSize
     let dailyReminderMinutes: Int
+    let reminderEnabled: Bool
     let language: AppLanguage
 }
 
@@ -36,6 +38,7 @@ enum AppSettingsField: Equatable, Sendable {
     case displayScope
     case lastPinnedSize
     case dailyReminderMinutes
+    case reminderEnabled
     case language
 }
 
@@ -57,6 +60,7 @@ final class AppSettings {
     private(set) var displayScope: DisplayScope
     private(set) var lastPinnedSize: CGSize
     private(set) var dailyReminderMinutes: Int
+    private(set) var reminderEnabled: Bool
     private(set) var language: AppLanguage
 
     @ObservationIgnored
@@ -72,6 +76,7 @@ final class AppSettings {
             displayScope: displayScope,
             lastPinnedSize: lastPinnedSize,
             dailyReminderMinutes: dailyReminderMinutes,
+            reminderEnabled: reminderEnabled,
             language: language
         )
     }
@@ -86,6 +91,9 @@ final class AppSettings {
         lastPinnedSize = pinnedPanelSizeStore.load()
         dailyReminderMinutes = Self.validReminderMinutes(
             defaults.object(forKey: AppSettingsStorageKey.dailyReminderMinutes)
+        )
+        reminderEnabled = Self.reminderEnabled(
+            defaults.object(forKey: AppSettingsStorageKey.reminderEnabled)
         )
         language = defaults.string(forKey: AppSettingsStorageKey.language)
             .flatMap(AppLanguage.init(rawValue:)) ?? .system
@@ -121,6 +129,13 @@ final class AppSettings {
         publish(.dailyReminderMinutes)
     }
 
+    func setReminderEnabled(_ enabled: Bool) {
+        guard reminderEnabled != enabled else { return }
+        defaults.set(enabled, forKey: AppSettingsStorageKey.reminderEnabled)
+        reminderEnabled = enabled
+        publish(.reminderEnabled)
+    }
+
     func setLanguage(_ language: AppLanguage) {
         guard self.language != language else { return }
         defaults.set(language.rawValue, forKey: AppSettingsStorageKey.language)
@@ -141,5 +156,9 @@ final class AppSettings {
 
     private static func validReminderMinutes(_ minutes: Int) -> Int {
         (0 ..< 24 * 60).contains(minutes) ? minutes : defaultReminderMinutes
+    }
+
+    private static func reminderEnabled(_ raw: Any?) -> Bool {
+        (raw as? NSNumber)?.boolValue ?? true
     }
 }

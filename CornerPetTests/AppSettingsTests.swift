@@ -13,6 +13,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.displayScope, .primary)
         XCTAssertEqual(settings.lastPinnedSize, CGSize(width: 360, height: 450))
         XCTAssertEqual(settings.dailyReminderMinutes, 9 * 60)
+        XCTAssertTrue(settings.reminderEnabled)
         XCTAssertEqual(settings.language, .system)
         XCTAssertEqual(settings.fixedDwellDuration, 0.4)
     }
@@ -25,6 +26,7 @@ final class AppSettingsTests: XCTestCase {
         settings.setDisplayScope(.all)
         settings.setLastPinnedSize(CGSize(width: 475, height: 625))
         settings.setDailyReminderMinutes(22 * 60 + 35)
+        settings.setReminderEnabled(false)
         settings.setLanguage(.english)
 
         let restored = AppSettings(defaults: defaults)
@@ -32,6 +34,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(restored.displayScope, .all)
         XCTAssertEqual(restored.lastPinnedSize, CGSize(width: 475, height: 625))
         XCTAssertEqual(restored.dailyReminderMinutes, 22 * 60 + 35)
+        XCTAssertFalse(restored.reminderEnabled)
         XCTAssertEqual(restored.language, .english)
     }
 
@@ -90,6 +93,19 @@ final class AppSettingsTests: XCTestCase {
             PinnedPanelSizeStore(defaults: defaults).load(),
             CGSize(width: 280, height: 640)
         )
+    }
+
+    func testReminderEnabledPersistsThenPublishesTypedSnapshot() {
+        let defaults = isolatedDefaults()
+        let settings = AppSettings(defaults: defaults)
+        var changes: [AppSettingsChange] = []
+        settings.onChange = { changes.append($0) }
+
+        settings.setReminderEnabled(false)
+
+        XCTAssertFalse(AppSettings(defaults: defaults).reminderEnabled)
+        XCTAssertEqual(changes.map(\.field), [.reminderEnabled])
+        XCTAssertFalse(changes[0].snapshot.reminderEnabled)
     }
 
     private func isolatedDefaults() -> UserDefaults {

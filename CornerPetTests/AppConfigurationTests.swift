@@ -26,7 +26,9 @@ final class AppConfigurationTests: XCTestCase {
             "--cornerpet-ui-open-capture-without-activation",
             "--cornerpet-ui-delete-failure",
             "--cornerpet-ui-keep-capture-open",
-            "--cornerpet-ui-command-comma-signal"
+            "--cornerpet-ui-command-comma-signal",
+            "--cornerpet-ui-show-reminder",
+            "--cornerpet-ui-reminder-corner=bottomRight"
         ])
         let gated = AppLaunchOptions(arguments: [
             "CornerPet",
@@ -52,6 +54,19 @@ final class AppConfigurationTests: XCTestCase {
             "--cornerpet-ui-open-capture-without-activation",
             "--cornerpet-ui-command-comma-signal"
         ])
+        let reminderFixture = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-memory-store",
+            "--cornerpet-ui-show-reminder",
+            "--cornerpet-ui-reminder-corner=bottomRight"
+        ])
+        let reminderWithoutMemoryStore = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-show-reminder",
+            "--cornerpet-ui-reminder-corner=bottomRight"
+        ])
 
         XCTAssertFalse(ungated.usesInMemoryStore)
         XCTAssertFalse(ungated.opensCapture)
@@ -59,6 +74,8 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertFalse(ungated.keepsCaptureOpen)
         XCTAssertFalse(ungated.opensCaptureWithoutActivation)
         XCTAssertFalse(ungated.handlesCommandCommaSignal)
+        XCTAssertFalse(ungated.showsReminder)
+        XCTAssertNil(ungated.reminderCorner)
         XCTAssertTrue(gated.usesInMemoryStore)
         XCTAssertTrue(gated.opensCapture)
         XCTAssertFalse(gated.opensCaptureWithoutActivation)
@@ -68,6 +85,10 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertTrue(nonactivatingOpenFixture.opensCapture)
         XCTAssertTrue(nonactivatingOpenFixture.opensCaptureWithoutActivation)
         XCTAssertTrue(nonactivatingOpenFixture.handlesCommandCommaSignal)
+        XCTAssertTrue(reminderFixture.showsReminder)
+        XCTAssertEqual(reminderFixture.reminderCorner, .bottomRight)
+        XCTAssertFalse(reminderWithoutMemoryStore.showsReminder)
+        XCTAssertNil(reminderWithoutMemoryStore.reminderCorner)
     }
 }
 
@@ -162,6 +183,104 @@ final class AppDelegateIntegrationTests: XCTestCase {
         appDelegate.applicationWillTerminate(Notification(name: .init("test")))
 
         XCTAssertFalse(coordinator.isRunning)
+    }
+
+    func testReminderRuntimeStartsAtLaunchAndStopsAtTermination() throws {
+        let coordinator = try makeCoordinator()
+        let defaults = UserDefaults(
+            suiteName: "CornerPet.AppDelegateReminderRuntime.\(UUID().uuidString)"
+        )!
+        let settings = AppSettings(defaults: defaults)
+        settings.setReminderEnabled(false)
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { self.makePanelController() },
+            triggerCoordinatorFactory: { _ in coordinator },
+            appSettings: settings
+        )
+
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+
+        XCTAssertNotNil(appDelegate.petReminderPanelController)
+        XCTAssertEqual(appDelegate.reminderScheduler?.isRunning, true)
+
+        appDelegate.applicationWillTerminate(Notification(name: .init("test")))
+
+        XCTAssertEqual(appDelegate.reminderScheduler?.isRunning, false)
+        XCTAssertEqual(appDelegate.petReminderPanelController?.isVisible, false)
+    }
+
+    func testCapturePresentationDismissesVisiblePetReminder() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let screenID = try XCTUnwrap(Self.displayID(for: screen))
+        let snapshot = ScreenSnapshot(
+            id: screenID,
+            frame: screen.frame,
+            visibleFrame: screen.visibleFrame
+        )
+        let defaults = UserDefaults(
+            suiteName: "CornerPet.AppDelegateReminderConflict.\(UUID().uuidString)"
+        )!
+        let settings = AppSettings(defaults: defaults)
+        settings.setReminderEnabled(false)
+        let screenCoordinator = ScreenCoordinator(
+            screensProvider: { [snapshot] },
+            primaryDisplayIDProvider: { screenID }
+        )
+        let panel = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == screenID ? screen : nil
+            }
+        )
+        let coordinator = try makeCoordinator()
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { panel },
+            triggerCoordinatorFactory: { _ in coordinator },
+            appSettings: settings,
+            screenCoordinator: screenCoordinator
+        )
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+        let pet = try XCTUnwrap(appDelegate.petReminderPanelController)
+        pet.present(corner: .topLeft, screens: [snapshot], primaryDisplayID: screenID)
+        XCTAssertTrue(pet.isVisible)
+
+        coordinator.onPresentRequested?(screenID)
+
+        XCTAssertFalse(pet.isVisible)
+        XCTAssertTrue(panel.isVisible)
+    }
+
+    func testDisablingReminderImmediatelyDismissesVisiblePet() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let screenID = try XCTUnwrap(Self.displayID(for: screen))
+        let snapshot = ScreenSnapshot(
+            id: screenID,
+            frame: screen.frame,
+            visibleFrame: screen.visibleFrame
+        )
+        let defaults = UserDefaults(
+            suiteName: "CornerPet.AppDelegateReminderDisable.\(UUID().uuidString)"
+        )!
+        let settings = AppSettings(defaults: defaults)
+        let screenCoordinator = ScreenCoordinator(
+            screensProvider: { [snapshot] },
+            primaryDisplayIDProvider: { screenID }
+        )
+        let coordinator = try makeCoordinator()
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { self.makePanelController() },
+            triggerCoordinatorFactory: { _ in coordinator },
+            appSettings: settings,
+            screenCoordinator: screenCoordinator
+        )
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+        let pet = try XCTUnwrap(appDelegate.petReminderPanelController)
+        pet.present(corner: .bottomRight, screens: [snapshot], primaryDisplayID: screenID)
+        XCTAssertTrue(pet.isVisible)
+
+        settings.setReminderEnabled(false)
+
+        XCTAssertFalse(pet.isVisible)
+        XCTAssertEqual(appDelegate.reminderScheduler?.lastEvaluationReason, .settingsChanged)
     }
 
     func testPanelLifecycleAndBoundaryCallbacksReachCoordinator() throws {

@@ -94,6 +94,19 @@
 		70000000000000000000000B /* LaunchAtLoginControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70000000000000000000000C /* LaunchAtLoginControllerTests.swift */; };
 		70000000000000000000000D /* LaunchAtLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70000000000000000000000E /* LaunchAtLoginController.swift */; };
 		70000000000000000000000F /* CornerPetSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000010 /* CornerPetSettingsView.swift */; };
+		800000000000000000000001 /* ReminderStateStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000002 /* ReminderStateStoreTests.swift */; };
+		800000000000000000000003 /* ReminderStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000004 /* ReminderStateStore.swift */; };
+		800000000000000000000006 /* ReminderPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000007 /* ReminderPolicyTests.swift */; };
+		800000000000000000000008 /* ReminderPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000009 /* ReminderPolicy.swift */; };
+		80000000000000000000000A /* ReminderSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80000000000000000000000B /* ReminderSchedulerTests.swift */; };
+		80000000000000000000000C /* ReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80000000000000000000000D /* ReminderScheduler.swift */; };
+		80000000000000000000000E /* PetReminderPositionerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80000000000000000000000F /* PetReminderPositionerTests.swift */; };
+		800000000000000000000010 /* PetReminderPositioner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000011 /* PetReminderPositioner.swift */; };
+		800000000000000000000012 /* PetReminderPanelControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000013 /* PetReminderPanelControllerTests.swift */; };
+		800000000000000000000014 /* PetReminderPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000015 /* PetReminderPanel.swift */; };
+		800000000000000000000016 /* PetReminderPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000017 /* PetReminderPanelController.swift */; };
+		800000000000000000000018 /* ReminderFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800000000000000000000019 /* ReminderFlowUITests.swift */; };
+		80000000000000000000001A /* CatReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80000000000000000000001B /* CatReminderView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -183,6 +196,19 @@
 		70000000000000000000000C /* LaunchAtLoginControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginControllerTests.swift; sourceTree = "<group>"; };
 		70000000000000000000000E /* LaunchAtLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginController.swift; sourceTree = "<group>"; };
 		700000000000000000000010 /* CornerPetSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetSettingsView.swift; sourceTree = "<group>"; };
+		800000000000000000000002 /* ReminderStateStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderStateStoreTests.swift; sourceTree = "<group>"; };
+		800000000000000000000004 /* ReminderStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderStateStore.swift; sourceTree = "<group>"; };
+		800000000000000000000007 /* ReminderPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderPolicyTests.swift; sourceTree = "<group>"; };
+		800000000000000000000009 /* ReminderPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderPolicy.swift; sourceTree = "<group>"; };
+		80000000000000000000000B /* ReminderSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSchedulerTests.swift; sourceTree = "<group>"; };
+		80000000000000000000000D /* ReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduler.swift; sourceTree = "<group>"; };
+		80000000000000000000000F /* PetReminderPositionerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReminderPositionerTests.swift; sourceTree = "<group>"; };
+		800000000000000000000011 /* PetReminderPositioner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReminderPositioner.swift; sourceTree = "<group>"; };
+		800000000000000000000013 /* PetReminderPanelControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReminderPanelControllerTests.swift; sourceTree = "<group>"; };
+		800000000000000000000015 /* PetReminderPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReminderPanel.swift; sourceTree = "<group>"; };
+		800000000000000000000017 /* PetReminderPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetReminderPanelController.swift; sourceTree = "<group>"; };
+		800000000000000000000019 /* ReminderFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderFlowUITests.swift; sourceTree = "<group>"; };
+		80000000000000000000001B /* CatReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatReminderView.swift; sourceTree = "<group>"; };
 		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
 		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
 		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
@@ -247,6 +273,7 @@
 				1000000000000000000000D0 /* Capture */,
 				700000000000000000000005 /* Settings */,
 				70000000000000000000000A /* Screen */,
+				800000000000000000000005 /* Reminder */,
 			);
 			path = CornerPet;
 			sourceTree = "<group>";
@@ -280,6 +307,20 @@
 				700000000000000000000009 /* ScreenCoordinator.swift */,
 			);
 			path = Screen;
+			sourceTree = "<group>";
+		};
+		800000000000000000000005 /* Reminder */ = {
+			isa = PBXGroup;
+			children = (
+				800000000000000000000004 /* ReminderStateStore.swift */,
+				800000000000000000000009 /* ReminderPolicy.swift */,
+				80000000000000000000000D /* ReminderScheduler.swift */,
+				800000000000000000000011 /* PetReminderPositioner.swift */,
+				800000000000000000000015 /* PetReminderPanel.swift */,
+				800000000000000000000017 /* PetReminderPanelController.swift */,
+				80000000000000000000001B /* CatReminderView.swift */,
+			);
+			path = Reminder;
 			sourceTree = "<group>";
 		};
 		100000000000000000000007 /* App */ = {
@@ -382,6 +423,11 @@
 				700000000000000000000002 /* AppSettingsTests.swift */,
 				700000000000000000000007 /* ScreenCoordinatorTests.swift */,
 				70000000000000000000000C /* LaunchAtLoginControllerTests.swift */,
+				800000000000000000000002 /* ReminderStateStoreTests.swift */,
+				800000000000000000000007 /* ReminderPolicyTests.swift */,
+				80000000000000000000000B /* ReminderSchedulerTests.swift */,
+				80000000000000000000000F /* PetReminderPositionerTests.swift */,
+				800000000000000000000013 /* PetReminderPanelControllerTests.swift */,
 			);
 			path = CornerPetTests;
 			sourceTree = "<group>";
@@ -393,6 +439,7 @@
 				20000000000000000000000E /* CaptureFlowUITests.swift */,
 				400000000000000000000018 /* LibraryFlowUITests.swift */,
 				50000000000000000000000F /* PinningFlowUITests.swift */,
+				800000000000000000000019 /* ReminderFlowUITests.swift */,
 			);
 			path = CornerPetUITests;
 			sourceTree = "<group>";
@@ -604,6 +651,13 @@
 				700000000000000000000008 /* ScreenCoordinator.swift in Sources */,
 				70000000000000000000000D /* LaunchAtLoginController.swift in Sources */,
 				70000000000000000000000F /* CornerPetSettingsView.swift in Sources */,
+				800000000000000000000003 /* ReminderStateStore.swift in Sources */,
+				800000000000000000000008 /* ReminderPolicy.swift in Sources */,
+				80000000000000000000000C /* ReminderScheduler.swift in Sources */,
+				800000000000000000000010 /* PetReminderPositioner.swift in Sources */,
+				800000000000000000000014 /* PetReminderPanel.swift in Sources */,
+				800000000000000000000016 /* PetReminderPanelController.swift in Sources */,
+				80000000000000000000001A /* CatReminderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -641,6 +695,11 @@
 				700000000000000000000001 /* AppSettingsTests.swift in Sources */,
 				700000000000000000000006 /* ScreenCoordinatorTests.swift in Sources */,
 				70000000000000000000000B /* LaunchAtLoginControllerTests.swift in Sources */,
+				800000000000000000000001 /* ReminderStateStoreTests.swift in Sources */,
+				800000000000000000000006 /* ReminderPolicyTests.swift in Sources */,
+				80000000000000000000000A /* ReminderSchedulerTests.swift in Sources */,
+				80000000000000000000000E /* PetReminderPositionerTests.swift in Sources */,
+				800000000000000000000012 /* PetReminderPanelControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -652,6 +711,7 @@
 				20000000000000000000010E /* CaptureFlowUITests.swift in Sources */,
 				400000000000000000000017 /* LibraryFlowUITests.swift in Sources */,
 				50000000000000000000000E /* PinningFlowUITests.swift in Sources */,
+				800000000000000000000018 /* ReminderFlowUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

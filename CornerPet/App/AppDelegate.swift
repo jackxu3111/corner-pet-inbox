@@ -9,6 +9,8 @@ struct AppLaunchOptions: Equatable {
     let handlesCommandCommaSignal: Bool
     let usesDeleteFailureFixture: Bool
     let keepsCaptureOpen: Bool
+    let showsReminder: Bool
+    let reminderCorner: TriggerCorner?
 
     init(arguments: [String]) {
         let isUITesting = arguments.contains("--cornerpet-ui-testing")
@@ -24,6 +26,16 @@ struct AppLaunchOptions: Equatable {
             && arguments.contains("--cornerpet-ui-delete-failure")
         keepsCaptureOpen = isUITesting
             && arguments.contains("--cornerpet-ui-keep-capture-open")
+        showsReminder = usesInMemoryStore
+            && arguments.contains("--cornerpet-ui-show-reminder")
+        reminderCorner = if showsReminder,
+            let rawValue = arguments.first(where: {
+                $0.hasPrefix("--cornerpet-ui-reminder-corner=")
+            })?.split(separator: "=", maxSplits: 1).last {
+            TriggerCorner(rawValue: String(rawValue))
+        } else {
+            nil
+        }
     }
 }
 
@@ -39,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let lifecycleCoordinatorFactory: LifecycleCoordinatorFactory
     private let compositionFactory: CompositionFactory
     private let launchOptions: AppLaunchOptions
+    private let reminderStateStore: any ReminderStateStoring
     private var commandCommaSignalSource: (any DispatchSourceSignal)?
 
     let appSettings: AppSettings
@@ -49,22 +62,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var triggerCoordinator: CornerTriggerCoordinator?
     private(set) var lifecycleCoordinator: PanelLifecycleCoordinator?
     private(set) var composition: (any CaptureComposing)?
+    private(set) var petReminderPanelController: PetReminderPanelController?
+    private(set) var reminderScheduler: ReminderScheduler?
 
     override init() {
         let launchOptions = AppLaunchOptions(arguments: ProcessInfo.processInfo.arguments)
-        let appSettings = if launchOptions.usesInMemoryStore {
-            AppSettings(defaults: UserDefaults(
+        let defaults = if launchOptions.usesInMemoryStore {
+            UserDefaults(
                 suiteName: "CornerPet.UITesting.\(UUID().uuidString)"
-            )!)
+            )!
         } else {
-            AppSettings()
+            UserDefaults.standard
         }
+        let appSettings = AppSettings(defaults: defaults)
         let launchAtLoginController = LaunchAtLoginController()
         let screenCoordinator = ScreenCoordinator()
         self.launchOptions = launchOptions
         self.appSettings = appSettings
         self.launchAtLoginController = launchAtLoginController
         self.screenCoordinator = screenCoordinator
+        reminderStateStore = ReminderStateStore(defaults: defaults)
         panelControllerFactory = {
             CapturePanelController(
                 screenProvider: { screenID in
@@ -128,6 +145,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         screenCoordinator: ScreenCoordinator = ScreenCoordinator(),
         compositionFactory: @escaping CompositionFactory = { _ in nil },
         launchOptions: AppLaunchOptions = AppLaunchOptions(arguments: []),
+        reminderStateStore: (any ReminderStateStoring)? = nil,
         lifecycleCoordinatorFactory: @escaping LifecycleCoordinatorFactory = { panelController in
             PanelLifecycleCoordinator(panelController: panelController)
         }
@@ -142,6 +160,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.lifecycleCoordinatorFactory = lifecycleCoordinatorFactory
         self.compositionFactory = compositionFactory
         self.launchOptions = launchOptions
+        self.reminderStateStore = reminderStateStore ?? ReminderStateStore(defaults: UserDefaults(
+            suiteName: "CornerPet.AppDelegate.Reminder.\(UUID().uuidString)"
+        )!)
         super.init()
     }
 
@@ -172,8 +193,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let lifecycleCoordinator = lifecycleCoordinatorFactory(panelController)
         let triggerCoordinator = triggerCoordinatorFactory(panelController)
+        let petReminderPanelController = PetReminderPanelController(
+            onOpenInbox: { [weak self] in
+                self?.openInboxFromReminder()
+            },
+            onSnooze: { [weak self] in
+                self?.snoozeReminder()
+            },
+            onDismissToday: { [weak self] in
+                self?.dismissReminderForToday()
+            }
+        )
+        let reminderScheduler = ReminderScheduler(
+            stateStore: reminderStateStore,
+            isCaptureVisible: { [weak panelController] in
+                panelController?.isVisible ?? false
+            },
+            isReminderVisible: { [weak petReminderPanelController] in
+                petReminderPanelController?.isVisible ?? false
+            },
+            onPresent: { [weak self, weak petReminderPanelController] _ in
+                guard let self,
+                      let configuration = self.screenCoordinator.currentConfiguration else {
+                    return
+                }
+                petReminderPanelController?.present(
+                    corner: self.appSettings.triggerCorner,
+                    screens: configuration.allScreens,
+                    primaryDisplayID: configuration.primaryDisplayID
+                )
+            }
+        )
 
-        triggerCoordinator.onPresentRequested = { [weak lifecycleCoordinator] screenID in
+        triggerCoordinator.onPresentRequested = {
+            [weak petReminderPanelController, weak lifecycleCoordinator] screenID in
+            petReminderPanelController?.dismiss()
             lifecycleCoordinator?.presentRequested(screenID: screenID)
         }
         triggerCoordinator.onReverseClosingRequested = { [weak lifecycleCoordinator] _ in
@@ -187,19 +241,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.triggerCoordinator = triggerCoordinator
         self.lifecycleCoordinator = lifecycleCoordinator
         self.composition = composition
+        self.petReminderPanelController = petReminderPanelController
+        self.reminderScheduler = reminderScheduler
 
-        screenCoordinator.onChange = { [weak panelController, weak triggerCoordinator] configuration in
+        screenCoordinator.onChange = {
+            [weak self, weak panelController, weak triggerCoordinator, weak petReminderPanelController]
+            configuration in
             triggerCoordinator?.updateScreens(configuration.enabledScreens)
             panelController?.handleScreenConfigurationChange(configuration)
+            if petReminderPanelController?.isVisible == true, let self {
+                petReminderPanelController?.updatePlacement(
+                    corner: self.appSettings.triggerCorner,
+                    screens: configuration.allScreens,
+                    primaryDisplayID: configuration.primaryDisplayID
+                )
+            }
         }
-        appSettings.onChange = { [weak self, weak panelController, weak triggerCoordinator] change in
+        appSettings.onChange = {
+            [weak self, weak panelController, weak triggerCoordinator, weak petReminderPanelController]
+            change in
             switch change.field {
             case .triggerCorner:
                 panelController?.updateCorner(change.snapshot.triggerCorner)
                 triggerCoordinator?.updateCorner(change.snapshot.triggerCorner)
+                if petReminderPanelController?.isVisible == true,
+                   let configuration = self?.screenCoordinator.currentConfiguration {
+                    petReminderPanelController?.updatePlacement(
+                        corner: change.snapshot.triggerCorner,
+                        screens: configuration.allScreens,
+                        primaryDisplayID: configuration.primaryDisplayID
+                    )
+                }
             case .displayScope:
                 self?.screenCoordinator.updateScope(change.snapshot.displayScope)
-            case .lastPinnedSize, .dailyReminderMinutes, .language:
+            case .dailyReminderMinutes:
+                self?.updateReminderConfiguration(change.snapshot)
+            case .reminderEnabled:
+                if !change.snapshot.reminderEnabled {
+                    petReminderPanelController?.dismiss()
+                }
+                self?.updateReminderConfiguration(change.snapshot)
+            case .lastPinnedSize, .language:
                 break
             }
         }
@@ -269,7 +351,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.appSettings.setTriggerCorner(corner)
         }
 
+        if launchOptions.showsReminder, let reminderCorner = launchOptions.reminderCorner {
+            appSettings.setTriggerCorner(reminderCorner)
+        }
         screenCoordinator.start(scope: appSettings.displayScope)
+        reminderScheduler.start(configuration: ReminderConfiguration(
+            isEnabled: appSettings.reminderEnabled,
+            dailyMinutes: appSettings.dailyReminderMinutes
+        ))
         _ = triggerCoordinator.start()
         if launchOptions.handlesCommandCommaSignal {
             Darwin.signal(SIGUSR1, SIG_IGN)
@@ -284,11 +373,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if launchOptions.opensCapture,
            let screenID = screenCoordinator.currentConfiguration?.primaryDisplayID {
+            petReminderPanelController.dismiss()
             if !launchOptions.opensCaptureWithoutActivation {
                 NSApp.activate()
             }
             lifecycleCoordinator.presentRequested(screenID: screenID)
             panelController.present(screenID: screenID)
+        } else if launchOptions.showsReminder,
+                  let configuration = screenCoordinator.currentConfiguration {
+            petReminderPanelController.present(
+                corner: appSettings.triggerCorner,
+                screens: configuration.allScreens,
+                primaryDisplayID: configuration.primaryDisplayID
+            )
         }
     }
 
@@ -303,10 +400,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         commandCommaSignalSource?.cancel()
         commandCommaSignalSource = nil
+        reminderScheduler?.stop()
+        petReminderPanelController?.dismiss()
         composition?.applicationWillTerminate()
         lifecycleCoordinator?.stop()
         triggerCoordinator?.stop()
         screenCoordinator.stop()
+    }
+
+    private func updateReminderConfiguration(_ snapshot: AppSettingsSnapshot) {
+        reminderScheduler?.update(configuration: ReminderConfiguration(
+            isEnabled: snapshot.reminderEnabled,
+            dailyMinutes: snapshot.dailyReminderMinutes
+        ))
+    }
+
+    private func openInboxFromReminder() {
+        let screenID = petReminderPanelController?.currentScreenID
+            ?? screenCoordinator.currentConfiguration?.primaryDisplayID
+        reminderScheduler?.completeCurrentReminder()
+        petReminderPanelController?.dismiss()
+        composition?.selectInbox()
+        NSApp.activate()
+
+        guard let screenID else { return }
+        lifecycleCoordinator?.presentRequested(screenID: screenID)
+        if panelController?.isVisible == true {
+            panelController?.panel?.orderFrontRegardless()
+            panelController?.panel?.makeKey()
+        }
+    }
+
+    private func snoozeReminder() {
+        reminderScheduler?.snooze()
+        petReminderPanelController?.dismiss()
+    }
+
+    private func dismissReminderForToday() {
+        reminderScheduler?.completeCurrentReminder()
+        petReminderPanelController?.dismiss()
     }
 
     private static func screen(withID screenID: UInt32) -> NSScreen? {
