@@ -78,40 +78,40 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(favorite.waitForExistence(timeout: 2))
         favorite.click()
 
-        app.buttons["nav.archive"].click()
+        let archiveNavigation = app.buttons["nav.archive"]
+        archiveNavigation.click()
         let archiveSearch = app.textFields["archive.search"]
         XCTAssertTrue(archiveSearch.waitForExistence(timeout: 2))
-        app.activate()
-        app.buttons["nav.archive"].click()
-        app.typeKey("f", modifierFlags: .command)
+        input.click()
+        input.typeKey("f", modifierFlags: .command)
         XCTAssertTrue(waitForKeyboardFocus(on: archiveSearch))
         archiveSearch.typeText("archive-cmdf-coffee")
         XCTAssertEqual(archiveSearch.value as? String, "archive-cmdf-coffee")
         XCTAssertTrue(app.staticTexts["archive-cmdf-coffee"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.staticTexts["favorites-cmdf-cafe"].exists)
 
-        app.typeKey("a", modifierFlags: .command)
-        app.typeText("archive-cmdf-missing")
+        archiveSearch.typeKey("a", modifierFlags: .command)
+        archiveSearch.typeText("archive-cmdf-missing")
         XCTAssertEqual(archiveSearch.value as? String, "archive-cmdf-missing")
         XCTAssertTrue(
             app.descendants(matching: .any)["archive.empty"].waitForExistence(timeout: 2)
         )
         XCTAssertFalse(app.staticTexts["archive-cmdf-coffee"].exists)
 
-        app.buttons["nav.favorites"].click()
+        let favoritesNavigation = app.buttons["nav.favorites"]
+        favoritesNavigation.click()
         let favoritesSearch = app.textFields["favorites.search"]
         XCTAssertTrue(favoritesSearch.waitForExistence(timeout: 2))
-        app.activate()
-        app.buttons["nav.favorites"].click()
-        app.typeKey("f", modifierFlags: .command)
+        input.click()
+        input.typeKey("f", modifierFlags: .command)
         XCTAssertTrue(waitForKeyboardFocus(on: favoritesSearch))
         favoritesSearch.typeText("FAVORITES-CMDF-CAFE")
         XCTAssertEqual(favoritesSearch.value as? String, "FAVORITES-CMDF-CAFE")
         XCTAssertTrue(app.staticTexts["favorites-cmdf-cafe"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.staticTexts["archive-cmdf-coffee"].exists)
 
-        app.typeKey("a", modifierFlags: .command)
-        app.typeText("favorites-cmdf-missing")
+        favoritesSearch.typeKey("a", modifierFlags: .command)
+        favoritesSearch.typeText("favorites-cmdf-missing")
         XCTAssertEqual(favoritesSearch.value as? String, "favorites-cmdf-missing")
         XCTAssertTrue(
             app.descendants(matching: .any)["favorites.empty"].waitForExistence(timeout: 2)
@@ -155,7 +155,7 @@ final class LibraryFlowUITests: XCTestCase {
         editor.click()
         XCTAssertTrue(waitForKeyboardFocus(on: editor))
         editor.typeText(" updated")
-        app.typeKey(.return, modifierFlags: [])
+        editor.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 5))
 
         app.staticTexts["editable updated"].doubleClick()
@@ -167,7 +167,7 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(waitForKeyboardFocus(on: activeEditor))
         app.typeKey(.return, modifierFlags: .shift)
         app.typeText("line")
-        app.typeKey(.escape, modifierFlags: [])
+        activeEditor.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 5))
 
         app.staticTexts["editable updated"].doubleClick()

@@ -40,6 +40,25 @@ final class CaptureLayoutTests: XCTestCase {
         XCTAssertEqual(model.selectedDestination, .archive)
     }
 
+    func testShellRoutesSearchFocusOnlyForSearchDestinations() {
+        let model = CaptureShellViewModel()
+
+        XCTAssertFalse(model.requestSearchFocus())
+        XCTAssertEqual(model.searchFocusRequest, 0)
+
+        model.select(.archive)
+        XCTAssertTrue(model.requestSearchFocus())
+        XCTAssertEqual(model.searchFocusRequest, 1)
+
+        model.select(.favorites)
+        XCTAssertTrue(model.requestSearchFocus())
+        XCTAssertEqual(model.searchFocusRequest, 2)
+
+        model.select(.settings)
+        XCTAssertFalse(model.requestSearchFocus())
+        XCTAssertEqual(model.searchFocusRequest, 2)
+    }
+
     func testCapturePanelViewConstructsWithInMemoryDependencies() throws {
         let container = try ModelContainerFactory.makeInMemory()
         let draftStore = DraftStore(context: container.mainContext)

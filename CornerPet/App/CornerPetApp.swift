@@ -18,6 +18,10 @@ struct CornerPetApp: App {
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
+            CommandGroup(after: .textEditing) {
+                Button("搜索 / Find", action: appDelegate.focusLibrarySearch)
+                .keyboardShortcut("f", modifiers: .command)
+            }
         }
     }
 }

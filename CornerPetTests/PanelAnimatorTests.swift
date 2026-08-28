@@ -1531,6 +1531,30 @@ final class PanelTickerAndControllerTests: XCTestCase {
         XCTAssertEqual(toggleCount, 1)
     }
 
+    func testCommandFFromNonactivatingPanelInvokesFindRoute() throws {
+        let panel = CornerPanel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 400))
+        var findCount = 0
+        panel.onFind = {
+            findCount += 1
+            return true
+        }
+        let event = try XCTUnwrap(NSEvent.keyEvent(
+            with: .keyDown,
+            location: .zero,
+            modifierFlags: [.command],
+            timestamp: 0.120,
+            windowNumber: panel.windowNumber,
+            context: nil,
+            characters: "f",
+            charactersIgnoringModifiers: "f",
+            isARepeat: false,
+            keyCode: 3
+        ))
+
+        XCTAssertTrue(panel.performKeyEquivalent(with: event))
+        XCTAssertEqual(findCount, 1)
+    }
+
     func testCommandCommaFromCornerPanelPerformsTheSettingsMenuCommand() throws {
         let previousMainMenu = NSApp.mainMenu
         defer { NSApp.mainMenu = previousMainMenu }

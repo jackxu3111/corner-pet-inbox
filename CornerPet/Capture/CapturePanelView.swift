@@ -144,12 +144,18 @@ struct CapturePanelView: View {
             InboxView(viewModel: inboxViewModel)
         case .favorites:
             if let favoritesViewModel {
-                FavoritesView(viewModel: favoritesViewModel)
+                FavoritesView(
+                    viewModel: favoritesViewModel,
+                    focusRequest: shellViewModel.searchFocusRequest
+                )
             } else {
                 placeholder(destination: .favorites)
             }
         case .archive:
-            ArchiveView(viewModel: archiveViewModel)
+            ArchiveView(
+                viewModel: archiveViewModel,
+                focusRequest: shellViewModel.searchFocusRequest
+            )
         case .settings:
             EmptyView()
         }

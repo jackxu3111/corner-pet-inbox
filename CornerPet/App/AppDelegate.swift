@@ -296,6 +296,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         launchAtLoginController.refresh()
     }
 
+    func focusLibrarySearch() {
+        _ = panelController?.requestSearchFocus()
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         commandCommaSignalSource?.cancel()
         commandCommaSignalSource = nil

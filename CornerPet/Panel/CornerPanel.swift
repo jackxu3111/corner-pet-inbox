@@ -3,6 +3,7 @@ import AppKit
 @MainActor
 final class CornerPanel: NSPanel {
     var onTogglePin: (() -> Void)?
+    var onFind: (() -> Bool)?
 
     private(set) var isPinned = false
 
@@ -73,6 +74,12 @@ final class CornerPanel: NSPanel {
             return true
         }
 
+        if event.charactersIgnoringModifiers?.lowercased() == "f",
+           modifiers == [.command],
+           onFind?() == true {
+            return true
+        }
+
         if event.charactersIgnoringModifiers == ",",
            modifiers == [.command] {
             NSApp.activate()
@@ -87,6 +94,7 @@ final class CornerPanel: NSPanel {
 
     override func sendEvent(_ event: NSEvent) {
         guard event.type == .keyDown,
+              event.modifierFlags.contains(.command),
               performKeyEquivalent(with: event) else {
             super.sendEvent(event)
             return

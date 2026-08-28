@@ -151,8 +151,13 @@ final class CaptureCompositionRoot: CaptureComposing {
         self.inboxViewModel = inboxViewModel
         self.favoritesViewModel = favoritesViewModel
         self.archiveViewModel = archiveViewModel
-        shellViewModel = CaptureShellViewModel()
+        let shellViewModel = CaptureShellViewModel()
+        self.shellViewModel = shellViewModel
         self.pinStateBox = pinStateBox
+
+        panelController.onFind = { [weak shellViewModel] in
+            shellViewModel?.requestSearchFocus() ?? false
+        }
 
         editViewModel.onStateChanged = { [weak self] in
             guard let self else { return }

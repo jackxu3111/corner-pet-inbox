@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FavoritesView: View {
     let viewModel: FavoritesViewModel
+    let focusRequest: Int
 
     @FocusState private var searchIsFocused: Bool
 
@@ -36,6 +37,9 @@ struct FavoritesView: View {
         }
         .accessibilityElement(children: .contain)
         .onAppear(perform: viewModel.load)
+        .onChange(of: focusRequest) { _, _ in
+            LibrarySearchFocusRouting.requestFocus { searchIsFocused = $0 }
+        }
         .confirmationDialog(
             "永久删除此想法？ / Delete this idea permanently?",
             isPresented: Binding(
@@ -80,15 +84,6 @@ struct FavoritesView: View {
                 .accessibilityLabel("清除搜索 / Clear search")
                 .accessibilityIdentifier("favorites.search.clear")
             }
-        }
-        .overlay {
-            Button(action: {
-                LibrarySearchFocusRouting.requestFocus { searchIsFocused = $0 }
-            }) { EmptyView() }
-                .keyboardShortcut("f", modifiers: .command)
-                .frame(width: 0, height: 0)
-                .opacity(0)
-                .accessibilityHidden(true)
         }
         .accessibilityElement(children: .contain)
     }

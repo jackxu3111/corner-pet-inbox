@@ -43,6 +43,7 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
     var onEscape: (() -> Void)?
     var onExternalFocusLost: (() -> Void)?
     var onTogglePin: (() -> Void)?
+    var onFind: (() -> Bool)?
     var onReturnToCorner: (() -> Void)?
     var onCornerChanged: ((TriggerCorner) -> Void)?
 
@@ -99,6 +100,9 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         panel.onTogglePin = { [weak self] in
             self?.togglePin()
         }
+        panel.onFind = { [weak self] in
+            self?.requestSearchFocus() ?? false
+        }
         panel.delegate = self
         panel.setPinned(false)
         let inputProbe = EscapeInputProbe(owner: self)
@@ -147,6 +151,11 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
 
     func togglePin() {
         onTogglePin?()
+    }
+
+    @discardableResult
+    func requestSearchFocus() -> Bool {
+        onFind?() ?? false
     }
 
     func setPinned(_ pinned: Bool) {
