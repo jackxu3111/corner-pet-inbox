@@ -1,19 +1,29 @@
 import AppKit
+import Darwin
 import SwiftUI
 
 struct AppLaunchOptions: Equatable {
     let usesInMemoryStore: Bool
     let opensCapture: Bool
+    let opensCaptureWithoutActivation: Bool
+    let handlesCommandCommaSignal: Bool
     let usesDeleteFailureFixture: Bool
+    let keepsCaptureOpen: Bool
 
     init(arguments: [String]) {
         let isUITesting = arguments.contains("--cornerpet-ui-testing")
         usesInMemoryStore = isUITesting
             && arguments.contains("--cornerpet-memory-store")
+        opensCaptureWithoutActivation = isUITesting
+            && arguments.contains("--cornerpet-ui-open-capture-without-activation")
+        handlesCommandCommaSignal = isUITesting
+            && arguments.contains("--cornerpet-ui-command-comma-signal")
         opensCapture = isUITesting
-            && arguments.contains("--cornerpet-open-capture")
+            && (arguments.contains("--cornerpet-open-capture") || opensCaptureWithoutActivation)
         usesDeleteFailureFixture = usesInMemoryStore
             && arguments.contains("--cornerpet-ui-delete-failure")
+        keepsCaptureOpen = isUITesting
+            && arguments.contains("--cornerpet-ui-keep-capture-open")
     }
 }
 
@@ -26,10 +36,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let panelControllerFactory: PanelControllerFactory
     private let triggerCoordinatorFactory: TriggerCoordinatorFactory
-    private let triggerCornerStore: TriggerCornerStore
     private let lifecycleCoordinatorFactory: LifecycleCoordinatorFactory
     private let compositionFactory: CompositionFactory
     private let launchOptions: AppLaunchOptions
+    private var commandCommaSignalSource: (any DispatchSourceSignal)?
+
+    let appSettings: AppSettings
+    let launchAtLoginController: LaunchAtLoginController
+    let screenCoordinator: ScreenCoordinator
 
     private(set) var panelController: CapturePanelController?
     private(set) var triggerCoordinator: CornerTriggerCoordinator?
@@ -38,26 +52,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         let launchOptions = AppLaunchOptions(arguments: ProcessInfo.processInfo.arguments)
-        let triggerCornerStore = TriggerCornerStore()
+        let appSettings = if launchOptions.usesInMemoryStore {
+            AppSettings(defaults: UserDefaults(
+                suiteName: "CornerPet.UITesting.\(UUID().uuidString)"
+            )!)
+        } else {
+            AppSettings()
+        }
+        let launchAtLoginController = LaunchAtLoginController()
+        let screenCoordinator = ScreenCoordinator()
         self.launchOptions = launchOptions
-        self.triggerCornerStore = triggerCornerStore
+        self.appSettings = appSettings
+        self.launchAtLoginController = launchAtLoginController
+        self.screenCoordinator = screenCoordinator
         panelControllerFactory = {
             CapturePanelController(
                 screenProvider: { screenID in
                     Self.screen(withID: screenID)
                 },
-                corner: triggerCornerStore.load()
+                corner: appSettings.triggerCorner,
+                loadPinnedSize: { appSettings.lastPinnedSize },
+                savePinnedSize: { appSettings.setLastPinnedSize($0) }
             )
         }
         triggerCoordinatorFactory = { panelController in
             CornerTriggerCoordinator(
-                screenProvider: { NSScreen.main },
-                corner: triggerCornerStore.load(),
+                screenSnapshotsProvider: {
+                    screenCoordinator.currentConfiguration?.enabledScreens ?? []
+                },
+                corner: appSettings.triggerCorner,
                 presentPanel: { [weak panelController] screenID in
                     panelController?.present(screenID: screenID)
                 },
                 reverseClosingPanel: { [weak panelController] _ in
                     panelController?.reverseClosing()
+                },
+                isPanelPinned: { [weak panelController] in
+                    panelController?.isPinned ?? false
+                },
+                bringPinnedPanelForward: { [weak panelController] in
+                    panelController?.bringForward()
                 }
             )
         }
@@ -65,6 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             PanelLifecycleCoordinator(
                 panelController: panelController,
                 pointerInsideKeepOpen: { [weak panelController] in
+                    if launchOptions.keepsCaptureOpen { return true }
                     guard let frame = panelController?.keepOpenFrame else { return false }
                     return frame.contains(NSEvent.mouseLocation)
                 }
@@ -88,7 +123,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     init(
         panelControllerFactory: @escaping PanelControllerFactory,
         triggerCoordinatorFactory: @escaping TriggerCoordinatorFactory,
-        triggerCornerStore: TriggerCornerStore = TriggerCornerStore(),
+        appSettings: AppSettings? = nil,
+        launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController(),
+        screenCoordinator: ScreenCoordinator = ScreenCoordinator(),
         compositionFactory: @escaping CompositionFactory = { _ in nil },
         launchOptions: AppLaunchOptions = AppLaunchOptions(arguments: []),
         lifecycleCoordinatorFactory: @escaping LifecycleCoordinatorFactory = { panelController in
@@ -97,7 +134,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     ) {
         self.panelControllerFactory = panelControllerFactory
         self.triggerCoordinatorFactory = triggerCoordinatorFactory
-        self.triggerCornerStore = triggerCornerStore
+        self.appSettings = appSettings ?? AppSettings(defaults: UserDefaults(
+            suiteName: "CornerPet.AppDelegate.Isolated.\(UUID().uuidString)"
+        ) ?? .standard)
+        self.launchAtLoginController = launchAtLoginController
+        self.screenCoordinator = screenCoordinator
         self.lifecycleCoordinatorFactory = lifecycleCoordinatorFactory
         self.compositionFactory = compositionFactory
         self.launchOptions = launchOptions
@@ -146,6 +187,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.triggerCoordinator = triggerCoordinator
         self.lifecycleCoordinator = lifecycleCoordinator
         self.composition = composition
+
+        screenCoordinator.onChange = { [weak panelController, weak triggerCoordinator] configuration in
+            triggerCoordinator?.updateScreens(configuration.enabledScreens)
+            panelController?.handleScreenConfigurationChange(configuration)
+        }
+        appSettings.onChange = { [weak self, weak panelController, weak triggerCoordinator] change in
+            switch change.field {
+            case .triggerCorner:
+                panelController?.updateCorner(change.snapshot.triggerCorner)
+                triggerCoordinator?.updateCorner(change.snapshot.triggerCorner)
+            case .displayScope:
+                self?.screenCoordinator.updateScope(change.snapshot.displayScope)
+            case .lastPinnedSize, .dailyReminderMinutes, .language:
+                break
+            }
+        }
 
         let togglePin: @MainActor @Sendable () -> Void = { [weak panelController, weak lifecycleCoordinator] in
             let pointerInside = panelController?.keepOpenFrame?.contains(NSEvent.mouseLocation) ?? false
@@ -208,30 +265,71 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let pointerInside = panelController?.keepOpenFrame?.contains(NSEvent.mouseLocation) ?? false
             lifecycleCoordinator?.didReturnToCorner(pointerInsideKeepOpen: pointerInside)
         }
-        panelController.onCornerChanged = { [weak self, weak triggerCoordinator] corner in
-            self?.triggerCornerStore.save(corner)
-            triggerCoordinator?.updateCorner(corner)
+        panelController.onCornerChanged = { [weak self] corner in
+            self?.appSettings.setTriggerCorner(corner)
         }
 
+        screenCoordinator.start(scope: appSettings.displayScope)
         _ = triggerCoordinator.start()
+        if launchOptions.handlesCommandCommaSignal {
+            Darwin.signal(SIGUSR1, SIG_IGN)
+            let signalSource = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
+            signalSource.setEventHandler { [weak self] in
+                MainActor.assumeIsolated {
+                    self?.dispatchCommandComma()
+                }
+            }
+            signalSource.resume()
+            commandCommaSignalSource = signalSource
+        }
         if launchOptions.opensCapture,
-           let screen = NSScreen.main,
-           let screenID = Self.displayID(for: screen) {
+           let screenID = screenCoordinator.currentConfiguration?.primaryDisplayID {
+            if !launchOptions.opensCaptureWithoutActivation {
+                NSApp.activate()
+            }
             lifecycleCoordinator.presentRequested(screenID: screenID)
             panelController.present(screenID: screenID)
         }
     }
 
+    func applicationDidBecomeActive(_ notification: Notification) {
+        launchAtLoginController.refresh()
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
+        commandCommaSignalSource?.cancel()
+        commandCommaSignalSource = nil
         composition?.applicationWillTerminate()
         lifecycleCoordinator?.stop()
         triggerCoordinator?.stop()
+        screenCoordinator.stop()
     }
 
     private static func screen(withID screenID: UInt32) -> NSScreen? {
         NSScreen.screens.first { screen in
             displayID(for: screen) == screenID
         }
+    }
+
+    private func dispatchCommandComma() {
+        guard launchOptions.handlesCommandCommaSignal,
+              launchOptions.opensCaptureWithoutActivation,
+              let panel = panelController?.panel,
+              let event = NSEvent.keyEvent(
+                  with: .keyDown,
+                  location: .zero,
+                  modifierFlags: [.command],
+                  timestamp: ProcessInfo.processInfo.systemUptime,
+                  windowNumber: panel.windowNumber,
+                  context: nil,
+                  characters: ",",
+                  charactersIgnoringModifiers: ",",
+                  isARepeat: false,
+                  keyCode: 43
+              ) else {
+            return
+        }
+        panel.sendEvent(event)
     }
 
     private static func displayID(for screen: NSScreen) -> UInt32? {

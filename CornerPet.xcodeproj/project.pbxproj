@@ -87,6 +87,13 @@
 		600000000000000000000003 /* CornerPanelDragRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600000000000000000000004 /* CornerPanelDragRegion.swift */; };
 		600000000000000000000005 /* CornerPanelDragRegionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600000000000000000000006 /* CornerPanelDragRegionView.swift */; };
 		50000000000000000000000E /* PinningFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50000000000000000000000F /* PinningFlowUITests.swift */; };
+		700000000000000000000001 /* AppSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000002 /* AppSettingsTests.swift */; };
+		700000000000000000000003 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000004 /* AppSettings.swift */; };
+		700000000000000000000006 /* ScreenCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000007 /* ScreenCoordinatorTests.swift */; };
+		700000000000000000000008 /* ScreenCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000009 /* ScreenCoordinator.swift */; };
+		70000000000000000000000B /* LaunchAtLoginControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70000000000000000000000C /* LaunchAtLoginControllerTests.swift */; };
+		70000000000000000000000D /* LaunchAtLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70000000000000000000000E /* LaunchAtLoginController.swift */; };
+		70000000000000000000000F /* CornerPetSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 700000000000000000000010 /* CornerPetSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -169,6 +176,13 @@
 		50000000000000000000000A /* PinnedPanelSizeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPanelSizeStore.swift; sourceTree = "<group>"; };
 		50000000000000000000000C /* PinnedPanelSizeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedPanelSizeStoreTests.swift; sourceTree = "<group>"; };
 		50000000000000000000000F /* PinningFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinningFlowUITests.swift; sourceTree = "<group>"; };
+		700000000000000000000002 /* AppSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsTests.swift; sourceTree = "<group>"; };
+		700000000000000000000004 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		700000000000000000000007 /* ScreenCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCoordinatorTests.swift; sourceTree = "<group>"; };
+		700000000000000000000009 /* ScreenCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCoordinator.swift; sourceTree = "<group>"; };
+		70000000000000000000000C /* LaunchAtLoginControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginControllerTests.swift; sourceTree = "<group>"; };
+		70000000000000000000000E /* LaunchAtLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginController.swift; sourceTree = "<group>"; };
+		700000000000000000000010 /* CornerPetSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetSettingsView.swift; sourceTree = "<group>"; };
 		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
 		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
 		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
@@ -231,6 +245,8 @@
 				100000000000000000000068 /* Panel */,
 				1000000000000000000000C0 /* Persistence */,
 				1000000000000000000000D0 /* Capture */,
+				700000000000000000000005 /* Settings */,
+				70000000000000000000000A /* Screen */,
 			);
 			path = CornerPet;
 			sourceTree = "<group>";
@@ -246,6 +262,24 @@
 				100000000000000000000095 /* TriggerZonePanel.swift */,
 			);
 			path = HotCorner;
+			sourceTree = "<group>";
+		};
+		700000000000000000000005 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				700000000000000000000004 /* AppSettings.swift */,
+				70000000000000000000000E /* LaunchAtLoginController.swift */,
+				700000000000000000000010 /* CornerPetSettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		70000000000000000000000A /* Screen */ = {
+			isa = PBXGroup;
+			children = (
+				700000000000000000000009 /* ScreenCoordinator.swift */,
+			);
+			path = Screen;
 			sourceTree = "<group>";
 		};
 		100000000000000000000007 /* App */ = {
@@ -345,6 +379,9 @@
 				500000000000000000000008 /* PanelLifecycleCoordinatorTests.swift */,
 				50000000000000000000000C /* PinnedPanelSizeStoreTests.swift */,
 				600000000000000000000002 /* CornerPanelDragRegionTests.swift */,
+				700000000000000000000002 /* AppSettingsTests.swift */,
+				700000000000000000000007 /* ScreenCoordinatorTests.swift */,
+				70000000000000000000000C /* LaunchAtLoginControllerTests.swift */,
 			);
 			path = CornerPetTests;
 			sourceTree = "<group>";
@@ -563,6 +600,10 @@
 				500000000000000000000009 /* PinnedPanelSizeStore.swift in Sources */,
 				600000000000000000000003 /* CornerPanelDragRegion.swift in Sources */,
 				600000000000000000000005 /* CornerPanelDragRegionView.swift in Sources */,
+				700000000000000000000003 /* AppSettings.swift in Sources */,
+				700000000000000000000008 /* ScreenCoordinator.swift in Sources */,
+				70000000000000000000000D /* LaunchAtLoginController.swift in Sources */,
+				70000000000000000000000F /* CornerPetSettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,6 +638,9 @@
 				500000000000000000000007 /* PanelLifecycleCoordinatorTests.swift in Sources */,
 				50000000000000000000000B /* PinnedPanelSizeStoreTests.swift in Sources */,
 				600000000000000000000001 /* CornerPanelDragRegionTests.swift in Sources */,
+				700000000000000000000001 /* AppSettingsTests.swift in Sources */,
+				700000000000000000000006 /* ScreenCoordinatorTests.swift in Sources */,
+				70000000000000000000000B /* LaunchAtLoginControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

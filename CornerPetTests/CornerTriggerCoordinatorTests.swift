@@ -38,6 +38,104 @@ final class ManualDeadlineScheduler: HotCornerDeadlineScheduling {
 
 @MainActor
 final class CornerTriggerCoordinatorTests: XCTestCase {
+    func testStartCreatesTriggerPanelsForEveryEnabledScreen() {
+        let first = ScreenSnapshot(
+            id: 101,
+            frame: CGRect(x: 0, y: 0, width: 1440, height: 900),
+            visibleFrame: CGRect(x: 0, y: 0, width: 1440, height: 875)
+        )
+        let second = ScreenSnapshot(
+            id: 202,
+            frame: CGRect(x: 1440, y: -120, width: 1920, height: 1080),
+            visibleFrame: CGRect(x: 1440, y: -120, width: 1920, height: 1055)
+        )
+        let coordinator = CornerTriggerCoordinator(
+            screenSnapshotsProvider: { [first, second] },
+            pointerLocationProvider: { CGPoint(x: 500, y: 500) },
+            presentPanel: { _ in },
+            reverseClosingPanel: { _ in }
+        )
+
+        XCTAssertTrue(coordinator.start())
+        XCTAssertEqual(coordinator.triggerScreenIDs, [101, 202])
+        XCTAssertEqual(
+            coordinator.triggerPanelFrames[101],
+            TriggerZonePanel.frames(for: first.frame, corner: .topLeft)
+        )
+        XCTAssertEqual(
+            coordinator.triggerPanelFrames[202],
+            TriggerZonePanel.frames(for: second.frame, corner: .topLeft)
+        )
+    }
+
+    func testDwellOnSecondaryScreenPresentsThatScreenID() {
+        let first = ScreenSnapshot(
+            id: 101,
+            frame: CGRect(x: 0, y: 0, width: 1440, height: 900),
+            visibleFrame: CGRect(x: 0, y: 0, width: 1440, height: 875)
+        )
+        let second = ScreenSnapshot(
+            id: 202,
+            frame: CGRect(x: 1440, y: -120, width: 1920, height: 1080),
+            visibleFrame: CGRect(x: 1440, y: -120, width: 1920, height: 1055)
+        )
+        var now: TimeInterval = 10
+        var pointer = point(in: second.frame, corner: .topLeft)
+        let scheduler = ManualDeadlineScheduler()
+        var presentedScreenIDs: [UInt32] = []
+        let coordinator = CornerTriggerCoordinator(
+            screenSnapshotsProvider: { [first, second] },
+            clock: { now },
+            pointerLocationProvider: { pointer },
+            scheduler: scheduler,
+            presentPanel: { presentedScreenIDs.append($0) },
+            reverseClosingPanel: { _ in }
+        )
+
+        XCTAssertTrue(coordinator.start())
+        XCTAssertEqual(scheduler.tokens.count, 1)
+        now = 10.4
+        scheduler.fire(0)
+
+        XCTAssertEqual(presentedScreenIDs, [202])
+        pointer = .zero
+    }
+
+    func testUpdatingEnabledScreensImmediatelyRebuildsZonesAndCancelsOldDwell() {
+        let first = ScreenSnapshot(
+            id: 101,
+            frame: CGRect(x: 0, y: 0, width: 1440, height: 900),
+            visibleFrame: CGRect(x: 0, y: 0, width: 1440, height: 875)
+        )
+        let second = ScreenSnapshot(
+            id: 202,
+            frame: CGRect(x: 1440, y: 0, width: 1920, height: 1080),
+            visibleFrame: CGRect(x: 1440, y: 0, width: 1920, height: 1055)
+        )
+        var pointer = point(in: first.frame, corner: .topLeft)
+        let scheduler = ManualDeadlineScheduler()
+        var presentedScreenIDs: [UInt32] = []
+        let coordinator = CornerTriggerCoordinator(
+            screenSnapshotsProvider: { [first] },
+            pointerLocationProvider: { pointer },
+            scheduler: scheduler,
+            presentPanel: { presentedScreenIDs.append($0) },
+            reverseClosingPanel: { _ in }
+        )
+        XCTAssertTrue(coordinator.start())
+        XCTAssertEqual(scheduler.tokens.count, 1)
+
+        pointer = CGPoint(x: second.frame.midX, y: second.frame.midY)
+        coordinator.updateScreens([second])
+
+        XCTAssertTrue(scheduler.tokens[0].isCancelled)
+        XCTAssertEqual(coordinator.triggerScreenIDs, [202])
+        XCTAssertNil(coordinator.triggerPanelFrames[101])
+        XCTAssertNotNil(coordinator.triggerPanelFrames[202])
+        scheduler.fire(0)
+        XCTAssertTrue(presentedScreenIDs.isEmpty)
+    }
+
     func testStartCreatesTriggerPanelsAtEveryConfiguredCorner() throws {
         let screen = try XCTUnwrap(NSScreen.screens.first)
 
@@ -245,6 +343,45 @@ final class CornerTriggerCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(presented, 1)
         XCTAssertEqual(reversed, 1)
+    }
+
+    func testPinnedOpenRetriggerBringsPanelForwardWithoutPresentingAgain() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        var now: TimeInterval = 20
+        var pointer = horizontalExclusivePoint(in: screen.frame)
+        var isPinned = false
+        let scheduler = ManualDeadlineScheduler()
+        var presented = 0
+        var broughtForward = 0
+        let coordinator = CornerTriggerCoordinator(
+            screenProvider: { screen },
+            clock: { now },
+            pointerLocationProvider: { pointer },
+            scheduler: scheduler,
+            presentPanel: { _ in presented += 1 },
+            reverseClosingPanel: { _ in },
+            isPanelPinned: { isPinned },
+            bringPinnedPanelForward: { broughtForward += 1 }
+        )
+        XCTAssertTrue(coordinator.start())
+        now = 20.4
+        scheduler.fire(0)
+        coordinator.panelBeganOpening()
+        coordinator.panelDidOpen()
+        isPinned = true
+
+        pointer = outsidePoint(in: screen.frame)
+        now = 21
+        coordinator.refreshPresence()
+        pointer = horizontalExclusivePoint(in: screen.frame)
+        coordinator.refreshPresence()
+        XCTAssertEqual(scheduler.tokens.count, 2)
+
+        now = 21.4
+        scheduler.fire(1)
+
+        XCTAssertEqual(presented, 1)
+        XCTAssertEqual(broughtForward, 1)
     }
 
     func testLeavingAnOpenPanelOnlyPublishesTriggerPresence() throws {

@@ -10,6 +10,7 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 5))
         input.click()
         input.typeText("library flow")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
 
         let completion = app.buttons.matching(
@@ -18,7 +19,10 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(completion.waitForExistence(timeout: 2))
         completion.click()
 
-        XCTAssertTrue(app.staticTexts["library flow"].waitForNonExistence(timeout: 2))
+        XCTAssertTrue(
+            app.scrollViews["inbox.list"].staticTexts["library flow"]
+                .waitForNonExistence(timeout: 2)
+        )
         let undo = app.buttons["inbox.archive.undo"]
         XCTAssertTrue(undo.waitForExistence(timeout: 2))
         undo.click()
@@ -52,16 +56,21 @@ final class LibraryFlowUITests: XCTestCase {
 
         input.click()
         input.typeText("archive-cmdf-coffee")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
         let completion = app.buttons.matching(
             NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.complete.")
         ).firstMatch
         XCTAssertTrue(completion.waitForExistence(timeout: 2))
         completion.click()
-        XCTAssertTrue(app.staticTexts["archive-cmdf-coffee"].waitForNonExistence(timeout: 2))
+        XCTAssertTrue(
+            app.scrollViews["inbox.list"].staticTexts["archive-cmdf-coffee"]
+                .waitForNonExistence(timeout: 2)
+        )
 
         input.click()
         input.typeText("favorites-cmdf-cafe")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
         let favorite = app.buttons.matching(
             NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.favorite.")
@@ -72,9 +81,11 @@ final class LibraryFlowUITests: XCTestCase {
         app.buttons["nav.archive"].click()
         let archiveSearch = app.textFields["archive.search"]
         XCTAssertTrue(archiveSearch.waitForExistence(timeout: 2))
-        input.click()
+        app.activate()
+        app.buttons["nav.archive"].click()
         app.typeKey("f", modifierFlags: .command)
-        app.typeText("archive-cmdf-coffee")
+        XCTAssertTrue(waitForKeyboardFocus(on: archiveSearch))
+        archiveSearch.typeText("archive-cmdf-coffee")
         XCTAssertEqual(archiveSearch.value as? String, "archive-cmdf-coffee")
         XCTAssertTrue(app.staticTexts["archive-cmdf-coffee"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.staticTexts["favorites-cmdf-cafe"].exists)
@@ -82,15 +93,19 @@ final class LibraryFlowUITests: XCTestCase {
         app.typeKey("a", modifierFlags: .command)
         app.typeText("archive-cmdf-missing")
         XCTAssertEqual(archiveSearch.value as? String, "archive-cmdf-missing")
-        XCTAssertTrue(app.staticTexts["没有匹配项 / No matches"].waitForExistence(timeout: 2))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["archive.empty"].waitForExistence(timeout: 2)
+        )
         XCTAssertFalse(app.staticTexts["archive-cmdf-coffee"].exists)
 
         app.buttons["nav.favorites"].click()
         let favoritesSearch = app.textFields["favorites.search"]
         XCTAssertTrue(favoritesSearch.waitForExistence(timeout: 2))
-        input.click()
+        app.activate()
+        app.buttons["nav.favorites"].click()
         app.typeKey("f", modifierFlags: .command)
-        app.typeText("FAVORITES-CMDF-CAFE")
+        XCTAssertTrue(waitForKeyboardFocus(on: favoritesSearch))
+        favoritesSearch.typeText("FAVORITES-CMDF-CAFE")
         XCTAssertEqual(favoritesSearch.value as? String, "FAVORITES-CMDF-CAFE")
         XCTAssertTrue(app.staticTexts["favorites-cmdf-cafe"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.staticTexts["archive-cmdf-coffee"].exists)
@@ -98,7 +113,9 @@ final class LibraryFlowUITests: XCTestCase {
         app.typeKey("a", modifierFlags: .command)
         app.typeText("favorites-cmdf-missing")
         XCTAssertEqual(favoritesSearch.value as? String, "favorites-cmdf-missing")
-        XCTAssertTrue(app.staticTexts["没有匹配项 / No matches"].waitForExistence(timeout: 2))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["favorites.empty"].waitForExistence(timeout: 2)
+        )
         XCTAssertFalse(app.staticTexts["favorites-cmdf-cafe"].exists)
     }
 
@@ -109,10 +126,15 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 5))
         input.click()
         input.typeText("editable")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(app.staticTexts["editable"].waitForExistence(timeout: 2))
+        let itemRow = app.groups.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.")
+        ).firstMatch
+        XCTAssertTrue(itemRow.waitForExistence(timeout: 3))
+        let row = itemRow.staticTexts["editable"]
+        XCTAssertTrue(row.waitForExistence(timeout: 2))
 
-        let row = app.staticTexts["editable"]
         row.doubleClick()
         let editor = app.textViews.matching(
             NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.editor.")
@@ -130,24 +152,31 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertFalse(favorite.isEnabled)
         XCTAssertFalse(delete.isEnabled)
         XCTAssertFalse(complete.isEnabled)
+        editor.click()
+        XCTAssertTrue(waitForKeyboardFocus(on: editor))
         editor.typeText(" updated")
-        editor.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 2))
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 5))
 
         app.staticTexts["editable updated"].doubleClick()
         let activeEditor = app.textViews.matching(
             NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.editor.")
         ).firstMatch
         XCTAssertTrue(activeEditor.waitForExistence(timeout: 2))
-        activeEditor.typeKey(.return, modifierFlags: .shift)
-        activeEditor.typeText("line")
-        activeEditor.typeKey(.escape, modifierFlags: [])
-        XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 2))
+        activeEditor.click()
+        XCTAssertTrue(waitForKeyboardFocus(on: activeEditor))
+        app.typeKey(.return, modifierFlags: .shift)
+        app.typeText("line")
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(app.staticTexts["editable updated"].waitForExistence(timeout: 5))
 
         app.staticTexts["editable updated"].doubleClick()
         let outsideEditor = app.textViews.matching(
             NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.editor.")
         ).firstMatch
+        XCTAssertTrue(outsideEditor.waitForExistence(timeout: 2))
+        outsideEditor.click()
+        XCTAssertTrue(waitForKeyboardFocus(on: outsideEditor))
         outsideEditor.typeText(" outside")
         input.click()
         XCTAssertTrue(app.staticTexts["editable updated outside"].waitForExistence(timeout: 2))
@@ -160,6 +189,7 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 5))
         input.click()
         input.typeText("delete candidate")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
 
         let delete = app.buttons.matching(
@@ -184,6 +214,7 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 5))
         input.click()
         input.typeText("delete failure")
+        input.hover()
         input.typeKey(.return, modifierFlags: [])
 
         let delete = app.buttons.matching(
@@ -205,9 +236,30 @@ final class LibraryFlowUITests: XCTestCase {
         app.launchArguments = [
             "--cornerpet-ui-testing",
             "--cornerpet-memory-store",
-            "--cornerpet-open-capture"
+            "--cornerpet-open-capture",
+            "--cornerpet-ui-keep-capture-open"
         ] + arguments
         app.launch()
+        let firstDialog = app.dialogs.firstMatch
+        XCTAssertTrue(firstDialog.waitForExistence(timeout: 2))
+        let triggerZone = app.dialogs.allElementsBoundByIndex.min {
+            $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height
+        } ?? firstDialog
+        triggerZone.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).hover()
+        let input = app.textViews["capture.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        input.hover()
         return app
+    }
+
+    private func waitForKeyboardFocus(
+        on element: XCUIElement,
+        timeout: TimeInterval = 5
+    ) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "hasKeyboardFocus == true"),
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

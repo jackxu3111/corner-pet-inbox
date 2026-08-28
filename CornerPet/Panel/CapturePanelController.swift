@@ -24,13 +24,14 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
     private let screensProvider: () -> [PanelScreenGeometry]
     private let clock: () -> TimeInterval
     private let reducedMotionProvider: () -> Bool
-    private let pinnedSizeStore: PinnedPanelSizeStore
+    private let loadPinnedSize: () -> CGSize
+    private let savePinnedSize: (CGSize) -> Void
     private var corner: TriggerCorner
 
     private var phase: Phase = .hidden
     private var closeWhenOpen = false
     private(set) var isPinned = false
-    private var currentScreenID: UInt32?
+    private(set) var currentScreenID: UInt32?
     private var animator: PanelAnimator?
     private var inputProbe: EscapeInputProbe?
     private var hostedContentFactory: HostedContentFactory?
@@ -67,14 +68,17 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         reducedMotionProvider: @escaping () -> Bool = {
             NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         },
-        pinnedSizeStore: PinnedPanelSizeStore = PinnedPanelSizeStore()
+        pinnedSizeStore: PinnedPanelSizeStore = PinnedPanelSizeStore(),
+        loadPinnedSize: (() -> CGSize)? = nil,
+        savePinnedSize: ((CGSize) -> Void)? = nil
     ) {
         self.screenProvider = screenProvider
         self.screensProvider = screensProvider
         self.corner = corner
         self.clock = clock
         self.reducedMotionProvider = reducedMotionProvider
-        self.pinnedSizeStore = pinnedSizeStore
+        self.loadPinnedSize = loadPinnedSize ?? { pinnedSizeStore.load() }
+        self.savePinnedSize = savePinnedSize ?? { pinnedSizeStore.save($0) }
         super.init()
     }
 
@@ -84,7 +88,7 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
             return
         }
 
-        let panelSize = pinnedSizeStore.load()
+        let panelSize = loadPinnedSize()
         let finalFrame = PanelPositioner.frame(
             inside: screen.visibleFrame,
             corner: corner,
@@ -106,15 +110,7 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         panel.ignoresMouseEvents = true
         panel.alphaValue = 1
 
-        let animator = PanelAnimator(
-            finalFrame: finalFrame,
-            corner: corner,
-            reducedMotion: reducedMotionProvider(),
-            clock: clock
-        )
-        animator.onSample = { [weak self] sample in
-            self?.consume(sample)
-        }
+        let animator = makeAnimator(finalFrame: finalFrame, corner: corner)
 
         self.panel = panel
         self.inputProbe = inputProbe
@@ -157,6 +153,89 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         guard let panel, isVisible else { return }
         panel.setPinned(pinned)
         isPinned = pinned
+    }
+
+    func bringForward() {
+        guard isPinned, isVisible, let panel else { return }
+        panel.orderFrontRegardless()
+        panel.makeKey()
+    }
+
+    func updateCorner(_ corner: TriggerCorner) {
+        guard self.corner != corner else { return }
+        self.corner = corner
+        guard case .open = phase,
+              !isPinned,
+              let currentScreenID,
+              let screen = screenProvider(currentScreenID),
+              let panel else {
+            return
+        }
+        panel.setFrame(
+            PanelPositioner.frame(
+                inside: screen.visibleFrame,
+                corner: corner,
+                size: panel.frame.size
+            ),
+            display: true
+        )
+        onPointerBoundaryChanged?()
+    }
+
+    func handleScreenConfigurationChange(_ configuration: ScreenConfiguration) {
+        guard isVisible, let panel else { return }
+        let current = currentScreenID.flatMap { currentID in
+            configuration.allScreens.first { $0.id == currentID }
+        }
+        guard let target = current ?? configuration.primaryScreen ?? configuration.allScreens.first else {
+            return
+        }
+
+        let targetSize = if case .opening = phase {
+            loadPinnedSize()
+        } else {
+            panel.frame.size
+        }
+        let targetFrame = if isPinned {
+            PanelPositioner.clampedFrame(panel.frame, inside: target.visibleFrame)
+        } else {
+            PanelPositioner.frame(
+                inside: target.visibleFrame,
+                corner: corner,
+                size: targetSize
+            )
+        }
+
+        animator?.stopTicker()
+        currentScreenID = target.id
+
+        switch phase {
+        case .opening:
+            let replacement = makeAnimator(finalFrame: targetFrame, corner: corner)
+            animator = replacement
+            apply(replacement.startOpening(at: clock()))
+            replacement.startTicker()
+        case .returning:
+            let replacement = makeAnimator(finalFrame: targetFrame, corner: corner)
+            animator = replacement
+            apply(replacement.startReturning(
+                from: panel.frame,
+                to: targetFrame,
+                at: clock()
+            ))
+            replacement.startTicker()
+        case .open:
+            animator = makeCompletedOpeningAnimator(
+                finalFrame: targetFrame,
+                corner: corner
+            )
+            panel.setFrame(targetFrame, display: true)
+        case .closing:
+            finishClosing()
+        case .hidden:
+            break
+        }
+        onPointerBoundaryChanged?()
     }
 
     func dismiss() {
@@ -205,15 +284,7 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
             return
         }
 
-        let animator = PanelAnimator(
-            finalFrame: targetFrame,
-            corner: target.corner,
-            reducedMotion: reducedMotionProvider(),
-            clock: clock
-        )
-        animator.onSample = { [weak self] sample in
-            self?.consume(sample)
-        }
+        let animator = makeAnimator(finalFrame: targetFrame, corner: target.corner)
 
         self.animator = animator
         phase = .returning
@@ -288,6 +359,31 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         apply(initialSample)
         emit(.beganClosing(screenID: screenID))
         animator.startTicker()
+    }
+
+    private func makeAnimator(finalFrame: CGRect, corner: TriggerCorner) -> PanelAnimator {
+        let animator = PanelAnimator(
+            finalFrame: finalFrame,
+            corner: corner,
+            reducedMotion: reducedMotionProvider(),
+            clock: clock
+        )
+        animator.onSample = { [weak self, weak animator] sample in
+            guard let self, self.animator === animator else { return }
+            self.consume(sample)
+        }
+        return animator
+    }
+
+    private func makeCompletedOpeningAnimator(
+        finalFrame: CGRect,
+        corner: TriggerCorner
+    ) -> PanelAnimator {
+        let animator = makeAnimator(finalFrame: finalFrame, corner: corner)
+        let startTime = clock()
+        _ = animator.startOpening(at: startTime)
+        _ = animator.sample(at: startTime + PanelAnimator.standardOpeningDuration)
+        return animator
     }
 
     private func consume(_ sample: PanelAnimationSample) {
@@ -392,7 +488,7 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         if panel.contentSize != clampedSize {
             panel.setContentSize(clampedSize)
         }
-        pinnedSizeStore.save(clampedSize)
+        savePinnedSize(clampedSize)
     }
 
     func windowDidEndLiveResize(_ notification: Notification) {

@@ -150,8 +150,8 @@ struct CapturePanelView: View {
             }
         case .archive:
             ArchiveView(viewModel: archiveViewModel)
-        case let destination:
-            placeholder(destination: destination)
+        case .settings:
+            EmptyView()
         }
     }
 

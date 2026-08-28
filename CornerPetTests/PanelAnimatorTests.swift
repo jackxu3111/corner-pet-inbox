@@ -329,6 +329,207 @@ final class CornerPanelTests: XCTestCase {
         XCTAssertEqual(events.last, .beganClosing(screenID: 2))
     }
 
+    func testScreenDisconnectMovesOpenUnpinnedPanelToPrimaryFallback() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let originalScreenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == originalScreenID ? screen : nil
+            },
+            corner: .topRight,
+            clock: { now },
+            reducedMotionProvider: { true },
+            pinnedSizeStore: PinnedPanelSizeStore(defaults: UserDefaults(
+                suiteName: "CornerPet.ScreenDisconnectUnpinned.\(UUID().uuidString)"
+            )!)
+        )
+        controller.present(screenID: originalScreenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        let fallback = ScreenSnapshot(
+            id: 999,
+            frame: CGRect(x: 2_000, y: 100, width: 1_200, height: 800),
+            visibleFrame: CGRect(x: 2_000, y: 100, width: 1_200, height: 760)
+        )
+
+        controller.handleScreenConfigurationChange(ScreenConfiguration(
+            allScreens: [fallback],
+            enabledScreens: [fallback],
+            primaryDisplayID: fallback.id
+        ))
+
+        XCTAssertEqual(controller.currentScreenID, fallback.id)
+        XCTAssertEqual(
+            controller.panel?.frame,
+            PanelPositioner.frame(
+                inside: fallback.visibleFrame,
+                corner: .topRight,
+                size: PinnedPanelSizeStore.defaultSize
+            )
+        )
+    }
+
+    func testScreenDisconnectDuringOpeningRetargetsAnimationToPrimaryFallback() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let originalScreenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == originalScreenID ? screen : nil
+            },
+            corner: .topRight,
+            clock: { now },
+            reducedMotionProvider: { true },
+            pinnedSizeStore: PinnedPanelSizeStore(defaults: UserDefaults(
+                suiteName: "CornerPet.ScreenDisconnectOpening.\(UUID().uuidString)"
+            )!)
+        )
+        defer { controller.panel?.orderOut(nil) }
+        controller.present(screenID: originalScreenID)
+        now = 0.040
+        _ = controller.tick(at: now)
+        let fallback = ScreenSnapshot(
+            id: 999,
+            frame: CGRect(x: 2_000, y: 100, width: 1_200, height: 800),
+            visibleFrame: CGRect(x: 2_000, y: 100, width: 1_200, height: 760)
+        )
+
+        controller.handleScreenConfigurationChange(ScreenConfiguration(
+            allScreens: [fallback],
+            enabledScreens: [fallback],
+            primaryDisplayID: fallback.id
+        ))
+        now = 0.160
+        _ = controller.tick(at: now)
+
+        XCTAssertEqual(controller.currentScreenID, fallback.id)
+        XCTAssertEqual(
+            controller.panel?.frame,
+            PanelPositioner.frame(
+                inside: fallback.visibleFrame,
+                corner: .topRight,
+                size: PinnedPanelSizeStore.defaultSize
+            )
+        )
+    }
+
+    func testScreenDisconnectDuringReturnRetargetsAnimationToPrimaryFallback() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let originalScreenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        let originalGeometry = PanelScreenGeometry(
+            id: originalScreenID,
+            frame: screen.frame,
+            visibleFrame: screen.visibleFrame
+        )
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == originalScreenID ? screen : nil
+            },
+            screensProvider: { [originalGeometry] },
+            corner: .topLeft,
+            clock: { now },
+            reducedMotionProvider: { true },
+            pinnedSizeStore: PinnedPanelSizeStore(defaults: UserDefaults(
+                suiteName: "CornerPet.ScreenDisconnectReturning.\(UUID().uuidString)"
+            )!)
+        )
+        defer { controller.panel?.orderOut(nil) }
+        controller.present(screenID: originalScreenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        controller.setPinned(true)
+        controller.panel?.setFrameOrigin(CGPoint(
+            x: screen.visibleFrame.minX + 100,
+            y: screen.visibleFrame.maxY - PinnedPanelSizeStore.defaultSize.height - 100
+        ))
+        controller.setPinned(false)
+        controller.returnToCorner()
+        now = 0.160
+        _ = controller.tick(at: now)
+        let fallback = ScreenSnapshot(
+            id: 999,
+            frame: CGRect(x: 2_000, y: 100, width: 1_200, height: 800),
+            visibleFrame: CGRect(x: 2_000, y: 100, width: 1_200, height: 760)
+        )
+
+        controller.handleScreenConfigurationChange(ScreenConfiguration(
+            allScreens: [fallback],
+            enabledScreens: [fallback],
+            primaryDisplayID: fallback.id
+        ))
+        now = 0.280
+        _ = controller.tick(at: now)
+
+        XCTAssertEqual(controller.currentScreenID, fallback.id)
+        XCTAssertEqual(
+            controller.panel?.frame,
+            PanelPositioner.frame(
+                inside: fallback.visibleFrame,
+                corner: .topLeft,
+                size: PinnedPanelSizeStore.defaultSize
+            )
+        )
+    }
+
+    func testScreenDisconnectKeepsPinnedPanelSizeAndClampsItIntoPrimaryFallback() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let originalScreenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == originalScreenID ? screen : nil
+            },
+            clock: { now },
+            reducedMotionProvider: { true }
+        )
+        controller.present(screenID: originalScreenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        controller.setPinned(true)
+        let movedFrame = CGRect(x: -5_000, y: -4_000, width: 420, height: 520)
+        controller.panel?.setFrame(movedFrame, display: false)
+        let fallback = ScreenSnapshot(
+            id: 999,
+            frame: CGRect(x: 2_000, y: 100, width: 1_200, height: 800),
+            visibleFrame: CGRect(x: 2_000, y: 100, width: 1_200, height: 760)
+        )
+
+        controller.handleScreenConfigurationChange(ScreenConfiguration(
+            allScreens: [fallback],
+            enabledScreens: [fallback],
+            primaryDisplayID: fallback.id
+        ))
+
+        XCTAssertEqual(controller.currentScreenID, fallback.id)
+        XCTAssertEqual(controller.panel?.frame.size, movedFrame.size)
+        XCTAssertTrue(fallback.visibleFrame.contains(controller.panel?.frame ?? .zero))
+    }
+
+    func testBringForwardPreservesPinnedPanelFrameAndState() throws {
+        let screen = try XCTUnwrap(NSScreen.screens.first)
+        let screenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in requestedID == screenID ? screen : nil },
+            clock: { now },
+            reducedMotionProvider: { true }
+        )
+        controller.present(screenID: screenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        controller.setPinned(true)
+        let pinnedFrame = CGRect(x: 140, y: 180, width: 410, height: 510)
+        controller.panel?.setFrame(pinnedFrame, display: false)
+
+        controller.bringForward()
+
+        XCTAssertTrue(controller.isPinned)
+        XCTAssertEqual(controller.panel?.frame, pinnedFrame)
+        XCTAssertTrue(controller.panel?.isVisible == true)
+    }
+
     func testControllerCancelsCloseWhenReentryReversesDuringReturn() throws {
         guard let screen = NSScreen.screens.first else {
             throw XCTSkip("A screen is required for unpin reversal tests")
@@ -1330,7 +1531,146 @@ final class PanelTickerAndControllerTests: XCTestCase {
         XCTAssertEqual(toggleCount, 1)
     }
 
+    func testCommandCommaFromCornerPanelPerformsTheSettingsMenuCommand() throws {
+        let previousMainMenu = NSApp.mainMenu
+        defer { NSApp.mainMenu = previousMainMenu }
+
+        let actionSpy = SettingsMenuActionSpy()
+        let settingsItem = NSMenuItem(
+            title: "Settings",
+            action: #selector(SettingsMenuActionSpy.openSettings(_:)),
+            keyEquivalent: ","
+        )
+        settingsItem.keyEquivalentModifierMask = [.command]
+        settingsItem.target = actionSpy
+        let menu = NSMenu()
+        menu.addItem(settingsItem)
+        NSApp.mainMenu = menu
+
+        let panel = CornerPanel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 400))
+        let event = try XCTUnwrap(NSEvent.keyEvent(
+            with: .keyDown,
+            location: .zero,
+            modifierFlags: [.command],
+            timestamp: 0.120,
+            windowNumber: panel.windowNumber,
+            context: nil,
+            characters: ",",
+            charactersIgnoringModifiers: ",",
+            isARepeat: false,
+            keyCode: 43
+        ))
+
+        panel.sendEvent(event)
+        Self.waitForSettingsAction(actionSpy)
+        XCTAssertEqual(actionSpy.openSettingsCallCount, 1)
+    }
+
+    func testCommandCommaUsesCharacterSemanticsAcrossKeyboardLayouts() throws {
+        let previousMainMenu = NSApp.mainMenu
+        defer { NSApp.mainMenu = previousMainMenu }
+
+        let actionSpy = SettingsMenuActionSpy()
+        NSApp.mainMenu = Self.settingsMenu(target: actionSpy)
+        let panel = CornerPanel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 400))
+        let event = try XCTUnwrap(Self.keyEvent(
+            characters: ",",
+            modifiers: [.command],
+            keyCode: 0,
+            windowNumber: panel.windowNumber
+        ))
+
+        XCTAssertTrue(panel.performKeyEquivalent(with: event))
+        Self.waitForSettingsAction(actionSpy)
+        XCTAssertEqual(actionSpy.openSettingsCallCount, 1)
+    }
+
+    func testCommandCommaAllowsCapsLockModifier() throws {
+        let previousMainMenu = NSApp.mainMenu
+        defer { NSApp.mainMenu = previousMainMenu }
+
+        let actionSpy = SettingsMenuActionSpy()
+        NSApp.mainMenu = Self.settingsMenu(target: actionSpy)
+        let panel = CornerPanel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 400))
+        let event = try XCTUnwrap(Self.keyEvent(
+            characters: ",",
+            modifiers: [.command, .capsLock],
+            keyCode: 43,
+            windowNumber: panel.windowNumber
+        ))
+
+        XCTAssertTrue(panel.performKeyEquivalent(with: event))
+        Self.waitForSettingsAction(actionSpy)
+        XCTAssertEqual(actionSpy.openSettingsCallCount, 1)
+    }
+
+    func testCommandKeyCode43WithoutCommaDoesNotPerformSettingsCommand() throws {
+        let previousMainMenu = NSApp.mainMenu
+        defer { NSApp.mainMenu = previousMainMenu }
+
+        let actionSpy = SettingsMenuActionSpy()
+        NSApp.mainMenu = Self.settingsMenu(target: actionSpy)
+        let panel = CornerPanel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 400))
+        let event = try XCTUnwrap(Self.keyEvent(
+            characters: ".",
+            modifiers: [.command],
+            keyCode: 43,
+            windowNumber: panel.windowNumber
+        ))
+
+        XCTAssertFalse(panel.performKeyEquivalent(with: event))
+        XCTAssertEqual(actionSpy.openSettingsCallCount, 0)
+    }
+
+    private static func settingsMenu(target: SettingsMenuActionSpy) -> NSMenu {
+        let settingsItem = NSMenuItem(
+            title: "Settings",
+            action: #selector(SettingsMenuActionSpy.openSettings(_:)),
+            keyEquivalent: ","
+        )
+        settingsItem.keyEquivalentModifierMask = [.command]
+        settingsItem.target = target
+        let menu = NSMenu()
+        menu.addItem(settingsItem)
+        return menu
+    }
+
+    private static func waitForSettingsAction(_ actionSpy: SettingsMenuActionSpy) {
+        let deadline = Date().addingTimeInterval(1)
+        while actionSpy.openSettingsCallCount == 0, Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.01))
+        }
+    }
+
+    private static func keyEvent(
+        characters: String,
+        modifiers: NSEvent.ModifierFlags,
+        keyCode: UInt16,
+        windowNumber: Int
+    ) -> NSEvent? {
+        NSEvent.keyEvent(
+            with: .keyDown,
+            location: .zero,
+            modifierFlags: modifiers,
+            timestamp: 0.120,
+            windowNumber: windowNumber,
+            context: nil,
+            characters: characters,
+            charactersIgnoringModifiers: characters,
+            isARepeat: false,
+            keyCode: keyCode
+        )
+    }
+
     private static func displayID(for screen: NSScreen) -> UInt32 {
         (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+    }
+}
+
+private final class SettingsMenuActionSpy: NSObject {
+    private(set) var openSettingsCallCount = 0
+
+    @objc func openSettings(_ sender: Any?) {
+        openSettingsCallCount += 1
     }
 }

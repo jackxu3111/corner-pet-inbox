@@ -22,7 +22,11 @@ final class AppConfigurationTests: XCTestCase {
         let ungated = AppLaunchOptions(arguments: [
             "CornerPet",
             "--cornerpet-memory-store",
-            "--cornerpet-open-capture"
+            "--cornerpet-open-capture",
+            "--cornerpet-ui-open-capture-without-activation",
+            "--cornerpet-ui-delete-failure",
+            "--cornerpet-ui-keep-capture-open",
+            "--cornerpet-ui-command-comma-signal"
         ])
         let gated = AppLaunchOptions(arguments: [
             "CornerPet",
@@ -37,19 +41,92 @@ final class AppConfigurationTests: XCTestCase {
             "--cornerpet-open-capture",
             "--cornerpet-ui-delete-failure"
         ])
+        let keepOpenFixture = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-keep-capture-open"
+        ])
+        let nonactivatingOpenFixture = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-open-capture-without-activation",
+            "--cornerpet-ui-command-comma-signal"
+        ])
 
         XCTAssertFalse(ungated.usesInMemoryStore)
         XCTAssertFalse(ungated.opensCapture)
         XCTAssertFalse(ungated.usesDeleteFailureFixture)
+        XCTAssertFalse(ungated.keepsCaptureOpen)
+        XCTAssertFalse(ungated.opensCaptureWithoutActivation)
+        XCTAssertFalse(ungated.handlesCommandCommaSignal)
         XCTAssertTrue(gated.usesInMemoryStore)
         XCTAssertTrue(gated.opensCapture)
+        XCTAssertFalse(gated.opensCaptureWithoutActivation)
         XCTAssertFalse(gated.usesDeleteFailureFixture)
         XCTAssertTrue(failureFixture.usesDeleteFailureFixture)
+        XCTAssertTrue(keepOpenFixture.keepsCaptureOpen)
+        XCTAssertTrue(nonactivatingOpenFixture.opensCapture)
+        XCTAssertTrue(nonactivatingOpenFixture.opensCaptureWithoutActivation)
+        XCTAssertTrue(nonactivatingOpenFixture.handlesCommandCommaSignal)
     }
 }
 
 @MainActor
 final class AppDelegateIntegrationTests: XCTestCase {
+    func testDisplayScopeChangesImmediatelyReconfigureRuntimeTriggerScreens() {
+        let first = ScreenSnapshot(
+            id: 101,
+            frame: CGRect(x: 0, y: 0, width: 1_440, height: 900),
+            visibleFrame: CGRect(x: 0, y: 0, width: 1_440, height: 875)
+        )
+        let second = ScreenSnapshot(
+            id: 202,
+            frame: CGRect(x: 1_440, y: 0, width: 1_920, height: 1_080),
+            visibleFrame: CGRect(x: 1_440, y: 0, width: 1_920, height: 1_055)
+        )
+        let settings = AppSettings(defaults: UserDefaults(
+            suiteName: "CornerPet.AppDelegateDisplayScope.\(UUID().uuidString)"
+        )!)
+        let screenCoordinator = ScreenCoordinator(
+            screensProvider: { [first, second] },
+            primaryDisplayIDProvider: { first.id }
+        )
+        let panel = makePanelController()
+        let trigger = CornerTriggerCoordinator(
+            screenSnapshotsProvider: { [] },
+            pointerLocationProvider: { CGPoint(x: 500, y: 500) },
+            presentPanel: { _ in },
+            reverseClosingPanel: { _ in }
+        )
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { panel },
+            triggerCoordinatorFactory: { _ in trigger },
+            appSettings: settings,
+            screenCoordinator: screenCoordinator
+        )
+
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+        XCTAssertEqual(trigger.triggerScreenIDs, [101])
+
+        settings.setDisplayScope(.all)
+
+        XCTAssertEqual(trigger.triggerScreenIDs, [101, 202])
+    }
+
+    func testNormalAndLoginLaunchPathStayHiddenUntilExplicitlyTriggered() throws {
+        let panel = makePanelController()
+        let coordinator = try makeCoordinator()
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { panel },
+            triggerCoordinatorFactory: { _ in coordinator }
+        )
+
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+
+        XCTAssertFalse(panel.isVisible)
+        XCTAssertTrue(coordinator.isRunning)
+    }
+
     func testLaunchAlwaysCreatesMainScreenTopLeftTriggerWithoutPermissionGate() throws {
         var panelFactoryCalls = 0
         var coordinatorFactoryCalls = 0
@@ -106,7 +183,7 @@ final class AppDelegateIntegrationTests: XCTestCase {
         let defaults = UserDefaults(
             suiteName: "CornerPet.AppDelegateCornerTests.\(UUID().uuidString)"
         )!
-        let cornerStore = TriggerCornerStore(defaults: defaults)
+        let settings = AppSettings(defaults: defaults)
         let panel = makePanelController()
         let coordinator = CornerTriggerCoordinator(
             screenProvider: { screen },
@@ -120,7 +197,7 @@ final class AppDelegateIntegrationTests: XCTestCase {
         let appDelegate = AppDelegate(
             panelControllerFactory: { panel },
             triggerCoordinatorFactory: { _ in coordinator },
-            triggerCornerStore: cornerStore
+            appSettings: settings
         )
         appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
 
@@ -182,7 +259,7 @@ final class AppDelegateIntegrationTests: XCTestCase {
         let appDelegate = AppDelegate(
             panelControllerFactory: { panel },
             triggerCoordinatorFactory: { _ in coordinator },
-            triggerCornerStore: TriggerCornerStore(defaults: defaults)
+            appSettings: AppSettings(defaults: defaults)
         )
         appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
 

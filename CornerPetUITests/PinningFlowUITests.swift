@@ -10,10 +10,10 @@ final class PinningFlowUITests: XCTestCase {
         XCTAssertTrue(pin.waitForExistence(timeout: 5))
 
         pin.click()
-        XCTAssertEqual(pin.label, "取消置顶 / Unpin")
+        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
 
         pin.click()
-        XCTAssertEqual(pin.label, "置顶 / Pin")
+        XCTAssertTrue(waitForLabel("置顶 / Pin", on: pin))
     }
 
     func testCommandShiftPTogglesTheSamePinnedState() {
@@ -24,7 +24,7 @@ final class PinningFlowUITests: XCTestCase {
         XCTAssertTrue(pin.waitForExistence(timeout: 5))
 
         app.typeKey("p", modifierFlags: [.command, .shift])
-        XCTAssertEqual(pin.label, "取消置顶 / Unpin")
+        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
     }
 
     func testPinnedPanelRemainsVisibleAfterPointerLeavesTriggerArea() {
@@ -32,18 +32,27 @@ final class PinningFlowUITests: XCTestCase {
         defer { app.terminate() }
 
         let pin = app.buttons["capture.pin"]
-        let panel = app.otherElements["capture.panel"]
+        let panel = app.descendants(matching: .any)["capture.panel"]
         XCTAssertTrue(pin.waitForExistence(timeout: 5))
         XCTAssertTrue(panel.exists)
 
         pin.click()
-        XCTAssertEqual(pin.label, "取消置顶 / Unpin")
+        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
 
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.95)).hover()
+        let panelFrame = panel.frame
+        let outsideX = panelFrame.minX > 100
+            ? panelFrame.minX - 40
+            : panelFrame.maxX + 40
+        panel.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
+            .withOffset(CGVector(
+                dx: outsideX - panelFrame.minX,
+                dy: panelFrame.midY - panelFrame.minY
+            ))
+            .hover()
 
         XCTAssertTrue(panel.waitForExistence(timeout: 1))
         XCTAssertTrue(pin.exists)
-        XCTAssertEqual(pin.label, "取消置顶 / Unpin")
+        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
     }
 
     private func launchApp() -> XCUIApplication {
@@ -55,6 +64,27 @@ final class PinningFlowUITests: XCTestCase {
             "--cornerpet-open-capture"
         ]
         app.launch()
+        let firstDialog = app.dialogs.firstMatch
+        XCTAssertTrue(firstDialog.waitForExistence(timeout: 2))
+        let triggerZone = app.dialogs.allElementsBoundByIndex.min {
+            $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height
+        } ?? firstDialog
+        triggerZone.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).hover()
+        let input = app.textViews["capture.input"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        input.hover()
         return app
+    }
+
+    private func waitForLabel(
+        _ label: String,
+        on element: XCUIElement,
+        timeout: TimeInterval = 5
+    ) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", label),
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

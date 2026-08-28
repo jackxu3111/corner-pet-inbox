@@ -65,14 +65,24 @@ final class CornerPanel: NSPanel {
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        guard event.keyCode == 35,
-              modifiers == [.command, .shift] else {
-            return super.performKeyEquivalent(with: event)
+        let modifiers = event.modifierFlags.intersection([.command, .shift, .option, .control])
+
+        if event.keyCode == 35,
+           modifiers == [.command, .shift] {
+            onTogglePin?()
+            return true
         }
 
-        onTogglePin?()
-        return true
+        if event.charactersIgnoringModifiers == ",",
+           modifiers == [.command] {
+            NSApp.activate()
+            DispatchQueue.main.async {
+                _ = NSApp.mainMenu?.performKeyEquivalent(with: event)
+            }
+            return true
+        }
+
+        return super.performKeyEquivalent(with: event)
     }
 
     override func sendEvent(_ event: NSEvent) {

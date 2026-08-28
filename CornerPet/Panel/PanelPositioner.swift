@@ -60,6 +60,16 @@ struct PanelPositioner {
         }
     }
 
+    static func clampedFrame(_ frame: CGRect, inside visibleFrame: CGRect) -> CGRect {
+        let width = min(frame.width, visibleFrame.width)
+        let height = min(frame.height, visibleFrame.height)
+        let origin = CGPoint(
+            x: min(max(frame.minX, visibleFrame.minX), visibleFrame.maxX - width),
+            y: min(max(frame.minY, visibleFrame.minY), visibleFrame.maxY - height)
+        )
+        return CGRect(origin: origin, size: CGSize(width: width, height: height))
+    }
+
     static func returnTarget(
         for panelFrame: CGRect,
         screens: [PanelScreenGeometry],
