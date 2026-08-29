@@ -192,13 +192,13 @@ git commit -m "test: stabilize macOS UI automation environment"
 - Consumes: the exact Task 12 `Draft` and `IdeaItem` shapes and `CornerPetContent` configuration.
 - Produces: `CornerPetSchemaV1`, `CornerPetMigrationPlan`, stable top-level `Draft`/`IdeaItem` aliases, and a factory that always supplies the migration plan.
 
-- [ ] **Step 1: Generate a synthetic legacy fixture before changing production models**
+- [x] **Step 1: Generate a synthetic legacy fixture before changing production models**
 
 Temporarily add a test-only generator to `ModelContainerFactoryTests` that uses the current unversioned factory to write synthetic data with fixed UUIDs, all three buckets, and fixed timestamps. Run only the generator, checkpoint WAL data into the main SQLite file, place the result at `CornerPetTests/Fixtures/Task12Legacy.store`, then remove the generator method before committing.
 
 The fixture contains synthetic strings only and no user data.
 
-- [ ] **Step 2: Write failing migration and schema tests**
+- [x] **Step 2: Write failing migration and schema tests**
 
 Add tests that assert:
 
@@ -210,7 +210,7 @@ XCTAssertTrue(CornerPetMigrationPlan.stages.isEmpty)
 
 Locate the fixture relative to `#filePath`, copy `Task12Legacy.store` to a temporary directory, open the copy with `ModelContainerFactory.make(at:)`, and assert exact draft text/date plus exact item UUID, text, bucket, and timestamps. Close and reopen the same migrated copy and assert the same values again. The fixture is source test data, not a test-bundle resource.
 
-- [ ] **Step 3: Run focused tests and verify RED**
+- [x] **Step 3: Run focused tests and verify RED**
 
 Run:
 
@@ -223,7 +223,7 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild test \
 
 Expected: compilation fails because the versioned schema and migration plan do not exist.
 
-- [ ] **Step 4: Implement the frozen V1 schema**
+- [x] **Step 4: Implement the frozen V1 schema**
 
 Create:
 
@@ -248,7 +248,7 @@ typealias IdeaItem = CornerPetSchemaV1.IdeaItem
 
 Do not change stored properties or defaults.
 
-- [ ] **Step 5: Route every container through the migration plan**
+- [x] **Step 5: Route every container through the migration plan**
 
 Use:
 
@@ -264,11 +264,11 @@ return try ModelContainer(
 
 Keep `CornerPetContent`, test configuration names, CloudKit disabled state, and store URL behavior unchanged.
 
-- [ ] **Step 6: Add project references and run focused tests until GREEN**
+- [x] **Step 6: Add project references and run focused tests until GREEN**
 
 Run the command from Step 3 and require exact fixture migration plus second reopen to pass.
 
-- [ ] **Step 7: Run all persistence tests**
+- [x] **Step 7: Run all persistence tests**
 
 Run:
 
@@ -282,11 +282,11 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild test \
   -only-testing:CornerPetTests/ItemLifecycleTests
 ```
 
-- [ ] **Step 8: Document the migration contract**
+- [x] **Step 8: Document the migration contract**
 
 In `docs/persistence.md`, explain V1 immutability, how to add V2 and a migration stage, the unchanged store location, fixture provenance, backup expectations, and the prohibition on deleting a failed production store.
 
-- [ ] **Step 9: Review and commit the persistence increment**
+- [x] **Step 9: Review and commit the persistence increment**
 
 ```bash
 git diff --check

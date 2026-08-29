@@ -28,6 +28,7 @@
 		1000000000000000000000A0 /* Draft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B0 /* Draft.swift */; };
 		1000000000000000000000A1 /* IdeaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* IdeaItem.swift */; };
 		1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* ModelContainerFactory.swift */; };
+		900000000000000000000001 /* CornerPetSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000000000000000000002 /* CornerPetSchema.swift */; };
 		1000000000000000000000A3 /* ModelContainerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* ModelContainerFactoryTests.swift */; };
 		1000000000000000000000A4 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* DraftStore.swift */; };
 		1000000000000000000000A5 /* DraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B5 /* DraftStoreTests.swift */; };
@@ -135,6 +136,7 @@
 		1000000000000000000000B0 /* Draft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Draft.swift; sourceTree = "<group>"; };
 		1000000000000000000000B1 /* IdeaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdeaItem.swift; sourceTree = "<group>"; };
 		1000000000000000000000B2 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
+		900000000000000000000002 /* CornerPetSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetSchema.swift; sourceTree = "<group>"; };
 		1000000000000000000000B3 /* ModelContainerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactoryTests.swift; sourceTree = "<group>"; };
 		1000000000000000000000B4 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
 		1000000000000000000000B5 /* DraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStoreTests.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 		1000000000000000000000C0 /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
+				900000000000000000000002 /* CornerPetSchema.swift */,
 				1000000000000000000000B0 /* Draft.swift */,
 				1000000000000000000000B1 /* IdeaItem.swift */,
 				1000000000000000000000B2 /* ModelContainerFactory.swift */,
@@ -618,6 +621,7 @@
 				1000000000000000000000A0 /* Draft.swift in Sources */,
 				1000000000000000000000A1 /* IdeaItem.swift in Sources */,
 				1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */,
+				900000000000000000000001 /* CornerPetSchema.swift in Sources */,
 				1000000000000000000000A4 /* DraftStore.swift in Sources */,
 				1000000000000000000000A6 /* ItemStore.swift in Sources */,
 				1000000000000000000000E1 /* CaptureKeyboardPolicy.swift in Sources */,
