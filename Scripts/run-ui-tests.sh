@@ -7,13 +7,19 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 ABC_INPUT_SOURCE="com.apple.keylayout.ABC"
 MODE="run"
 
-if [[ "${1:-}" == "--preflight-only" ]]; then
-    MODE="preflight"
-    shift
-fi
+case "${1:-}" in
+    --preflight-only)
+        MODE="preflight"
+        shift
+        ;;
+    --probe-only)
+        MODE="probe"
+        shift
+        ;;
+esac
 
 if [[ $# -ne 0 ]]; then
-    echo "usage: Scripts/run-ui-tests.sh [--preflight-only]" >&2
+    echo "usage: Scripts/run-ui-tests.sh [--preflight-only|--probe-only]" >&2
     exit 64
 fi
 
@@ -82,9 +88,13 @@ finish() {
     if [[ "$INPUT_SOURCE_EXPECTATION_ESTABLISHED" -eq 1 ]]; then
         final_active_input_source="$($INPUT_SOURCE_TOOL current 2>/dev/null)" || true
         if [[ "$final_active_input_source" != "$ABC_INPUT_SOURCE" ]]; then
-            echo "error: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
-            CLASSIFICATION="input-source-drift"
-            FINAL_STATUS=75
+            if [[ "$FINAL_STATUS" -eq 0 ]]; then
+                echo "error: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
+                CLASSIFICATION="input-source-drift"
+                FINAL_STATUS=75
+            else
+                echo "warning: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
+            fi
         fi
     fi
 
@@ -191,6 +201,7 @@ if [[ "$ACTIVE_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
 fi
 
 echo "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=$ACTIVE_INPUT_SOURCE"
+echo "CORNERPET_UI_TEST_MODE=$MODE"
 INPUT_SOURCE_EXPECTATION_ESTABLISHED=1
 
 if [[ "$ORIGINAL_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
@@ -223,13 +234,18 @@ LOG_PATH="$EVIDENCE_DIR/CornerPetUITests.log"
 RESULT_BUNDLE_PATH="$EVIDENCE_DIR/CornerPetUITests.xcresult"
 
 set +e
+ONLY_TESTING_TARGET="CornerPetUITests"
+if [[ "$MODE" == "probe" ]]; then
+    ONLY_TESTING_TARGET="CornerPetUITests/CornerPetLaunchTests/testApplicationLaunchesWithoutMainWindow"
+fi
+
 DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" "$XCODEBUILD" test \
     -project "$PROJECT_ROOT/CornerPet.xcodeproj" \
     -scheme CornerPet \
     -configuration Debug \
     -destination "platform=macOS,arch=arm64" \
     -parallel-testing-enabled NO \
-    -only-testing:CornerPetUITests \
+    "-only-testing:$ONLY_TESTING_TARGET" \
     -resultBundlePath "$RESULT_BUNDLE_PATH" \
     2>&1 | tee "$LOG_PATH"
 XCODE_STATUS=${PIPESTATUS[0]}
