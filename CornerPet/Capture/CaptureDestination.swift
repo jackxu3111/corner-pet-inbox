@@ -1,4 +1,5 @@
 import CoreGraphics
+import Foundation
 
 enum CaptureDestination: String, CaseIterable, Identifiable {
     case inbox
@@ -8,21 +9,12 @@ enum CaptureDestination: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var chineseTitle: String {
+    var title: LocalizedStringResource {
         switch self {
-        case .inbox: "收件箱"
-        case .favorites: "收藏"
-        case .archive: "归档"
-        case .settings: "设置"
-        }
-    }
-
-    var englishTitle: String {
-        switch self {
-        case .inbox: "Inbox"
-        case .favorites: "Favorites"
-        case .archive: "Archive"
-        case .settings: "Settings"
+        case .inbox: L10n.navInbox
+        case .favorites: L10n.navFavorites
+        case .archive: L10n.navArchive
+        case .settings: L10n.navSettings
         }
     }
 

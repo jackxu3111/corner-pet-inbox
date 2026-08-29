@@ -5,6 +5,7 @@ struct FavoritesView: View {
     let focusRequest: Int
 
     @FocusState private var searchIsFocused: Bool
+    @Environment(\.locale) private var locale
 
     var body: some View {
         VStack(spacing: 8) {
@@ -41,19 +42,23 @@ struct FavoritesView: View {
             LibrarySearchFocusRouting.requestFocus { searchIsFocused = $0 }
         }
         .confirmationDialog(
-            "永久删除此想法？ / Delete this idea permanently?",
+            L10n.localized(L10n.deleteConfirmation, locale: locale),
             isPresented: Binding(
                 get: { viewModel.pendingDeletion != nil },
                 set: { if !$0 { viewModel.dismissDeleteConfirmation() } }
             ),
             titleVisibility: .visible
         ) {
-            Button("永久删除 / Delete", role: .destructive) {
+            Button(role: .destructive) {
                 _ = viewModel.confirmDelete()
+            } label: {
+                Text(L10n.delete)
             }
             .accessibilityIdentifier("favorites.delete.confirm")
-            Button("取消 / Cancel", role: .cancel) {
+            Button(role: .cancel) {
                 viewModel.cancelDelete()
+            } label: {
+                Text(L10n.cancel)
             }
             .accessibilityIdentifier("favorites.delete.cancel")
         }
@@ -65,7 +70,7 @@ struct FavoritesView: View {
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
             TextField(
-                "搜索收藏 / Search Favorites",
+                L10n.localized(L10n.favoritesSearch, locale: locale),
                 text: Binding(
                     get: { viewModel.query },
                     set: viewModel.search
@@ -81,7 +86,7 @@ struct FavoritesView: View {
                     Image(systemName: "xmark.circle.fill")
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("清除搜索 / Clear search")
+                .accessibilityLabel(Text(L10n.clearSearch))
                 .accessibilityIdentifier("favorites.search.clear")
             }
         }
@@ -93,7 +98,7 @@ struct FavoritesView: View {
             Image(systemName: "star")
                 .font(.system(size: 24, weight: .light))
                 .foregroundStyle(.tertiary)
-            Text(viewModel.query.isEmpty ? "还没有收藏 / No favorites yet" : "没有匹配项 / No matches")
+            Text(viewModel.query.isEmpty ? L10n.favoritesEmpty : L10n.noMatches)
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -107,9 +112,11 @@ struct FavoritesView: View {
             Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(.orange)
-            Text("收藏加载失败 / Couldn’t load Favorites")
+            Text(L10n.favoritesLoadFailed)
                 .font(.callout)
-            Button("重试 / Retry", action: viewModel.retryLoad)
+            Button(action: viewModel.retryLoad) {
+                Text(L10n.retry)
+            }
                 .accessibilityIdentifier("favorites.error.retry")
         }
         .frame(maxWidth: .infinity, minHeight: 150)
@@ -186,13 +193,15 @@ private struct FavoriteItemRow: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .onTapGesture(count: 2) {
-                            guard editViewModel?.beginEditing(item) == true else { return }
-                            focusRequest &+= 1
+                            beginEditing()
+                        }
+                        .accessibilityAction(named: Text(L10n.accessibilityEditAction)) {
+                            beginEditing()
                         }
                 }
 
                 Text(item.movedAt, format: .dateTime.month().day().hour().minute())
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
 
                 if hasDeleteError {
@@ -208,8 +217,8 @@ private struct FavoriteItemRow: View {
                         .foregroundStyle(hasError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help("取消收藏 / Remove favorite")
-                .accessibilityLabel("取消收藏 / Remove favorite")
+                .help(Text(L10n.favoriteRemove))
+                .accessibilityLabel(Text(L10n.favoriteRemove))
                 .accessibilityIdentifier("favorites.item.unfavorite.\(item.id.uuidString)")
 
                 Button(action: onDelete) {
@@ -217,8 +226,8 @@ private struct FavoriteItemRow: View {
                         .foregroundStyle(hasDeleteError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help("永久删除 / Delete permanently")
-                .accessibilityLabel("永久删除 / Delete permanently")
+                .help(Text(L10n.deletePermanent))
+                .accessibilityLabel(Text(L10n.deletePermanent))
                 .accessibilityIdentifier("favorites.item.delete.\(item.id.uuidString)")
             }
             .disabled(editViewModel?.isEditing(item.id) == true)
@@ -232,5 +241,10 @@ private struct FavoriteItemRow: View {
             guard activeID == item.id else { return }
             focusRequest &+= 1
         }
+    }
+
+    private func beginEditing() {
+        guard editViewModel?.beginEditing(item) == true else { return }
+        focusRequest &+= 1
     }
 }

@@ -17,24 +17,27 @@ struct CatReminderView: View {
                 .offset(y: reduceMotion || isPresented ? 0 : corner.isTopEdge ? -10 : 10)
 
             VStack(spacing: 3) {
-                Text("该看看收件箱啦")
+                Text(L10n.reminderTitle)
                     .font(.headline)
-                Text("Time to check your inbox")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.center)
 
-            Button("打开收件箱 / Open Inbox", action: onOpenInbox)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityIdentifier("reminder.openInbox")
+            Button(action: onOpenInbox) {
+                Text(L10n.reminderOpenInbox)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityIdentifier("reminder.openInbox")
 
             VStack(spacing: 6) {
-                Button("10 分钟后提醒 / Remind in 10 Minutes", action: onSnooze)
-                    .accessibilityIdentifier("reminder.snooze")
-                Button("关闭 / 今天不再提醒 / Dismiss for Today", action: onDismissToday)
-                    .accessibilityIdentifier("reminder.dismissToday")
+                Button(action: onSnooze) {
+                    Text(L10n.reminderSnooze)
+                }
+                .accessibilityIdentifier("reminder.snooze")
+                Button(action: onDismissToday) {
+                    Text(L10n.reminderDismissToday)
+                }
+                .accessibilityIdentifier("reminder.dismissToday")
             }
             .buttonStyle(.bordered)
             .controlSize(.small)

@@ -62,13 +62,15 @@ struct ArchiveItemRow: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .onTapGesture(count: 2) {
-                            guard editViewModel?.beginEditing(item) == true else { return }
-                            focusRequest &+= 1
+                            beginEditing()
+                        }
+                        .accessibilityAction(named: Text(L10n.accessibilityEditAction)) {
+                            beginEditing()
                         }
                 }
 
                 Text(item.movedAt, format: .dateTime.month().day().hour().minute())
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
 
                 if hasDeleteError {
@@ -85,8 +87,8 @@ struct ArchiveItemRow: View {
                     .foregroundStyle(hasDeleteError ? .red : .secondary)
             }
             .buttonStyle(.plain)
-            .help("永久删除 / Delete permanently")
-            .accessibilityLabel("永久删除 / Delete permanently")
+            .help(Text(L10n.deletePermanent))
+            .accessibilityLabel(Text(L10n.deletePermanent))
             .accessibilityIdentifier("archive.item.delete.\(item.id.uuidString)")
             .disabled(editViewModel?.isEditing(item.id) == true)
         }
@@ -99,5 +101,10 @@ struct ArchiveItemRow: View {
             guard activeID == item.id else { return }
             focusRequest &+= 1
         }
+    }
+
+    private func beginEditing() {
+        guard editViewModel?.beginEditing(item) == true else { return }
+        focusRequest &+= 1
     }
 }

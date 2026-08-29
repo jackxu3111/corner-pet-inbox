@@ -4,6 +4,8 @@ struct CaptureNavigationBar: View {
     let selectedDestination: CaptureDestination
     let onSelect: (CaptureDestination) -> Void
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         HStack(spacing: 4) {
             ForEach(CaptureDestination.allCases) { destination in
@@ -15,7 +17,7 @@ struct CaptureNavigationBar: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("\(destination.chineseTitle) / \(destination.englishTitle)")
+                    .accessibilityLabel(Text(destination.title))
                     .accessibilityIdentifier("nav.\(destination.rawValue)")
                 } else {
                     Button {
@@ -27,8 +29,12 @@ struct CaptureNavigationBar: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("\(destination.chineseTitle) / \(destination.englishTitle)")
-                    .accessibilityValue(selectedDestination == destination ? "已选择 / Selected" : "")
+                    .accessibilityLabel(Text(destination.title))
+                    .accessibilityValue(
+                        selectedDestination == destination
+                            ? L10n.localized(L10n.accessibilitySelected, locale: locale)
+                            : ""
+                    )
                     .accessibilityIdentifier("nav.\(destination.rawValue)")
                 }
             }
@@ -46,10 +52,8 @@ private struct NavigationItemLabel: View {
         VStack(spacing: 2) {
             Image(systemName: destination.systemImage)
                 .font(.system(size: 14, weight: .semibold))
-            Text(destination.chineseTitle)
-                .font(.caption2.weight(.medium))
-            Text(destination.englishTitle)
-                .font(.caption2)
+            Text(destination.title)
+                .font(.caption.weight(.medium))
         }
         .foregroundStyle(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
         .frame(maxWidth: .infinity, maxHeight: .infinity)

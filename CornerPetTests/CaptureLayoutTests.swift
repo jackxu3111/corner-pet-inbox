@@ -19,13 +19,17 @@ final class CaptureLayoutTests: XCTestCase {
         XCTAssertEqual(CaptureLayout.inputHeight(contentHeight: 180), 110)
     }
 
-    func testDestinationsHaveExactBilingualCopy() {
+    func testDestinationsHaveExactLocalizedCopy() {
         XCTAssertEqual(
-            CaptureDestination.allCases.map(\.chineseTitle),
+            CaptureDestination.allCases.map {
+                L10n.localized($0.title, locale: Locale(identifier: "zh-Hans"))
+            },
             ["收件箱", "收藏", "归档", "设置"]
         )
         XCTAssertEqual(
-            CaptureDestination.allCases.map(\.englishTitle),
+            CaptureDestination.allCases.map {
+                L10n.localized($0.title, locale: Locale(identifier: "en"))
+            },
             ["Inbox", "Favorites", "Archive", "Settings"]
         )
     }

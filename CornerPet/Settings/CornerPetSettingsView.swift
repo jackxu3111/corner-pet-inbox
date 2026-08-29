@@ -6,96 +6,117 @@ struct CornerPetSettingsView: View {
 
     var body: some View {
         Form {
-            Section("触发 / Trigger") {
-                Picker("触发角 / Trigger corner", selection: triggerCornerBinding) {
+            Section {
+                Picker(selection: triggerCornerBinding) {
                     ForEach(TriggerCorner.allCases, id: \.rawValue) { corner in
                         Text(cornerTitle(corner)).tag(corner)
                     }
+                } label: {
+                    Text(L10n.triggerCorner)
                 }
                 .accessibilityIdentifier("settings.triggerCorner")
-                Picker("显示范围 / Displays", selection: displayScopeBinding) {
+                Picker(selection: displayScopeBinding) {
                     ForEach(DisplayScope.allCases) { scope in
                         Text(displayScopeTitle(scope)).tag(scope)
                     }
+                } label: {
+                    Text(L10n.settingsDisplayScope)
                 }
                 .accessibilityIdentifier("settings.displayScope")
-                LabeledContent("停留时间 / Dwell") {
+                LabeledContent {
                     Text(settings.fixedDwellDuration, format: .number.precision(.fractionLength(1)))
-                    Text(" 秒 / s")
+                    Text(L10n.seconds)
+                } label: {
+                    Text(L10n.settingsDwell)
                 }
+            } header: {
+                Text(L10n.triggerSection)
             }
 
-            Section("每日提醒 / Daily reminder") {
-                Toggle("启用每日提醒 / Enable daily reminder", isOn: reminderEnabledBinding)
+            Section {
+                Toggle(isOn: reminderEnabledBinding) {
+                    Text(L10n.reminderEnabled)
+                }
                     .accessibilityIdentifier("settings.reminderEnabled")
                 DatePicker(
-                    "提醒时间 / Reminder time",
                     selection: reminderDateBinding,
                     displayedComponents: .hourAndMinute
-                )
+                ) {
+                    Text(L10n.reminderTime)
+                }
                 .disabled(!settings.reminderEnabled)
                 .accessibilityIdentifier("settings.reminderTime")
-                Text("到点后，小猫会出现在所选触发角对应的屏幕侧边栏；不需要系统通知权限。")
+                Text(L10n.reminderExplanation)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Text("At reminder time, the cat appears on the screen edge beside the selected corner. No system notification permission is required.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+            } header: {
+                Text(L10n.reminderSection)
             }
 
-            Section("语言 / Language") {
-                Picker("语言偏好 / Language preference", selection: languageBinding) {
+            Section {
+                Picker(selection: languageBinding) {
                     ForEach(AppLanguage.allCases) { language in
                         Text(languageTitle(language)).tag(language)
                     }
+                } label: {
+                    Text(L10n.languagePreference)
                 }
                 .accessibilityIdentifier("settings.language")
-                Text("语言偏好已保存；完整本地化将在后续版本提供，当前界面仍保留现有中英混合文案。")
+                Text(L10n.languageExplanation)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Text("The preference is saved; full localization will arrive in a later version.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+            } header: {
+                Text(L10n.languageSection)
             }
 
-            Section("启动 / Startup") {
-                Toggle("登录时启动 / Launch at login", isOn: launchAtLoginBinding)
+            Section {
+                Toggle(isOn: launchAtLoginBinding) {
+                    Text(L10n.launchAtLogin)
+                }
                     .disabled(launchAtLogin.state == .unavailable)
                     .accessibilityIdentifier("settings.launchAtLogin")
 
                 if launchAtLogin.state == .requiresApproval {
-                    Label(
-                        "需要在系统设置中批准 / Approval required in System Settings",
-                        systemImage: "exclamationmark.circle"
-                    )
+                    Label {
+                        Text(L10n.launchApproval)
+                    } icon: {
+                        Image(systemName: "exclamationmark.circle")
+                    }
                     .foregroundStyle(.orange)
-                    Button("打开登录项设置 / Open Login Items", action: launchAtLogin.openSystemSettings)
+                    Button(action: launchAtLogin.openSystemSettings) {
+                        Text(L10n.openLoginItems)
+                    }
                 } else if launchAtLogin.state == .unavailable {
-                    Label(
-                        "当前构建无法注册登录项 / Login item unavailable in this build",
-                        systemImage: "xmark.circle"
-                    )
+                    Label {
+                        Text(L10n.launchUnavailable)
+                    } icon: {
+                        Image(systemName: "xmark.circle")
+                    }
                     .foregroundStyle(.secondary)
                 }
 
-                if let errorMessage = launchAtLogin.errorMessage {
-                    Text(errorMessage)
+                if launchAtLogin.errorMessage != nil {
+                    Text(L10n.launchError)
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .textSelection(.enabled)
                 }
+            } header: {
+                Text(L10n.startupSection)
             }
 
-            Section("热角冲突帮助 / Hot Corner conflicts") {
-                Text("CornerPet 无法检测 macOS 触发角是否冲突。若同一角落已分配系统操作，两者可能同时响应。请前往“系统设置 → 桌面与程序坞 → 触发角…”，清除该角落的系统操作，或在 CornerPet 中选择其他角落。CornerPet 不会读取或更改这些系统设置。")
+            Section {
+                Text(L10n.hotCornerConflictBody)
                     .accessibilityIdentifier("settings.conflictHelp.body")
-                Text("CornerPet can’t detect whether macOS Hot Corners conflict with this setting. Go to “System Settings → Desktop & Dock → Hot Corners…” to clear the system action, or choose another CornerPet corner. CornerPet never reads or changes these system settings.")
-                    .foregroundStyle(.secondary)
-                Text("不需要“输入监控”权限 / No Input Monitoring permission is required.")
+                Text(L10n.noInputMonitoring)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                Button("打开系统设置 / Open System Settings", action: openSystemSettings)
+                Button(action: openSystemSettings) {
+                    Text(L10n.openSystemSettings)
+                }
                     .accessibilityIdentifier("settings.conflictHelp.openSystemSettings")
+            } header: {
+                Text(L10n.hotCornerConflictSection)
             }
         }
         .formStyle(.grouped)
@@ -158,27 +179,27 @@ struct CornerPetSettingsView: View {
         )
     }
 
-    private func cornerTitle(_ corner: TriggerCorner) -> String {
+    private func cornerTitle(_ corner: TriggerCorner) -> LocalizedStringResource {
         switch corner {
-        case .topLeft: "左上 / Top Left"
-        case .topRight: "右上 / Top Right"
-        case .bottomLeft: "左下 / Bottom Left"
-        case .bottomRight: "右下 / Bottom Right"
+        case .topLeft: L10n.cornerTopLeft
+        case .topRight: L10n.cornerTopRight
+        case .bottomLeft: L10n.cornerBottomLeft
+        case .bottomRight: L10n.cornerBottomRight
         }
     }
 
-    private func displayScopeTitle(_ scope: DisplayScope) -> String {
+    private func displayScopeTitle(_ scope: DisplayScope) -> LocalizedStringResource {
         switch scope {
-        case .primary: "主屏 / Primary Display"
-        case .all: "所有屏幕 / All Displays"
+        case .primary: L10n.displayPrimary
+        case .all: L10n.displayAll
         }
     }
 
-    private func languageTitle(_ language: AppLanguage) -> String {
+    private func languageTitle(_ language: AppLanguage) -> LocalizedStringResource {
         switch language {
-        case .system: "跟随系统 / System Default"
-        case .simplifiedChinese: "简体中文 / Simplified Chinese"
-        case .english: "English / 英语"
+        case .system: L10n.languageSystem
+        case .simplifiedChinese: L10n.languageZhHans
+        case .english: L10n.languageEnglish
         }
     }
 

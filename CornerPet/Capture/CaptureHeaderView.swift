@@ -18,7 +18,7 @@ struct CaptureHeaderView: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("CornerPet")
                     .font(.headline)
-                Text("角落灵感箱")
+                Text(L10n.captureHeaderSubtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -34,11 +34,15 @@ struct CaptureHeaderView: View {
             }
             .buttonStyle(.plain)
             .disabled(!pinAvailable)
-            .help(isPinned ? "取消置顶 / Unpin" : "置顶 / Pin")
-            .accessibilityLabel(isPinned ? "取消置顶 / Unpin" : "置顶 / Pin")
+            .help(Text(pinLabel))
+            .accessibilityLabel(Text(pinLabel))
             .accessibilityIdentifier("capture.pin")
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("capture.header")
+    }
+
+    private var pinLabel: LocalizedStringResource {
+        isPinned ? L10n.captureUnpin : L10n.capturePin
     }
 }

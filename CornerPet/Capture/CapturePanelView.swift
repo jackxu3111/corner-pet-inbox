@@ -56,9 +56,8 @@ struct CapturePanelView: View {
                 captureInput
                     .frame(height: measuredInputHeight)
 
-                if let error = captureViewModel.saveError {
+                if captureViewModel.saveError != nil {
                     CaptureSaveErrorBanner(
-                        error: error,
                         canRetry: captureViewModel.retryIntent != nil,
                         onRetry: captureViewModel.retryLastFailedOperation,
                         onDismiss: captureViewModel.dismissSaveError
@@ -112,7 +111,7 @@ struct CapturePanelView: View {
                 .fill(.background.opacity(0.58))
 
             if captureViewModel.draftText.isEmpty {
-                Text("记下想法… / Capture a thought…")
+                Text(L10n.captureInputPlaceholder)
                     .font(.body)
                     .foregroundStyle(.tertiary)
                     .padding(.horizontal, 8)
@@ -166,11 +165,8 @@ struct CapturePanelView: View {
             Image(systemName: destination.systemImage)
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(.tertiary)
-            Text(destination.chineseTitle)
+            Text(destination.title)
                 .font(.headline)
-            Text(destination.englishTitle)
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
@@ -190,7 +186,6 @@ struct CapturePanelView: View {
 }
 
 private struct CaptureSaveErrorBanner: View {
-    let error: CaptureSaveError
     let canRetry: Bool
     let onRetry: () -> Void
     let onDismiss: () -> Void
@@ -201,20 +196,20 @@ private struct CaptureSaveErrorBanner: View {
                 .foregroundStyle(.orange)
                 .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(error.chineseMessage)
-                Text(error.englishMessage)
-                    .foregroundStyle(.secondary)
-            }
-            .font(.caption)
+            Text(L10n.captureSaveFailed)
+                .font(.caption)
 
             Spacer(minLength: 4)
 
-            Button("重试 / Retry", action: onRetry)
-                .disabled(!canRetry)
-                .accessibilityIdentifier("capture.error.retry")
-            Button("关闭 / Dismiss", action: onDismiss)
-                .accessibilityIdentifier("capture.error.dismiss")
+            Button(action: onRetry) {
+                Text(L10n.retry)
+            }
+            .disabled(!canRetry)
+            .accessibilityIdentifier("capture.error.retry")
+            Button(action: onDismiss) {
+                Text(L10n.dismiss)
+            }
+            .accessibilityIdentifier("capture.error.dismiss")
         }
         .padding(8)
         .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 9))
