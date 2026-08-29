@@ -11,6 +11,7 @@ struct AppLaunchOptions: Equatable {
     let keepsCaptureOpen: Bool
     let showsReminder: Bool
     let reminderCorner: TriggerCorner?
+    let languageOverride: AppLanguage?
 
     init(arguments: [String]) {
         let isUITesting = arguments.contains("--cornerpet-ui-testing")
@@ -33,6 +34,14 @@ struct AppLaunchOptions: Equatable {
                 $0.hasPrefix("--cornerpet-ui-reminder-corner=")
             })?.split(separator: "=", maxSplits: 1).last {
             TriggerCorner(rawValue: String(rawValue))
+        } else {
+            nil
+        }
+        languageOverride = if isUITesting,
+            let rawValue = arguments.first(where: {
+                $0.hasPrefix("--cornerpet-ui-language=")
+            })?.split(separator: "=", maxSplits: 1).last {
+            AppLanguage(rawValue: String(rawValue))
         } else {
             nil
         }
@@ -75,6 +84,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard
         }
         let appSettings = AppSettings(defaults: defaults)
+        if let languageOverride = launchOptions.languageOverride {
+            appSettings.setLanguage(languageOverride)
+        }
         let launchAtLoginController = LaunchAtLoginController()
         let screenCoordinator = ScreenCoordinator()
         self.launchOptions = launchOptions
@@ -150,11 +162,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             PanelLifecycleCoordinator(panelController: panelController)
         }
     ) {
-        self.panelControllerFactory = panelControllerFactory
-        self.triggerCoordinatorFactory = triggerCoordinatorFactory
-        self.appSettings = appSettings ?? AppSettings(defaults: UserDefaults(
+        let appSettings = appSettings ?? AppSettings(defaults: UserDefaults(
             suiteName: "CornerPet.AppDelegate.Isolated.\(UUID().uuidString)"
         ) ?? .standard)
+        if let languageOverride = launchOptions.languageOverride {
+            appSettings.setLanguage(languageOverride)
+        }
+        self.panelControllerFactory = panelControllerFactory
+        self.triggerCoordinatorFactory = triggerCoordinatorFactory
+        self.appSettings = appSettings
         self.launchAtLoginController = launchAtLoginController
         self.screenCoordinator = screenCoordinator
         self.lifecycleCoordinatorFactory = lifecycleCoordinatorFactory

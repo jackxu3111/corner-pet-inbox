@@ -15,6 +15,17 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
     case english = "en"
 
     var id: String { rawValue }
+
+    var locale: Locale {
+        switch self {
+        case .system:
+            .autoupdatingCurrent
+        case .simplifiedChinese:
+            Locale(identifier: rawValue)
+        case .english:
+            Locale(identifier: rawValue)
+        }
+    }
 }
 
 enum AppSettingsStorageKey {
