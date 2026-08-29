@@ -125,10 +125,17 @@ final class CaptureFlowUITests: XCTestCase {
 
         XCTAssertTrue(element("settings.triggerCorner", in: app).waitForExistence(timeout: 3))
         XCTAssertTrue(element("settings.displayScope", in: app).exists)
+        XCTAssertTrue(element("settings.reminderEnabled", in: app).exists)
         XCTAssertTrue(element("settings.reminderTime", in: app).exists)
         XCTAssertTrue(element("settings.language", in: app).exists)
         XCTAssertTrue(element("settings.launchAtLogin", in: app).exists)
         XCTAssertTrue(element("settings.conflictHelp.body", in: app).exists)
+
+        let reminderToggle = element("settings.reminderEnabled", in: app)
+        let reminderTime = element("settings.reminderTime", in: app)
+        XCTAssertTrue(reminderTime.isEnabled)
+        reminderToggle.click()
+        XCTAssertFalse(reminderTime.isEnabled)
     }
 
     func testConflictHelpIsVisibleWithoutExpandingAnything() {

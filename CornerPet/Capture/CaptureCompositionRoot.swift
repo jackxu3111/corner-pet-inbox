@@ -10,6 +10,7 @@ protocol CaptureComposing: AnyObject {
     var panelContentStatus: PanelContentStatus { get }
 
     func makeRootView() -> AnyView
+    func selectInbox()
     func applicationWillTerminate()
     func saveActiveEditForExternalFocus() -> ItemEditSaveResult?
     func configurePanelPinning(
@@ -26,6 +27,8 @@ extension CaptureComposing {
     func saveActiveEditForExternalFocus() -> ItemEditSaveResult? {
         nil
     }
+
+    func selectInbox() {}
 
     func configurePanelPinning(
         isPinned: @escaping @MainActor () -> Bool,
@@ -73,6 +76,10 @@ final class CaptureCompositionRoot: CaptureComposing {
         )
     }
     var onAutoHideProtectionChanged: ((Bool) -> Void)?
+
+    func selectInbox() {
+        shellViewModel.select(.inbox)
+    }
 
     private let pinStateBox: PanelPinStateBox
     private var pinStateProvider: @MainActor () -> Bool = { false }
