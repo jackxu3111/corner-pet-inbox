@@ -154,6 +154,12 @@ final class AppSettings {
         publish(.language)
     }
 
+    func applyTransientLanguageOverride(_ language: AppLanguage) {
+        guard self.language != language else { return }
+        self.language = language
+        publish(.language)
+    }
+
     private func publish(_ field: AppSettingsField) {
         onChange?(AppSettingsChange(field: field, snapshot: snapshot))
     }

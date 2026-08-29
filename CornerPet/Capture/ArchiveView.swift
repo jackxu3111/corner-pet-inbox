@@ -85,6 +85,7 @@ struct ArchiveView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(L10n.clearSearch))
+                .help(Text(L10n.clearSearch))
                 .accessibilityIdentifier("archive.search.clear")
             }
         }

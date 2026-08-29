@@ -87,6 +87,7 @@ struct FavoritesView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(L10n.clearSearch))
+                .help(Text(L10n.clearSearch))
                 .accessibilityIdentifier("favorites.search.clear")
             }
         }

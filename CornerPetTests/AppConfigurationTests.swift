@@ -127,10 +127,14 @@ final class AppConfigurationTests: XCTestCase {
 
 @MainActor
 final class AppDelegateIntegrationTests: XCTestCase {
-    func testUITestLanguageOverrideIsAppliedBeforeRuntimeComposition() {
+    func testUITestLanguageOverrideIsAppliedTransientlyBeforeRuntimeComposition() {
         let defaults = UserDefaults(
             suiteName: "CornerPet.AppDelegateLanguage.\(UUID().uuidString)"
         )!
+        defaults.set(
+            AppLanguage.simplifiedChinese.rawValue,
+            forKey: AppSettingsStorageKey.language
+        )
         let settings = AppSettings(defaults: defaults)
         let launchOptions = AppLaunchOptions(arguments: [
             "CornerPet",
@@ -154,7 +158,7 @@ final class AppDelegateIntegrationTests: XCTestCase {
         XCTAssertEqual(settings.language, .english)
         XCTAssertEqual(
             defaults.string(forKey: AppSettingsStorageKey.language),
-            AppLanguage.english.rawValue
+            AppLanguage.simplifiedChinese.rawValue
         )
     }
 

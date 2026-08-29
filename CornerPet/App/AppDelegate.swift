@@ -85,7 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let appSettings = AppSettings(defaults: defaults)
         if let languageOverride = launchOptions.languageOverride {
-            appSettings.setLanguage(languageOverride)
+            appSettings.applyTransientLanguageOverride(languageOverride)
         }
         let launchAtLoginController = LaunchAtLoginController()
         let screenCoordinator = ScreenCoordinator()
@@ -166,7 +166,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             suiteName: "CornerPet.AppDelegate.Isolated.\(UUID().uuidString)"
         ) ?? .standard)
         if let languageOverride = launchOptions.languageOverride {
-            appSettings.setLanguage(languageOverride)
+            appSettings.applyTransientLanguageOverride(languageOverride)
         }
         self.panelControllerFactory = panelControllerFactory
         self.triggerCoordinatorFactory = triggerCoordinatorFactory
