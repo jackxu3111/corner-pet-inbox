@@ -3,6 +3,7 @@ import SwiftUI
 
 @MainActor
 final class PetReminderPanelController {
+    private let settings: AppSettings
     private let pointerLocationProvider: @MainActor () -> CGPoint
     private let onOpenInbox: @MainActor () -> Void
     private let onSnooze: @MainActor () -> Void
@@ -16,11 +17,13 @@ final class PetReminderPanelController {
     }
 
     init(
+        settings: AppSettings,
         pointerLocationProvider: @escaping @MainActor () -> CGPoint = { NSEvent.mouseLocation },
         onOpenInbox: @escaping @MainActor () -> Void,
         onSnooze: @escaping @MainActor () -> Void,
         onDismissToday: @escaping @MainActor () -> Void
     ) {
+        self.settings = settings
         self.pointerLocationProvider = pointerLocationProvider
         self.onOpenInbox = onOpenInbox
         self.onSnooze = onSnooze
@@ -81,12 +84,14 @@ final class PetReminderPanelController {
     }
 
     private func installContent(corner: TriggerCorner, in panel: PetReminderPanel) {
-        let hostingView = NSHostingView(rootView: CatReminderView(
-            corner: corner,
-            onOpenInbox: onOpenInbox,
-            onSnooze: onSnooze,
-            onDismissToday: onDismissToday
-        ))
+        let hostingView = NSHostingView(rootView: AppLocaleScope(settings: settings) {
+            CatReminderView(
+                corner: corner,
+                onOpenInbox: self.onOpenInbox,
+                onSnooze: self.onSnooze,
+                onDismissToday: self.onDismissToday
+            )
+        })
         hostingView.frame = panel.contentView?.bounds
             ?? CGRect(origin: .zero, size: panel.frame.size)
         hostingView.autoresizingMask = [.width, .height]

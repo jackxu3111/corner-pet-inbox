@@ -6,10 +6,12 @@ struct CornerPetApp: App {
 
     var body: some Scene {
         Settings {
-            CornerPetSettingsView(
-                settings: appDelegate.appSettings,
-                launchAtLogin: appDelegate.launchAtLoginController
-            )
+            AppLocaleScope(settings: appDelegate.appSettings) {
+                CornerPetSettingsView(
+                    settings: appDelegate.appSettings,
+                    launchAtLogin: appDelegate.launchAtLoginController
+                )
+            }
         }
         .commands {
             CommandGroup(replacing: .appSettings) {

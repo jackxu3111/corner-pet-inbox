@@ -91,6 +91,9 @@ final class PetReminderPanelControllerTests: XCTestCase {
         pointerProvider: @escaping @MainActor () -> CGPoint
     ) -> PetReminderPanelController {
         PetReminderPanelController(
+            settings: AppSettings(defaults: UserDefaults(
+                suiteName: "CornerPet.ReminderPanel.\(UUID().uuidString)"
+            )!),
             pointerLocationProvider: pointerProvider,
             onOpenInbox: {},
             onSnooze: {},

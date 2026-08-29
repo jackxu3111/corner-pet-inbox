@@ -1,9 +1,27 @@
 import Foundation
+import SwiftUI
 import XCTest
 
 @testable import CornerPet
 
+@MainActor
 final class LocalizationTests: XCTestCase {
+    func testAppLocaleScopeReadsTheCurrentLanguageWithoutCachingIt() {
+        let settings = AppSettings(defaults: UserDefaults(
+            suiteName: "CornerPet.LocalizationScope.\(UUID().uuidString)"
+        )!)
+        settings.setLanguage(.english)
+        let scope = AppLocaleScope(settings: settings) {
+            EmptyView()
+        }
+
+        XCTAssertEqual(scope.locale.identifier, "en")
+
+        settings.setLanguage(.simplifiedChinese)
+
+        XCTAssertEqual(scope.locale.identifier, "zh-Hans")
+    }
+
     func testEveryDeclaredResourceResolvesInEnglishAndSimplifiedChinese() {
         for localeIdentifier in ["en", "zh-Hans"] {
             let locale = Locale(identifier: localeIdentifier)

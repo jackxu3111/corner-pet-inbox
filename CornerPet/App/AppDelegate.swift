@@ -196,20 +196,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             composition = try compositionFactory(panelController)
             if let composition {
-                panelController.installHostedContentFactory {
-                    NSHostingView(rootView: composition.makeRootView())
+                panelController.installHostedContentFactory { [appSettings] in
+                    NSHostingView(rootView: AppLocaleScope(settings: appSettings) {
+                        composition.makeRootView()
+                    })
                 }
             }
         } catch {
             composition = nil
             NSLog("CornerPet persistence initialization failed: %@", String(describing: error))
-            panelController.installHostedContentFactory {
-                NSHostingView(rootView: CapturePersistenceErrorView())
+            panelController.installHostedContentFactory { [appSettings] in
+                NSHostingView(rootView: AppLocaleScope(settings: appSettings) {
+                    CapturePersistenceErrorView()
+                })
             }
         }
         let lifecycleCoordinator = lifecycleCoordinatorFactory(panelController)
         let triggerCoordinator = triggerCoordinatorFactory(panelController)
         let petReminderPanelController = PetReminderPanelController(
+            settings: appSettings,
             onOpenInbox: { [weak self] in
                 self?.openInboxFromReminder()
             },

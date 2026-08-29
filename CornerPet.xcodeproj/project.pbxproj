@@ -111,6 +111,7 @@
 		A13000000000000000000001 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000002 /* LocalizationTests.swift */; };
 		A13000000000000000000003 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000004 /* L10n.swift */; };
 		A13000000000000000000005 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000006 /* Localizable.xcstrings */; };
+		A13000000000000000000008 /* AppLocaleScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000009 /* AppLocaleScope.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -217,6 +218,7 @@
 		A13000000000000000000002 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
 		A13000000000000000000004 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		A13000000000000000000006 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		A13000000000000000000009 /* AppLocaleScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocaleScope.swift; sourceTree = "<group>"; };
 		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
 		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
 		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 		A13000000000000000000007 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				A13000000000000000000009 /* AppLocaleScope.swift */,
 				A13000000000000000000004 /* L10n.swift */,
 				A13000000000000000000006 /* Localizable.xcstrings */,
 			);
@@ -681,6 +684,7 @@
 				800000000000000000000016 /* PetReminderPanelController.swift in Sources */,
 				80000000000000000000001A /* CatReminderView.swift in Sources */,
 				A13000000000000000000003 /* L10n.swift in Sources */,
+				A13000000000000000000008 /* AppLocaleScope.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
