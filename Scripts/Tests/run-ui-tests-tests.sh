@@ -66,6 +66,7 @@ case "${1:-}" in
         if [[ "${FAKE_FAIL_QUIESCE_ID:-}" == "$identifier" ]]; then
             exit 1
         fi
+        printf '%s\n' "escape-posted"
         ;;
     *)
         exit 64
@@ -142,6 +143,7 @@ test_switches_and_restores_after_success() {
     assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=passed"
     assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=com.apple.keylayout.ABC"
     assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE=com.apple.inputmethod.SCIM.ITABC"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE_STATE=escape-posted"
     cleanup_fixture
     PASS_COUNT=$((PASS_COUNT + 1))
 }

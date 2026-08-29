@@ -23,6 +23,7 @@ ORIGINAL_INPUT_SOURCE=""
 FINAL_REPORTED=0
 LOG_PATH=""
 RESULT_BUNDLE_PATH=""
+QUIESCED_INPUT_SOURCE_STATE=""
 
 resolve_developer_dir() {
     if [[ -n "${CORNERPET_DEVELOPER_DIR:-}" ]]; then
@@ -64,7 +65,8 @@ restore_input_source() {
     fi
 
     current="$($INPUT_SOURCE_TOOL current 2>/dev/null)" || return 1
-    [[ "$current" == "$ORIGINAL_INPUT_SOURCE" ]]
+    [[ "$current" == "$ORIGINAL_INPUT_SOURCE" ]] || return 1
+
 }
 
 finish() {
@@ -180,13 +182,21 @@ fi
 echo "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=$ACTIVE_INPUT_SOURCE"
 
 if [[ "$ORIGINAL_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
-    if ! "$INPUT_SOURCE_TOOL" quiesce "$ORIGINAL_INPUT_SOURCE"; then
-        echo "error: unable to quiesce the inactive input source process" >&2
+    QUIESCED_INPUT_SOURCE_STATE="$($INPUT_SOURCE_TOOL quiesce "$ORIGINAL_INPUT_SOURCE")" || {
+        echo "error: unable to dismiss an inactive input source candidate window" >&2
+        CLASSIFICATION="environment-preflight"
+        FINAL_STATUS=64
+        exit "$FINAL_STATUS"
+    }
+    if [[ "$QUIESCED_INPUT_SOURCE_STATE" != "escape-posted" &&
+          "$QUIESCED_INPUT_SOURCE_STATE" != "unchanged" ]]; then
+        echo "error: invalid input source quiesce state: $QUIESCED_INPUT_SOURCE_STATE" >&2
         CLASSIFICATION="environment-preflight"
         FINAL_STATUS=64
         exit "$FINAL_STATUS"
     fi
     echo "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE=$ORIGINAL_INPUT_SOURCE"
+    echo "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE_STATE=$QUIESCED_INPUT_SOURCE_STATE"
 fi
 
 if [[ "$MODE" == "preflight" ]]; then

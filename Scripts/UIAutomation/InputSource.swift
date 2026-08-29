@@ -1,5 +1,6 @@
 import AppKit
 import Carbon
+import CoreGraphics
 import Foundation
 
 enum InputSourceError: Error, CustomStringConvertible {
@@ -10,11 +11,12 @@ enum InputSourceError: Error, CustomStringConvertible {
     case selectionFailed(String, OSStatus)
     case selectionDidNotStick(expected: String, actual: String)
     case quiesceFailed(identifier: String, bundleIdentifier: String)
+    case eventPostingUnavailable
 
     var description: String {
         switch self {
         case .invalidArguments:
-            "usage: cornerpet-input-source current | select <input-source-id>"
+            "usage: cornerpet-input-source current | select <input-source-id> | quiesce <input-source-id>"
         case .missingIdentifier:
             "the current keyboard input source has no identifier"
         case let .sourceNotFound(identifier):
@@ -26,7 +28,9 @@ enum InputSourceError: Error, CustomStringConvertible {
         case let .selectionDidNotStick(expected, actual):
             "input source selection did not stick (expected \(expected), got \(actual))"
         case let .quiesceFailed(identifier, bundleIdentifier):
-            "input source process did not stop (source \(identifier), bundle \(bundleIdentifier))"
+            "input source candidate cleanup failed (source \(identifier), bundle \(bundleIdentifier))"
+        case .eventPostingUnavailable:
+            "event-posting access is unavailable for candidate-window cleanup"
         }
     }
 }
@@ -88,44 +92,58 @@ func select(identifier expectedIdentifier: String) throws {
     }
 }
 
-func quiesce(identifier sourceIdentifier: String) throws {
+func sourceBundleIdentifier(identifier sourceIdentifier: String) throws -> String? {
     guard let source = enabledSource(identifier: sourceIdentifier) else {
         throw InputSourceError.sourceNotFound(sourceIdentifier)
     }
 
-    guard let bundleIdentifier = property(
+    return property(
         of: source,
         key: kTISPropertyBundleID,
         as: String.self
-    ), !bundleIdentifier.isEmpty else {
-        return
+    )
+}
+
+func quiesce(identifier sourceIdentifier: String) throws -> String {
+    guard let bundleIdentifier = try sourceBundleIdentifier(identifier: sourceIdentifier),
+          !bundleIdentifier.isEmpty else {
+        return "unchanged"
     }
 
     let applications = NSRunningApplication.runningApplications(
         withBundleIdentifier: bundleIdentifier
     )
     guard !applications.isEmpty else {
-        return
+        return "unchanged"
     }
 
-    guard applications.allSatisfy({ $0.terminate() }) else {
+    guard CGPreflightPostEventAccess() else {
+        throw InputSourceError.eventPostingUnavailable
+    }
+
+    guard let eventSource = CGEventSource(stateID: .hidSystemState),
+          let keyDown = CGEvent(
+              keyboardEventSource: eventSource,
+              virtualKey: 53,
+              keyDown: true
+          ),
+          let keyUp = CGEvent(
+              keyboardEventSource: eventSource,
+              virtualKey: 53,
+              keyDown: false
+          ) else {
         throw InputSourceError.quiesceFailed(
             identifier: sourceIdentifier,
             bundleIdentifier: bundleIdentifier
         )
     }
 
-    let deadline = Date().addingTimeInterval(3)
-    while applications.contains(where: { !$0.isTerminated }), Date() < deadline {
-        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+    for application in applications {
+        keyDown.postToPid(application.processIdentifier)
+        keyUp.postToPid(application.processIdentifier)
     }
-
-    guard applications.allSatisfy(\.isTerminated) else {
-        throw InputSourceError.quiesceFailed(
-            identifier: sourceIdentifier,
-            bundleIdentifier: bundleIdentifier
-        )
-    }
+    RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+    return "escape-posted"
 }
 
 do {
@@ -135,7 +153,7 @@ do {
     } else if arguments.count == 2, arguments[0] == "select" {
         try select(identifier: arguments[1])
     } else if arguments.count == 2, arguments[0] == "quiesce" {
-        try quiesce(identifier: arguments[1])
+        print(try quiesce(identifier: arguments[1]))
     } else {
         throw InputSourceError.invalidArguments
     }
