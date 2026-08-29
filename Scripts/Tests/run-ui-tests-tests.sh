@@ -114,6 +114,7 @@ run_fixture() {
     FAKE_XCODE_EXIT="${FAKE_XCODE_EXIT:-0}" \
     FAKE_XCODE_SIGNAL_PARENT="${FAKE_XCODE_SIGNAL_PARENT:-0}" \
     FAKE_XCODE_DRIFT_INPUT_SOURCE="${FAKE_XCODE_DRIFT_INPUT_SOURCE:-}" \
+    CORNERPET_AD_HOC_SIGNING="${CORNERPET_AD_HOC_SIGNING:-0}" \
     CORNERPET_INPUT_SOURCE_TOOL="$FIXTURE_DIR/input-source" \
     CORNERPET_XCODEBUILD="$FIXTURE_DIR/xcodebuild" \
     CORNERPET_DEVELOPER_DIR="$FIXTURE_DIR/Developer" \
@@ -302,6 +303,23 @@ test_probe_mode_runs_only_launch_probe() {
     PASS_COUNT=$((PASS_COUNT + 1))
 }
 
+test_ad_hoc_signing_mode_uses_local_signing_without_a_team() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    CORNERPET_AD_HOC_SIGNING=1
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "0" "ad-hoc signing run status"
+    assert_contains "$XCODE_ARGS" "CODE_SIGN_STYLE=Manual"
+    assert_contains "$XCODE_ARGS" "CODE_SIGN_IDENTITY=-"
+    assert_contains "$XCODE_ARGS" "DEVELOPMENT_TEAM="
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_SIGNING=ad-hoc"
+    cleanup_fixture
+    unset CORNERPET_AD_HOC_SIGNING
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
 test_quiesce_failure_stops_before_xcode_and_restores() {
     make_fixture
     printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
@@ -333,5 +351,6 @@ test_product_failure_has_priority_over_input_source_drift
 test_interruption_has_priority_over_input_source_drift
 test_quiesce_failure_stops_before_xcode_and_restores
 test_probe_mode_runs_only_launch_probe
+test_ad_hoc_signing_mode_uses_local_signing_without_a_team
 
 echo "PASS: $PASS_COUNT UI automation runner tests"

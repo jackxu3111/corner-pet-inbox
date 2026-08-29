@@ -227,6 +227,22 @@ if [[ "$MODE" == "preflight" ]]; then
     exit 0
 fi
 
+AD_HOC_SIGNING=0
+case "${CORNERPET_AD_HOC_SIGNING:-0}" in
+    0|"")
+        ;;
+    1)
+        AD_HOC_SIGNING=1
+        echo "CORNERPET_UI_TEST_SIGNING=ad-hoc"
+        ;;
+    *)
+        echo "error: CORNERPET_AD_HOC_SIGNING must be 0 or 1" >&2
+        CLASSIFICATION="environment-preflight"
+        FINAL_STATUS=64
+        exit "$FINAL_STATUS"
+        ;;
+esac
+
 TIMESTAMP="$(date '+%Y%m%d-%H%M%S')"
 EVIDENCE_DIR="${CORNERPET_TEST_EVIDENCE_DIR:-$PROJECT_ROOT/build/test-evidence/$TIMESTAMP}"
 mkdir -p "$EVIDENCE_DIR"
@@ -239,14 +255,25 @@ if [[ "$MODE" == "probe" ]]; then
     ONLY_TESTING_TARGET="CornerPetUITests/CornerPetLaunchTests/testApplicationLaunchesWithoutMainWindow"
 fi
 
-DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" "$XCODEBUILD" test \
-    -project "$PROJECT_ROOT/CornerPet.xcodeproj" \
-    -scheme CornerPet \
-    -configuration Debug \
-    -destination "platform=macOS,arch=arm64" \
-    -parallel-testing-enabled NO \
-    "-only-testing:$ONLY_TESTING_TARGET" \
-    -resultBundlePath "$RESULT_BUNDLE_PATH" \
+XCODEBUILD_ARGS=(
+    test
+    -project "$PROJECT_ROOT/CornerPet.xcodeproj"
+    -scheme CornerPet
+    -configuration Debug
+    -destination "platform=macOS,arch=arm64"
+    -parallel-testing-enabled NO
+    "-only-testing:$ONLY_TESTING_TARGET"
+    -resultBundlePath "$RESULT_BUNDLE_PATH"
+)
+if [[ "$AD_HOC_SIGNING" -eq 1 ]]; then
+    XCODEBUILD_ARGS+=(
+        "CODE_SIGN_STYLE=Manual"
+        "CODE_SIGN_IDENTITY=-"
+        "DEVELOPMENT_TEAM="
+    )
+fi
+
+DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" "$XCODEBUILD" "${XCODEBUILD_ARGS[@]}" \
     2>&1 | tee "$LOG_PATH"
 XCODE_STATUS=${PIPESTATUS[0]}
 set -e
