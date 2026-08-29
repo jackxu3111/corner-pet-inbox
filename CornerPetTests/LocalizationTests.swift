@@ -34,9 +34,13 @@ final class LocalizationTests: XCTestCase {
             "common.saveFailed",
             "common.undo",
             "favorites.add",
+            "favorites.addFailedHelp",
             "favorites.empty",
             "favorites.loadFailed",
             "favorites.remove",
+            "favorites.removeFailedHelp",
+            "favorites.retryAdd",
+            "favorites.retryRemove",
             "favorites.search",
             "inbox.archiveFailedHelp",
             "inbox.archived",
@@ -132,6 +136,25 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(
             L10n.localized(L10n.captureSaveFailed, locale: Locale(identifier: "zh-Hans")),
             "无法保存。草稿仍在，请重试。"
+        )
+    }
+
+    func testFavoriteFailuresExposeActionableCopyInBothLanguages() {
+        XCTAssertEqual(
+            L10n.localized(L10n.favoriteRetryAdd, locale: Locale(identifier: "en")),
+            "Retry adding to Favorites"
+        )
+        XCTAssertEqual(
+            L10n.localized(L10n.favoriteRetryAdd, locale: Locale(identifier: "zh-Hans")),
+            "重试收藏"
+        )
+        XCTAssertEqual(
+            L10n.localized(L10n.favoriteRetryRemove, locale: Locale(identifier: "en")),
+            "Retry removing from Favorites"
+        )
+        XCTAssertEqual(
+            L10n.localized(L10n.favoriteRetryRemove, locale: Locale(identifier: "zh-Hans")),
+            "重试取消收藏"
         )
     }
 }

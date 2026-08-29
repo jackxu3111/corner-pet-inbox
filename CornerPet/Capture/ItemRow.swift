@@ -109,8 +109,10 @@ struct ItemRow: View {
                         .foregroundStyle(hasFavoriteError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help(Text(L10n.favoriteAdd))
-                .accessibilityLabel(Text(L10n.favoriteAdd))
+                .help(Text(hasFavoriteError ? L10n.favoriteAddFailedHelp : L10n.favoriteAdd))
+                .accessibilityLabel(
+                    Text(hasFavoriteError ? L10n.favoriteRetryAdd : L10n.favoriteAdd)
+                )
                 .accessibilityIdentifier("inbox.item.favorite.\(item.id.uuidString)")
 
                 Button(action: onDelete) {

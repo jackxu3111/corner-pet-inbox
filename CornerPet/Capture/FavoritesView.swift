@@ -219,8 +219,10 @@ private struct FavoriteItemRow: View {
                         .foregroundStyle(hasError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help(Text(L10n.favoriteRemove))
-                .accessibilityLabel(Text(L10n.favoriteRemove))
+                .help(Text(hasError ? L10n.favoriteRemoveFailedHelp : L10n.favoriteRemove))
+                .accessibilityLabel(
+                    Text(hasError ? L10n.favoriteRetryRemove : L10n.favoriteRemove)
+                )
                 .accessibilityIdentifier("favorites.item.unfavorite.\(item.id.uuidString)")
 
                 Button(action: onDelete) {

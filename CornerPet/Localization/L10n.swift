@@ -32,9 +32,13 @@ enum L10n {
     static let saveFailed: LocalizedStringResource = "common.saveFailed"
     static let undo: LocalizedStringResource = "common.undo"
     static let favoriteAdd: LocalizedStringResource = "favorites.add"
+    static let favoriteAddFailedHelp: LocalizedStringResource = "favorites.addFailedHelp"
     static let favoritesEmpty: LocalizedStringResource = "favorites.empty"
     static let favoritesLoadFailed: LocalizedStringResource = "favorites.loadFailed"
     static let favoriteRemove: LocalizedStringResource = "favorites.remove"
+    static let favoriteRemoveFailedHelp: LocalizedStringResource = "favorites.removeFailedHelp"
+    static let favoriteRetryAdd: LocalizedStringResource = "favorites.retryAdd"
+    static let favoriteRetryRemove: LocalizedStringResource = "favorites.retryRemove"
     static let favoritesSearch: LocalizedStringResource = "favorites.search"
     static let archiveFailedHelp: LocalizedStringResource = "inbox.archiveFailedHelp"
     static let inboxArchived: LocalizedStringResource = "inbox.archived"
@@ -112,9 +116,13 @@ enum L10n {
         entry("common.saveFailed", saveFailed),
         entry("common.undo", undo),
         entry("favorites.add", favoriteAdd),
+        entry("favorites.addFailedHelp", favoriteAddFailedHelp),
         entry("favorites.empty", favoritesEmpty),
         entry("favorites.loadFailed", favoritesLoadFailed),
         entry("favorites.remove", favoriteRemove),
+        entry("favorites.removeFailedHelp", favoriteRemoveFailedHelp),
+        entry("favorites.retryAdd", favoriteRetryAdd),
+        entry("favorites.retryRemove", favoriteRetryRemove),
         entry("favorites.search", favoritesSearch),
         entry("inbox.archiveFailedHelp", archiveFailedHelp),
         entry("inbox.archived", inboxArchived),
