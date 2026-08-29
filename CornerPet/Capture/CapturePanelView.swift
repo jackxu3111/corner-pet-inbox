@@ -10,6 +10,7 @@ struct CapturePanelView: View {
     let pinState: () -> Bool
     let pinAvailable: Bool
     let onTogglePin: () -> Void
+    let onOpenSettings: () -> Void
     let onPanelCommand: (CapturePanelCommand) -> Void
 
     @State private var measuredInputHeight = CaptureLayout.inputMinimumHeight
@@ -25,6 +26,7 @@ struct CapturePanelView: View {
         pinState: @escaping () -> Bool,
         pinAvailable: Bool,
         onTogglePin: @escaping () -> Void,
+        onOpenSettings: @escaping () -> Void = {},
         onPanelCommand: @escaping (CapturePanelCommand) -> Void
     ) {
         self.captureViewModel = captureViewModel
@@ -36,6 +38,7 @@ struct CapturePanelView: View {
         self.pinState = pinState
         self.pinAvailable = pinAvailable
         self.onTogglePin = onTogglePin
+        self.onOpenSettings = onOpenSettings
         self.onPanelCommand = onPanelCommand
     }
 
@@ -69,7 +72,8 @@ struct CapturePanelView: View {
 
                 CaptureNavigationBar(
                     selectedDestination: shellViewModel.selectedDestination,
-                    onSelect: shellViewModel.select
+                    onSelect: shellViewModel.select,
+                    onOpenSettings: onOpenSettings
                 )
                 .frame(height: CaptureLayout.navigationHeight)
             }

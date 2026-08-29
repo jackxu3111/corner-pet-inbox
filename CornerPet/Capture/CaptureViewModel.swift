@@ -322,8 +322,12 @@ final class CaptureViewModel {
     }
 
     private func recordFailure(retryIntent: CaptureRetryIntent) {
+        let resolvedIntent = pendingSubmissionState?.retryIntent ?? retryIntent
+        guard saveError != .saveFailed || self.retryIntent != resolvedIntent else {
+            return
+        }
         saveError = .saveFailed
-        self.retryIntent = pendingSubmissionState?.retryIntent ?? retryIntent
+        self.retryIntent = resolvedIntent
         onStateChanged?()
     }
 

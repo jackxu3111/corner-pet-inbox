@@ -1476,7 +1476,7 @@ final class PanelTickerAndControllerTests: XCTestCase {
             clock: { now },
             reducedMotionProvider: { true }
         )
-        controller.onExternalFocusLost = { focusLossCount += 1 }
+        controller.onExternalFocusLost = { _ in focusLossCount += 1 }
         controller.onLifecycle = { lifecycleEvents.append($0) }
 
         controller.present(screenID: screenID)
@@ -1495,6 +1495,74 @@ final class PanelTickerAndControllerTests: XCTestCase {
             return false
         })
         XCTAssertTrue(controller.isVisible)
+    }
+
+    func testSettingsTransitionForwardsOneKeepOpenResignThenNormalResign() throws {
+        guard let screen = NSScreen.screens.first else {
+            throw XCTSkip("A screen is required for external-focus tests")
+        }
+        let screenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        var forwarded: [Bool] = []
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == screenID ? screen : nil
+            },
+            clock: { now },
+            reducedMotionProvider: { true }
+        )
+        controller.onExternalFocusLost = { forwarded.append($0) }
+
+        controller.present(screenID: screenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        let panel = try XCTUnwrap(controller.panel)
+
+        controller.beginSettingsTransition()
+        controller.windowDidResignKey(Notification(
+            name: NSWindow.didResignKeyNotification,
+            object: panel
+        ))
+        XCTAssertEqual(forwarded, [true])
+
+        controller.windowDidResignKey(Notification(
+            name: NSWindow.didResignKeyNotification,
+            object: panel
+        ))
+        XCTAssertEqual(forwarded, [true, false])
+    }
+
+    func testSettingsTransitionMarkerIsClearedWhenPanelRegainsKey() throws {
+        guard let screen = NSScreen.screens.first else {
+            throw XCTSkip("A screen is required for external-focus tests")
+        }
+        let screenID = Self.displayID(for: screen)
+        var now: TimeInterval = 0
+        var forwarded: [Bool] = []
+        let controller = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == screenID ? screen : nil
+            },
+            clock: { now },
+            reducedMotionProvider: { true }
+        )
+        controller.onExternalFocusLost = { forwarded.append($0) }
+
+        controller.present(screenID: screenID)
+        now = 0.120
+        _ = controller.tick(at: now)
+        let panel = try XCTUnwrap(controller.panel)
+
+        controller.beginSettingsTransition()
+        controller.windowDidBecomeKey(Notification(
+            name: NSWindow.didBecomeKeyNotification,
+            object: panel
+        ))
+        controller.windowDidResignKey(Notification(
+            name: NSWindow.didResignKeyNotification,
+            object: panel
+        ))
+        XCTAssertEqual(forwarded, [false])
     }
 
     func testCommandShiftPReachesOneControllerTogglePath() throws {

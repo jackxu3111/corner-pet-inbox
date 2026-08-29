@@ -4,6 +4,7 @@ import AppKit
 final class CornerPanel: NSPanel {
     var onTogglePin: (() -> Void)?
     var onFind: (() -> Bool)?
+    var onOpenSettings: (() -> Void)?
 
     private(set) var isPinned = false
 
@@ -82,6 +83,7 @@ final class CornerPanel: NSPanel {
 
         if event.charactersIgnoringModifiers == ",",
            modifiers == [.command] {
+            onOpenSettings?()
             NSApp.activate()
             DispatchQueue.main.async {
                 _ = NSApp.mainMenu?.performKeyEquivalent(with: event)

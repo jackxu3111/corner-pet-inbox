@@ -286,7 +286,7 @@ final class PanelLifecycleCoordinatorTests: XCTestCase {
         controller.onPointerBoundaryChanged = {
             coordinator.refreshPresence()
         }
-        controller.onExternalFocusLost = {
+        controller.onExternalFocusLost = { _ in
             coordinator.externalFocusLost(editSaveSucceeded: nil)
         }
 

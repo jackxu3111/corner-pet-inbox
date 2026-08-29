@@ -256,6 +256,29 @@ final class CaptureViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.consumePanelCommand())
     }
 
+    func testSynchronousWriteFailureRecordsRetryIntentOnlyOnce() {
+        let draftStore = CaptureDraftStoreSpy()
+        draftStore.flushError = CaptureViewModelTestError.writeFailed
+        draftStore.firesCallbackBeforeThrow = true
+        let viewModel = makeViewModel(draftStore: draftStore)
+        viewModel.draftDidChange("dedup flush")
+
+        var stateChangeCount = 0
+        viewModel.onStateChanged = { stateChangeCount += 1 }
+        viewModel.flushDraft()
+
+        XCTAssertEqual(viewModel.saveError, .saveFailed)
+        XCTAssertEqual(viewModel.retryIntent, .flushDraft)
+        XCTAssertEqual(stateChangeCount, 1)
+        XCTAssertEqual(viewModel.draftText, "dedup flush")
+
+        draftStore.flushError = nil
+        viewModel.retryLastFailedOperation()
+
+        XCTAssertEqual(viewModel.saveError, nil)
+        XCTAssertEqual(viewModel.retryIntent, nil)
+    }
+
     func testSuccessfulFlushDoesNotClearSubmitFailure() {
         let draftStore = CaptureDraftStoreSpy()
         let itemStore = CaptureItemStoreSpy()
@@ -878,6 +901,9 @@ private final class CaptureDraftStoreSpy: DraftStoring {
     var restoreError: Error?
     var flushError: Error?
     var clearError: Error?
+    /// Mirrors the real DraftStore, which reports a write failure through
+    /// `onWriteFailure` before rethrowing, so call sites can deduplicate.
+    var firesCallbackBeforeThrow = false
 
     private(set) var stagedSnapshots: [DraftSnapshot] = []
     private(set) var restoreCallCount = 0
@@ -913,6 +939,9 @@ private final class CaptureDraftStoreSpy: DraftStoring {
     func flush() throws {
         flushedCount += 1
         if let flushError {
+            if firesCallbackBeforeThrow {
+                onWriteFailure?(CaptureViewModelTestError.writeFailed)
+            }
             throw flushError
         }
     }
@@ -921,6 +950,9 @@ private final class CaptureDraftStoreSpy: DraftStoring {
         clearedDates.append(updatedAt)
         operationLog?.append("draft.clear")
         if let clearError {
+            if firesCallbackBeforeThrow {
+                onWriteFailure?(CaptureViewModelTestError.writeFailed)
+            }
             throw clearError
         }
     }

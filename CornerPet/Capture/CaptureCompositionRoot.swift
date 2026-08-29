@@ -17,6 +17,7 @@ protocol CaptureComposing: AnyObject {
         isPinned: @escaping @MainActor () -> Bool,
         onTogglePin: @escaping @MainActor () -> Void
     )
+    func configureSettingsOpening(_ handler: @escaping @MainActor () -> Void)
 }
 
 extension CaptureComposing {
@@ -34,6 +35,8 @@ extension CaptureComposing {
         isPinned: @escaping @MainActor () -> Bool,
         onTogglePin: @escaping @MainActor () -> Void
     ) {}
+
+    func configureSettingsOpening(_ handler: @escaping @MainActor () -> Void) {}
 }
 
 @MainActor
@@ -84,6 +87,7 @@ final class CaptureCompositionRoot: CaptureComposing {
     private let pinStateBox: PanelPinStateBox
     private var pinStateProvider: @MainActor () -> Bool = { false }
     private var togglePinHandler: @MainActor () -> Void = {}
+    private var openSettingsHandler: @MainActor () -> Void = {}
 
     func saveActiveEditForExternalFocus() -> ItemEditSaveResult? {
         guard editViewModel.isEditing else { return nil }
@@ -199,6 +203,7 @@ final class CaptureCompositionRoot: CaptureComposing {
             pinState: pinStateProvider,
             pinAvailable: true,
             onTogglePin: togglePinHandler,
+            onOpenSettings: openSettingsHandler,
             onPanelCommand: { [weak panelController] command in
                 panelController?.handleCaptureCommand(command)
             }
@@ -216,6 +221,10 @@ final class CaptureCompositionRoot: CaptureComposing {
             self?.pinStateBox.isPinned = isPinned()
         }
         panelController?.onTogglePin = togglePinHandler
+    }
+
+    func configureSettingsOpening(_ handler: @escaping @MainActor () -> Void) {
+        openSettingsHandler = handler
     }
 
     func applicationWillTerminate() {

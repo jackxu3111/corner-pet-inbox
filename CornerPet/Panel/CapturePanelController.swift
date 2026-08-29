@@ -20,6 +20,12 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         case closing
     }
 
+    /// Set immediately before opening Settings from inside the capture panel
+    /// (via the nav button or `⌘,`). It is consumed by the next key-window change
+    /// so the panel can distinguish "Settings took the key in-app" from a genuine
+    /// external-focus loss, which would otherwise close a protected draft/edit.
+    private var settingsTransitionPending = false
+
     private let screenProvider: (UInt32) -> NSScreen?
     private let screensProvider: () -> [PanelScreenGeometry]
     private let clock: () -> TimeInterval
@@ -41,7 +47,10 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
     var onLifecycle: ((CapturePanelLifecycleEvent) -> Void)?
     var onPointerBoundaryChanged: (() -> Void)?
     var onEscape: (() -> Void)?
-    var onExternalFocusLost: (() -> Void)?
+    /// Reports an external-focus loss. The boolean indicates whether the key moved
+    /// to another window inside this app (Settings); in that case the panel should
+    /// stay open so an active draft/edit is not discarded.
+    var onExternalFocusLost: ((Bool) -> Void)?
     var onTogglePin: (() -> Void)?
     var onFind: (() -> Bool)?
     var onReturnToCorner: (() -> Void)?
@@ -103,6 +112,9 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
         panel.onFind = { [weak self] in
             self?.requestSearchFocus() ?? false
         }
+        panel.onOpenSettings = { [weak self] in
+            self?.beginSettingsTransition()
+        }
         panel.delegate = self
         panel.setPinned(false)
         let inputProbe = EscapeInputProbe(owner: self)
@@ -151,6 +163,13 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
 
     func togglePin() {
         onTogglePin?()
+    }
+
+    /// Marks that the Settings window is about to take the key from inside this
+    /// app. The next `windowDidResignKey` will report a keep-open transition so a
+    /// draft or active edit is not discarded while the user browses Settings.
+    func beginSettingsTransition() {
+        settingsTransitionPending = true
     }
 
     @discardableResult
@@ -488,7 +507,15 @@ final class CapturePanelController: NSObject, NSWindowDelegate {
 
     func windowDidResignKey(_ notification: Notification) {
         guard case .open = phase else { return }
-        onExternalFocusLost?()
+        let keepOpen = settingsTransitionPending
+        settingsTransitionPending = false
+        onExternalFocusLost?(keepOpen)
+    }
+
+    func windowDidBecomeKey(_ notification: Notification) {
+        // A stale settings-transition marker (e.g. `⌘,` pressed while Settings was
+        // already key) must not suppress a later genuine external-focus loss.
+        settingsTransitionPending = false
     }
 
     func windowDidEndLiveResize() {

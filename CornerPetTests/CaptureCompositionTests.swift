@@ -252,6 +252,67 @@ final class CaptureCompositionTests: XCTestCase {
         XCTAssertEqual(root.editViewModel.workingText, "working text must remain")
     }
 
+    func testSettingsTransitionKeepsProtectedDraftPanelOpen() throws {
+        let (screen, screenID) = try mainScreen()
+        let container = try ModelContainerFactory.makeInMemory()
+        var now: TimeInterval = 0
+        let panelController = CapturePanelController(
+            screenProvider: { requestedID in
+                requestedID == screenID ? screen : nil
+            },
+            clock: { now },
+            reducedMotionProvider: { true }
+        )
+        let scheduler = ManualDeadlineScheduler()
+        let appDelegate = AppDelegate(
+            panelControllerFactory: { panelController },
+            triggerCoordinatorFactory: { _ in
+                CornerTriggerCoordinator(
+                    screenProvider: { screen },
+                    clock: { now },
+                    pointerLocationProvider: {
+                        CGPoint(x: screen.frame.midX, y: screen.frame.midY)
+                    },
+                    scheduler: ManualDeadlineScheduler(),
+                    presentPanel: { _ in },
+                    reverseClosingPanel: { _ in }
+                )
+            },
+            compositionFactory: { controller in
+                CaptureCompositionRoot(container: container, panelController: controller)
+            },
+            lifecycleCoordinatorFactory: { controller in
+                PanelLifecycleCoordinator(
+                    panelController: controller,
+                    scheduler: scheduler,
+                    clock: { now },
+                    pointerInsideKeepOpen: { false }
+                )
+            }
+        )
+
+        appDelegate.applicationDidFinishLaunching(Notification(name: .init("test")))
+        let root = try XCTUnwrap(appDelegate.composition as? CaptureCompositionRoot)
+        root.captureViewModel.draftDidChange("draft must survive settings")
+
+        appDelegate.lifecycleCoordinator?.presentRequested(screenID: screenID)
+        panelController.present(screenID: screenID)
+        now = 0.120
+        _ = panelController.tick(at: now)
+        XCTAssertEqual(appDelegate.lifecycleCoordinator?.state, .draftLocked)
+
+        panelController.beginSettingsTransition()
+        panelController.windowDidResignKey(Notification(
+            name: NSWindow.didResignKeyNotification,
+            object: panelController.panel
+        ))
+
+        XCTAssertEqual(appDelegate.lifecycleCoordinator?.state, .draftLocked)
+        XCTAssertTrue(panelController.isVisible)
+        XCTAssertEqual(root.captureViewModel.draftText, "draft must survive settings")
+        XCTAssertEqual(try root.draftStore.restore().text, "draft must survive settings")
+    }
+
     func testAppDelegateCreatesLifecycleCoordinator() throws {
         let (screen, _) = try mainScreen()
         let panelController = CapturePanelController(screenProvider: { _ in nil })

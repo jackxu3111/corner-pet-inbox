@@ -1,4 +1,30 @@
+import AppKit
 import SwiftUI
+
+/// Normalizes the SwiftUI Settings window to a regular, coverable window:
+/// it stays on the current Space, may appear over full-screen apps on demand,
+/// and never gets an elevated level, so other pages can cover it.
+struct SettingsWindowConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        SettingsWindowConfiguringView()
+    }
+
+    func updateNSView(_ view: NSView, context: Context) {}
+}
+
+private final class SettingsWindowConfiguringView: NSView {
+    private var didConfigure = false
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        guard !didConfigure, let window else { return }
+        didConfigure = true
+        window.isReleasedWhenClosed = false
+        window.level = .normal
+        window.collectionBehavior = [.fullScreenAuxiliary]
+        window.hidesOnDeactivate = false
+    }
+}
 
 struct CornerPetSettingsView: View {
     let settings: AppSettings
@@ -129,6 +155,7 @@ struct CornerPetSettingsView: View {
         .task {
             launchAtLogin.refresh()
         }
+        .background(SettingsWindowConfigurator())
     }
 
     private var triggerCornerBinding: Binding<TriggerCorner> {

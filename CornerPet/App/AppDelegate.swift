@@ -317,6 +317,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             },
             onTogglePin: togglePin
         )
+        composition?.configureSettingsOpening { [weak panelController] in
+            panelController?.beginSettingsTransition()
+            NSApp.activate()
+            if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
+                NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+            }
+        }
 
         composition?.onAutoHideProtectionChanged = { [weak self, weak lifecycleCoordinator] _ in
             let content = self?.composition?.panelContentStatus
@@ -327,8 +334,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panelController.onLifecycle = { [weak self, weak triggerCoordinator, weak lifecycleCoordinator] event in
             switch event {
             case let .beganOpening(screenID):
+                // The initial present is already driven by lifecycleCoordinator.presentRequested
+                // (via the trigger's onPresentRequested or the direct launch path); do not
+                // request it again here.
                 triggerCoordinator?.panelBeganOpening()
-                lifecycleCoordinator?.presentRequested(screenID: screenID)
                 lifecycleCoordinator?.didBeginOpening(screenID: screenID)
             case .didOpen:
                 triggerCoordinator?.panelDidOpen()
@@ -352,7 +361,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panelController.onEscape = { [weak lifecycleCoordinator] in
             lifecycleCoordinator?.closeRequested()
         }
-        panelController.onExternalFocusLost = { [weak self, weak lifecycleCoordinator] in
+        panelController.onExternalFocusLost = { [weak self, weak lifecycleCoordinator] keepOpen in
+            if keepOpen {
+                // The key moved to an in-app window (Settings). Flush the draft so it is
+                // preserved, but do NOT treat this as external focus loss: keep the panel
+                // (and any active inline edit) open so protected content is not discarded.
+                let content = self?.composition?.panelContentStatus
+                    ?? PanelContentStatus(hasDraft: false, hasItemEdit: false, hasError: false)
+                self?.composition?.captureViewModel.flushDraft()
+                lifecycleCoordinator?.contentChanged(content, pointerInsideKeepOpen: false)
+                return
+            }
             self?.composition?.captureViewModel.flushDraft()
             let saveResult = self?.composition?.saveActiveEditForExternalFocus()
             let succeeded: Bool? = saveResult.map { result in
@@ -412,6 +431,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) {
         launchAtLoginController.refresh()
+    }
+
+    func applicationDidResignActive(_ notification: Notification) {
+        // Keep the Settings window behind other applications' windows when
+        // CornerPet loses focus, so it never floats above other pages.
+        for window in NSApp.windows where window.level == .normal {
+            window.orderBack(nil)
+        }
     }
 
     func focusLibrarySearch() {

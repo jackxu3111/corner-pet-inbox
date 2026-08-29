@@ -3,6 +3,7 @@ import SwiftUI
 struct CaptureNavigationBar: View {
     let selectedDestination: CaptureDestination
     let onSelect: (CaptureDestination) -> Void
+    let onOpenSettings: () -> Void
 
     @Environment(\.locale) private var locale
 
@@ -10,7 +11,7 @@ struct CaptureNavigationBar: View {
         HStack(spacing: 4) {
             ForEach(CaptureDestination.allCases) { destination in
                 if destination == .settings {
-                    SettingsLink {
+                    Button(action: onOpenSettings) {
                         NavigationItemLabel(
                             destination: destination,
                             isSelected: false
