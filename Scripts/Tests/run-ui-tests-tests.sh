@@ -60,6 +60,13 @@ case "${1:-}" in
         fi
         printf '%s\n' "$identifier" > "$FAKE_INPUT_STATE"
         ;;
+    quiesce)
+        identifier="${2:-}"
+        echo "quiesce:$identifier" >> "$FAKE_INPUT_CALLS"
+        if [[ "${FAKE_FAIL_QUIESCE_ID:-}" == "$identifier" ]]; then
+            exit 1
+        fi
+        ;;
     *)
         exit 64
         ;;
@@ -92,6 +99,7 @@ run_fixture() {
     FAKE_INPUT_STATE="$INPUT_STATE" \
     FAKE_INPUT_CALLS="$INPUT_CALLS" \
     FAKE_FAIL_SELECT_ID="${FAKE_FAIL_SELECT_ID:-}" \
+    FAKE_FAIL_QUIESCE_ID="${FAKE_FAIL_QUIESCE_ID:-}" \
     FAKE_XCODE_ARGS="$XCODE_ARGS" \
     FAKE_XCODE_OUTPUT="${FAKE_XCODE_OUTPUT:-}" \
     FAKE_XCODE_EXIT="${FAKE_XCODE_EXIT:-0}" \
@@ -129,8 +137,11 @@ test_switches_and_restores_after_success() {
     assert_equals "$RUN_STATUS" "0" "successful run status"
     assert_equals "$(cat "$INPUT_STATE")" "com.apple.inputmethod.SCIM.ITABC" "restored Chinese input source"
     assert_equals "$(sed -n '1p' "$INPUT_CALLS")" "select:com.apple.keylayout.ABC" "temporary ABC selection"
-    assert_equals "$(sed -n '2p' "$INPUT_CALLS")" "select:com.apple.inputmethod.SCIM.ITABC" "original source restoration"
+    assert_equals "$(sed -n '2p' "$INPUT_CALLS")" "quiesce:com.apple.inputmethod.SCIM.ITABC" "inactive input-method cleanup"
+    assert_equals "$(sed -n '3p' "$INPUT_CALLS")" "select:com.apple.inputmethod.SCIM.ITABC" "original source restoration"
     assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=passed"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=com.apple.keylayout.ABC"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE=com.apple.inputmethod.SCIM.ITABC"
     cleanup_fixture
     PASS_COUNT=$((PASS_COUNT + 1))
 }
@@ -197,6 +208,22 @@ test_restore_failure_overrides_status() {
     PASS_COUNT=$((PASS_COUNT + 1))
 }
 
+test_quiesce_failure_stops_before_xcode_and_restores() {
+    make_fixture
+    printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
+    FAKE_FAIL_QUIESCE_ID="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "64" "quiesce failure status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.inputmethod.SCIM.ITABC" "quiesce failure restoration"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=environment-preflight"
+    [[ ! -s "$XCODE_ARGS" ]] || fail "xcodebuild ran after quiesce failed"
+    cleanup_fixture
+    unset FAKE_FAIL_QUIESCE_ID
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
 set -e
 [[ -f "$RUNNER" ]] || fail "missing runner: $RUNNER"
 
@@ -206,5 +233,6 @@ test_product_failure_restores_and_preserves_status
 test_automation_failure_restores_and_uses_infrastructure_status
 test_signal_restores_original_source
 test_restore_failure_overrides_status
+test_quiesce_failure_stops_before_xcode_and_restores
 
 echo "PASS: $PASS_COUNT UI automation runner tests"

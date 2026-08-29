@@ -1,3 +1,4 @@
+import AppKit
 import Carbon
 import Foundation
 
@@ -8,6 +9,7 @@ enum InputSourceError: Error, CustomStringConvertible {
     case sourceNotSelectable(String)
     case selectionFailed(String, OSStatus)
     case selectionDidNotStick(expected: String, actual: String)
+    case quiesceFailed(identifier: String, bundleIdentifier: String)
 
     var description: String {
         switch self {
@@ -23,6 +25,8 @@ enum InputSourceError: Error, CustomStringConvertible {
             "failed to select input source \(identifier) (OSStatus \(status))"
         case let .selectionDidNotStick(expected, actual):
             "input source selection did not stick (expected \(expected), got \(actual))"
+        case let .quiesceFailed(identifier, bundleIdentifier):
+            "input source process did not stop (source \(identifier), bundle \(bundleIdentifier))"
         }
     }
 }
@@ -84,12 +88,54 @@ func select(identifier expectedIdentifier: String) throws {
     }
 }
 
+func quiesce(identifier sourceIdentifier: String) throws {
+    guard let source = enabledSource(identifier: sourceIdentifier) else {
+        throw InputSourceError.sourceNotFound(sourceIdentifier)
+    }
+
+    guard let bundleIdentifier = property(
+        of: source,
+        key: kTISPropertyBundleID,
+        as: String.self
+    ), !bundleIdentifier.isEmpty else {
+        return
+    }
+
+    let applications = NSRunningApplication.runningApplications(
+        withBundleIdentifier: bundleIdentifier
+    )
+    guard !applications.isEmpty else {
+        return
+    }
+
+    guard applications.allSatisfy({ $0.terminate() }) else {
+        throw InputSourceError.quiesceFailed(
+            identifier: sourceIdentifier,
+            bundleIdentifier: bundleIdentifier
+        )
+    }
+
+    let deadline = Date().addingTimeInterval(3)
+    while applications.contains(where: { !$0.isTerminated }), Date() < deadline {
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+    }
+
+    guard applications.allSatisfy(\.isTerminated) else {
+        throw InputSourceError.quiesceFailed(
+            identifier: sourceIdentifier,
+            bundleIdentifier: bundleIdentifier
+        )
+    }
+}
+
 do {
     let arguments = Array(CommandLine.arguments.dropFirst())
     if arguments == ["current"] {
         print(try currentIdentifier())
     } else if arguments.count == 2, arguments[0] == "select" {
         try select(identifier: arguments[1])
+    } else if arguments.count == 2, arguments[0] == "quiesce" {
+        try quiesce(identifier: arguments[1])
     } else {
         throw InputSourceError.invalidArguments
     }

@@ -126,6 +126,7 @@ else
     INPUT_SOURCE_TOOL="$HELPER_CACHE/input-source"
     if [[ ! -x "$INPUT_SOURCE_TOOL" || "$SCRIPT_DIR/UIAutomation/InputSource.swift" -nt "$INPUT_SOURCE_TOOL" ]]; then
         if ! DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" xcrun swiftc \
+            -framework AppKit \
             -framework Carbon \
             "$SCRIPT_DIR/UIAutomation/InputSource.swift" \
             -o "$INPUT_SOURCE_TOOL"; then
@@ -176,6 +177,18 @@ if [[ "$ACTIVE_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
     exit "$FINAL_STATUS"
 fi
 
+echo "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=$ACTIVE_INPUT_SOURCE"
+
+if [[ "$ORIGINAL_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
+    if ! "$INPUT_SOURCE_TOOL" quiesce "$ORIGINAL_INPUT_SOURCE"; then
+        echo "error: unable to quiesce the inactive input source process" >&2
+        CLASSIFICATION="environment-preflight"
+        FINAL_STATUS=64
+        exit "$FINAL_STATUS"
+    fi
+    echo "CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE=$ORIGINAL_INPUT_SOURCE"
+fi
+
 if [[ "$MODE" == "preflight" ]]; then
     CLASSIFICATION="preflight-passed"
     exit 0
@@ -204,7 +217,7 @@ if [[ "$XCODE_STATUS" -eq 0 ]]; then
     CLASSIFICATION="passed"
     FINAL_STATUS=0
 elif grep -Eiq \
-    "failed to (establish|initialize|create|launch).*(automation|session)|automation session|AXError|candidate window|input method|UI Testing Failure.*application.*not running" \
+    "failed to (establish|initialize|create|launch).*(automation|session)|automation session|AXError|candidate window|input ?method|UI interruption|UI Testing Failure.*application.*not running" \
     "$LOG_PATH"; then
     CLASSIFICATION="automation-infrastructure"
     FINAL_STATUS=70

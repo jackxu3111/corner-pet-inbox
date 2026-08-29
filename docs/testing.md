@@ -4,9 +4,9 @@
 
 macOS UI automation can fail before CornerPet reaches a product assertion when an input-method candidate window or another process owns focus. `Scripts/run-ui-tests.sh` makes that environment deterministic without changing the user's enabled input methods or machine-wide Xcode selection.
 
-The runner records the current keyboard input-source ID, temporarily selects `com.apple.keylayout.ABC`, runs `CornerPetUITests` serially, and restores the exact captured ID from an exit trap. Restoration runs after success, test failure, `INT`, or `TERM`.
+The runner records the current keyboard input-source ID, temporarily selects `com.apple.keylayout.ABC`, and gracefully stops the now-inactive input source's owning application when one is still running. This removes candidate windows that can survive a source switch and steal XCUITest focus. It then runs `CornerPetUITests` serially and restores the exact captured source ID from an exit trap. Selecting the original source relaunches its input-method process when needed. Restoration runs after success, test failure, `INT`, or `TERM`.
 
-The input-source helper uses the public HIToolbox APIs declared by the installed macOS SDK: `TISCopyCurrentKeyboardInputSource`, `TISCreateInputSourceList`, and `TISSelectInputSource`. It only queries enabled sources and never enables, disables, or removes one.
+The input-source helper uses the public HIToolbox APIs declared by the installed macOS SDK: `TISCopyCurrentKeyboardInputSource`, `TISCreateInputSourceList`, and `TISSelectInputSource`. It uses `NSRunningApplication.terminate()` for graceful process cleanup and never force-kills a process or enables, disables, or removes an input source. Run UI automation only when no text composition needs to be preserved.
 
 ## Commands
 
@@ -42,14 +42,19 @@ build/test-evidence/<timestamp>/CornerPetUITests.xcresult
 The final output names both paths and prints exactly one classification line:
 
 ```text
+CORNERPET_UI_TEST_ORIGINAL_INPUT_SOURCE=<captured-id>
+CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=com.apple.keylayout.ABC
+CORNERPET_UI_TEST_QUIESCED_INPUT_SOURCE=<captured-id>
 CORNERPET_UI_TEST_CLASSIFICATION=<classification>
 ```
+
+The `QUIESCED` line is omitted when ABC was already active.
 
 | Classification | Exit | Meaning |
 |---|---:|---|
 | `passed` | 0 | XCUITest completed successfully and the input source was restored. |
 | `preflight-passed` | 0 | Xcode/helper/input-source preflight completed and the original source was restored. |
-| `environment-preflight` | 64 | Full Xcode, the helper, or input-source setup was unavailable before tests started. |
+| `environment-preflight` | 64 | Full Xcode, the helper, input-source switching, or inactive input-method cleanup was unavailable before tests started. |
 | `product-regression` | 65 | The app launched and xcodebuild reported a test failure without a known automation-infrastructure signature. |
 | `automation-infrastructure` | 70 | The log reports an automation-session, app-launch, accessibility, candidate-window, or input-method failure before a trustworthy product assertion. |
 | `input-source-restore-failed` | 74 | The original input source could not be restored or verified. This always makes the run fail. |
