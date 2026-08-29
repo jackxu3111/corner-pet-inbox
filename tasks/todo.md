@@ -1,6 +1,6 @@
 # CornerPet MVP Task Checklist
 
-## Current Progress (2026-08-28)
+## Current Progress (2026-08-29)
 
 - [x] Task 1–4：原生工程、L 形触发、400 ms 停留与 360×450 面板原型
 - [x] Task 5：SwiftData 正式事项与唯一草稿持久化
@@ -8,9 +8,11 @@
 - [x] Task 7：输入优先面板、最新优先收件箱与双语占位导航
 - [x] Task 8：五秒撤销、收藏与搜索、共享行内编辑、确认永久删除
 - [x] Task 9：八状态面板生命周期、唯一 120 ms 收回、置顶移动缩放与尺寸持久化
-- [ ] Task 10–14：多显示器、设置、提醒、双语无障碍与发布
+- [x] Task 10–12：多显示器、设置、登录启动、每日提醒与小猫
+- [ ] Task 12.5：UI 自动化、SwiftData 迁移与发布工程加固（进行中）
+- [ ] Task 13–14：双语无障碍、隐私安全指标、扩展 QA 与候选版验证
 
-最新自动验收：`build-for-testing` 成功，直接 XCTest 249/249 通过，arm64 Debug `BUILD SUCCEEDED`，`git diff --check` 与旧 100 ms 收回 owner 扫描通过。Library/Pinning UI Runner 在执行首个用例前无法初始化 automation mode；相关 UI 套件已构建但未记为通过，真实 Mac 的搜索/编辑/删除、拖拽缩放、全屏/Spaces 与 unpin/retrigger 仍需手测。
+Task 12 合并前最新自动验收：`CornerPetTests` 341/341、`CornerPetUITests` 21/21 通过，`git diff --check` 通过。首次 `xcodebuild` 因系统指向 Command Line Tools 而失败；仅为测试进程选择 Xcode Beta 后通过，归类为环境失败。成功 UI 运行时输入源为 `com.apple.keylayout.ABC`，中文候选窗干扰仍由 Task 12.5 建立可恢复的前置防护。
 
 ## Task 1: Project Baseline
 **Outcome:** macOS 14、arm64 App 和两类测试目标可构建，隐藏启动。
@@ -83,6 +85,14 @@
 **Acceptance:** 每日最多一次；休眠只补一次；可稍后或关闭。
 **Verification:** ReminderPolicyTests + sleep/wake 手测。
 **Dependencies:** Tasks 5, 11 · **Scope:** M
+
+**Status:** 已通过 PR #1 合并到 `main`（`9ede8d7`）；自动单元与 UI 回归通过，sleep/wake 真实会话仍保留为手测证据。
+
+## Task 12.5: Engineering Hardening
+**Outcome:** UI 自动化输入源可恢复、SwiftData V1 可迁移、版本/Release/Hardened Runtime 与签名公证流程可执行。
+**Acceptance:** 环境失败与产品回归可区分；Task 12 旧数据无损打开并重启恢复；unsigned Release 与全部自动化通过；缺失 Developer ID/公证凭据时明确失败而不伪造成功。
+**Verification:** 脚本测试 + legacy-store migration tests + full unit/UI + Release build + static review。
+**Dependencies:** Task 12 · **Scope:** M · **Status:** 进行中
 
 ## Task 13: Localization and Accessibility
 **Outcome:** 中英文、VoiceOver、Reduce Motion 和错误文案完整。

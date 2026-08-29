@@ -63,9 +63,10 @@
 ## Phase 2: Window and System Integration
 
 - [x] Task 9: 面板状态机、120 ms 防抖、置顶移动缩放
-- [ ] Task 10: 四角设置、主屏/所有屏与动态重排
-- [ ] Task 11: 其余设置、冲突帮助、登录启动
-- [ ] Task 12: 每日提醒、休眠补发、稍后提醒、小猫
+- [x] Task 10: 四角设置、主屏/所有屏与动态重排
+- [x] Task 11: 其余设置、冲突帮助、登录启动
+- [x] Task 12: 每日提醒、休眠补发、稍后提醒、小猫
+- [ ] Task 12.5: UI 自动化环境、SwiftData 迁移与发布工程加固（进行中）
 
 ### Checkpoint C
 
@@ -79,6 +80,8 @@
 
 - [ ] Task 13: 中英文、无障碍、Reduce Motion、错误文案
 - [ ] Task 14: 本地指标、自动化、QA、arm64 Release
+
+Task 12 已通过 PR #1 合并到 `main`（`9ede8d7`）。Task 12.5 在 Task 13 前建立数据升级与发布流程基线；Task 14 仍负责隐私安全指标、扩展 QA 和七天候选版验证。
 
 ### Checkpoint D
 
