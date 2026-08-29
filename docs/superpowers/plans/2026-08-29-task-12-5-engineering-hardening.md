@@ -420,7 +420,7 @@ git commit -m "build: add the macOS release baseline"
 - Consumes: all Task 12.5 increments and the Task 12 behavior baseline.
 - Produces: fresh automated evidence, an explicit manual/not-executed matrix, five-axis review findings, and corrected task tracking.
 
-- [ ] **Step 1: Run script tests and static checks**
+- [x] **Step 1: Run script tests and static checks**
 
 ```bash
 /bin/bash Scripts/Tests/run-ui-tests-tests.sh
@@ -430,7 +430,7 @@ git diff --check origin/main...HEAD
 rg -n "CGEventTap|NSEvent\.addGlobalMonitor|UNUserNotificationCenter|Sparkle|Sentry|Firebase" CornerPet Scripts
 ```
 
-- [ ] **Step 2: Run all unit tests serially**
+- [x] **Step 2: Run all unit tests serially**
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild test \
@@ -441,7 +441,7 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild test \
 
 Record the exact executed/passed/failed counts and `.xcresult` path.
 
-- [ ] **Step 3: Run all UI tests through the guarded runner**
+- [x] **Step 3: Run all UI tests through the guarded runner**
 
 ```bash
 Scripts/run-ui-tests.sh
@@ -449,7 +449,7 @@ Scripts/run-ui-tests.sh
 
 Record the classification, exact executed/passed/failed counts, original/restored input-source IDs, log path, and `.xcresult` path.
 
-- [ ] **Step 4: Run clean Debug and unsigned Release builds**
+- [x] **Step 4: Run clean Debug and unsigned Release builds**
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild clean build \
@@ -461,15 +461,15 @@ DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild analyze
   -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO
 ```
 
-- [ ] **Step 5: Record the regression matrix truthfully**
+- [x] **Step 5: Record the regression matrix truthfully**
 
 Automated evidence covers reminder, archive, favorites, capture/focus, four-corner geometry, screen coordination, pin state, and persistence. Record full-screen/Spaces, physical multi-display behavior, candidate-window behavior under a real Chinese input session, pointer drag/resize, sleep/wake, logout/restart, and `/Applications` login launch as manual passed/failed/not executed. Never convert not executed into passed.
 
-- [ ] **Step 6: Conduct the five-axis and SwiftUI/SwiftData review**
+- [x] **Step 6: Conduct the five-axis and SwiftUI/SwiftData review**
 
 Review `origin/main...HEAD` in this order: tests, implementation, project settings/scripts, then documentation. Categorize findings as Critical, Required, Optional, or Nit across correctness, readability, architecture, security, and performance. Fix every confirmed Critical/Required issue with a reproducing test first, rerun the affected verification, and record the resolution.
 
-- [ ] **Step 7: Update tracking and commit final evidence**
+- [x] **Step 7: Update tracking and commit final evidence**
 
 Mark Task 12.5 complete only when all executable gates pass and external gates are listed. Keep Task 13 as the next task and Task 14 as the later metrics/extended-QA gate.
 

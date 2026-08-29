@@ -1,7 +1,7 @@
 # CornerPet Task 12.5 Engineering Hardening Design
 
-**Date:** 2026-08-29  
-**Status:** Approved in conversation; awaiting repository-spec review  
+**Date:** 2026-08-29
+**Status:** Approved
 **Scope:** Engineering hardening only. No pet or page visual redesign, cloud sync, analytics SDK, or automatic updater.
 
 ## 1. Objective

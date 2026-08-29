@@ -9,10 +9,10 @@
 - [x] Task 8：五秒撤销、收藏与搜索、共享行内编辑、确认永久删除
 - [x] Task 9：八状态面板生命周期、唯一 120 ms 收回、置顶移动缩放与尺寸持久化
 - [x] Task 10–12：多显示器、设置、登录启动、每日提醒与小猫
-- [ ] Task 12.5：UI 自动化、SwiftData 迁移与发布工程加固（进行中）
+- [x] Task 12.5：UI 自动化、SwiftData 迁移与发布工程加固（已完成）
 - [ ] Task 13–14：双语无障碍、隐私安全指标、扩展 QA 与候选版验证
 
-Task 12 合并前最新自动验收：`CornerPetTests` 341/341、`CornerPetUITests` 21/21 通过，`git diff --check` 通过。首次 `xcodebuild` 因系统指向 Command Line Tools 而失败；仅为测试进程选择 Xcode Beta 后通过，归类为环境失败。成功 UI 运行时输入源为 `com.apple.keylayout.ABC`，中文候选窗干扰仍由 Task 12.5 建立可恢复的前置防护。
+Task 12 合并前自动验收为 `CornerPetTests` 341/341、`CornerPetUITests` 21/21。Task 12.5 最终自动验收为 `CornerPetTests` 344/344、受保护的 `CornerPetUITests` 21/21、UI Runner 7/7、Release Workflow 11/11，并通过 Debug/Release 构建与静态分析。Runner 会临时选择 ABC、向未激活输入法进程定向发送 Escape 清理残留候选窗、在所有退出路径恢复原输入源，并区分环境失败与产品回归。完整证据和未执行的会话/凭据门槛见 `docs/verification/task-12-5-verification.md`。
 
 ## Task 1: Project Baseline
 **Outcome:** macOS 14、arm64 App 和两类测试目标可构建，隐藏启动。
@@ -92,7 +92,9 @@ Task 12 合并前最新自动验收：`CornerPetTests` 341/341、`CornerPetUITes
 **Outcome:** UI 自动化输入源可恢复、SwiftData V1 可迁移、版本/Release/Hardened Runtime 与签名公证流程可执行。
 **Acceptance:** 环境失败与产品回归可区分；Task 12 旧数据无损打开并重启恢复；unsigned Release 与全部自动化通过；缺失 Developer ID/公证凭据时明确失败而不伪造成功。
 **Verification:** 脚本测试 + legacy-store migration tests + full unit/UI + Release build + static review。
-**Dependencies:** Task 12 · **Scope:** M · **Status:** 进行中
+**Dependencies:** Task 12 · **Scope:** M · **Status:** 已完成
+
+**Verification evidence:** `docs/verification/task-12-5-verification.md`。本机缺少 Developer ID Application 证书和公证 profile，因此签名、公证、`/Applications` 安装与真实登录重启验证保留为明确外部门槛，不计为通过。
 
 ## Task 13: Localization and Accessibility
 **Outcome:** 中英文、VoiceOver、Reduce Motion 和错误文案完整。
