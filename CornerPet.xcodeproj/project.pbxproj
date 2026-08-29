@@ -28,6 +28,7 @@
 		1000000000000000000000A0 /* Draft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B0 /* Draft.swift */; };
 		1000000000000000000000A1 /* IdeaItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B1 /* IdeaItem.swift */; };
 		1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B2 /* ModelContainerFactory.swift */; };
+		900000000000000000000001 /* CornerPetSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900000000000000000000002 /* CornerPetSchema.swift */; };
 		1000000000000000000000A3 /* ModelContainerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B3 /* ModelContainerFactoryTests.swift */; };
 		1000000000000000000000A4 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B4 /* DraftStore.swift */; };
 		1000000000000000000000A5 /* DraftStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1000000000000000000000B5 /* DraftStoreTests.swift */; };
@@ -135,6 +136,7 @@
 		1000000000000000000000B0 /* Draft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Draft.swift; sourceTree = "<group>"; };
 		1000000000000000000000B1 /* IdeaItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdeaItem.swift; sourceTree = "<group>"; };
 		1000000000000000000000B2 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
+		900000000000000000000002 /* CornerPetSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPetSchema.swift; sourceTree = "<group>"; };
 		1000000000000000000000B3 /* ModelContainerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactoryTests.swift; sourceTree = "<group>"; };
 		1000000000000000000000B4 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
 		1000000000000000000000B5 /* DraftStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStoreTests.swift; sourceTree = "<group>"; };
@@ -350,6 +352,7 @@
 		1000000000000000000000C0 /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
+				900000000000000000000002 /* CornerPetSchema.swift */,
 				1000000000000000000000B0 /* Draft.swift */,
 				1000000000000000000000B1 /* IdeaItem.swift */,
 				1000000000000000000000B2 /* ModelContainerFactory.swift */,
@@ -618,6 +621,7 @@
 				1000000000000000000000A0 /* Draft.swift in Sources */,
 				1000000000000000000000A1 /* IdeaItem.swift in Sources */,
 				1000000000000000000000A2 /* ModelContainerFactory.swift in Sources */,
+				900000000000000000000001 /* CornerPetSchema.swift in Sources */,
 				1000000000000000000000A4 /* DraftStore.swift in Sources */,
 				1000000000000000000000A6 /* ItemStore.swift in Sources */,
 				1000000000000000000000E1 /* CaptureKeyboardPolicy.swift in Sources */,
@@ -771,9 +775,12 @@
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BA2HVLXM26;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
+				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
 				INFOPLIST_KEY_CFBundleDisplayName = "CornerPet / 角落灵感箱";
 				INFOPLIST_KEY_CFBundleName = "$(PRODUCT_NAME)";
 				INFOPLIST_KEY_LSMinimumSystemVersion = 14.0;
@@ -782,6 +789,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jack.CornerPet;
 				PRODUCT_NAME = CornerPet;
 			};
@@ -792,11 +800,15 @@
 			buildSettings = {
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BA2HVLXM26;
-				ENABLE_TESTABILITY = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_TESTABILITY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
+				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
 				INFOPLIST_KEY_CFBundleDisplayName = "CornerPet / 角落灵感箱";
 				INFOPLIST_KEY_CFBundleName = "$(PRODUCT_NAME)";
 				INFOPLIST_KEY_LSMinimumSystemVersion = 14.0;
@@ -805,6 +817,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jack.CornerPet;
 				PRODUCT_NAME = CornerPet;
 			};

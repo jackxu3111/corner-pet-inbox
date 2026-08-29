@@ -4,7 +4,7 @@ import SwiftData
 @MainActor
 enum ModelContainerFactory {
     private static var schema: Schema {
-        Schema([Draft.self, IdeaItem.self])
+        Schema(versionedSchema: CornerPetSchemaV1.self)
     }
 
     static func makeProduction() throws -> ModelContainer {
@@ -14,7 +14,11 @@ enum ModelContainerFactory {
             groupContainer: .none,
             cloudKitDatabase: .none
         )
-        return try ModelContainer(for: schema, configurations: [configuration])
+        return try ModelContainer(
+            for: schema,
+            migrationPlan: CornerPetMigrationPlan.self,
+            configurations: [configuration]
+        )
     }
 
     static func makeInMemory() throws -> ModelContainer {
@@ -25,7 +29,11 @@ enum ModelContainerFactory {
             groupContainer: .none,
             cloudKitDatabase: .none
         )
-        return try ModelContainer(for: schema, configurations: [configuration])
+        return try ModelContainer(
+            for: schema,
+            migrationPlan: CornerPetMigrationPlan.self,
+            configurations: [configuration]
+        )
     }
 
     static func make(at storeURL: URL) throws -> ModelContainer {
@@ -35,6 +43,10 @@ enum ModelContainerFactory {
             url: storeURL,
             cloudKitDatabase: .none
         )
-        return try ModelContainer(for: schema, configurations: [configuration])
+        return try ModelContainer(
+            for: schema,
+            migrationPlan: CornerPetMigrationPlan.self,
+            configurations: [configuration]
+        )
     }
 }

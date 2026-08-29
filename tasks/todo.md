@@ -1,6 +1,6 @@
 # CornerPet MVP Task Checklist
 
-## Current Progress (2026-08-28)
+## Current Progress (2026-08-29)
 
 - [x] Task 1–4：原生工程、L 形触发、400 ms 停留与 360×450 面板原型
 - [x] Task 5：SwiftData 正式事项与唯一草稿持久化
@@ -8,9 +8,11 @@
 - [x] Task 7：输入优先面板、最新优先收件箱与双语占位导航
 - [x] Task 8：五秒撤销、收藏与搜索、共享行内编辑、确认永久删除
 - [x] Task 9：八状态面板生命周期、唯一 120 ms 收回、置顶移动缩放与尺寸持久化
-- [ ] Task 10–14：多显示器、设置、提醒、双语无障碍与发布
+- [x] Task 10–12：多显示器、设置、登录启动、每日提醒与小猫
+- [x] Task 12.5：UI 自动化、SwiftData 迁移与发布工程加固（已完成）
+- [ ] Task 13–14：双语无障碍、隐私安全指标、扩展 QA 与候选版验证
 
-最新自动验收：`build-for-testing` 成功，直接 XCTest 249/249 通过，arm64 Debug `BUILD SUCCEEDED`，`git diff --check` 与旧 100 ms 收回 owner 扫描通过。Library/Pinning UI Runner 在执行首个用例前无法初始化 automation mode；相关 UI 套件已构建但未记为通过，真实 Mac 的搜索/编辑/删除、拖拽缩放、全屏/Spaces 与 unpin/retrigger 仍需手测。
+Task 12 合并前自动验收为 `CornerPetTests` 341/341、`CornerPetUITests` 21/21。Task 12.5 最终自动验收为 `CornerPetTests` 344/344、受保护的 `CornerPetUITests` 21/21、UI Runner 7/7、Release Workflow 11/11，并通过 Debug/Release 构建与静态分析。Runner 会临时选择 ABC、向未激活输入法进程定向发送 Escape 清理残留候选窗、在所有退出路径恢复原输入源，并区分环境失败与产品回归。完整证据和未执行的会话/凭据门槛见 `docs/verification/task-12-5-verification.md`。
 
 ## Task 1: Project Baseline
 **Outcome:** macOS 14、arm64 App 和两类测试目标可构建，隐藏启动。
@@ -83,6 +85,16 @@
 **Acceptance:** 每日最多一次；休眠只补一次；可稍后或关闭。
 **Verification:** ReminderPolicyTests + sleep/wake 手测。
 **Dependencies:** Tasks 5, 11 · **Scope:** M
+
+**Status:** 已通过 PR #1 合并到 `main`（`9ede8d7`）；自动单元与 UI 回归通过，sleep/wake 真实会话仍保留为手测证据。
+
+## Task 12.5: Engineering Hardening
+**Outcome:** UI 自动化输入源可恢复、SwiftData V1 可迁移、版本/Release/Hardened Runtime 与签名公证流程可执行。
+**Acceptance:** 环境失败与产品回归可区分；Task 12 旧数据无损打开并重启恢复；unsigned Release 与全部自动化通过；缺失 Developer ID/公证凭据时明确失败而不伪造成功。
+**Verification:** 脚本测试 + legacy-store migration tests + full unit/UI + Release build + static review。
+**Dependencies:** Task 12 · **Scope:** M · **Status:** 已完成
+
+**Verification evidence:** `docs/verification/task-12-5-verification.md`。本机缺少 Developer ID Application 证书和公证 profile，因此签名、公证、`/Applications` 安装与真实登录重启验证保留为明确外部门槛，不计为通过。
 
 ## Task 13: Localization and Accessibility
 **Outcome:** 中英文、VoiceOver、Reduce Motion 和错误文案完整。
