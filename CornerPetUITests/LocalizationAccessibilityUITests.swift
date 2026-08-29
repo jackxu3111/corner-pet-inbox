@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class LocalizationAccessibilityUITests: XCTestCase {
-    func testEnglishCaptureExposesLocalizedVisibleAndAccessibilityCopy() {
+    func testEnglishCaptureExposesLocalizedVisibleAndAccessibilityCopy() throws {
         let app = launchCapture(language: "en")
         defer { app.terminate() }
 
@@ -15,7 +15,12 @@ final class LocalizationAccessibilityUITests: XCTestCase {
         XCTAssertEqual(app.buttons["nav.favorites"].label, "Favorites")
         XCTAssertEqual(app.buttons["nav.archive"].label, "Archive")
         XCTAssertEqual(app.buttons["nav.settings"].label, "Settings")
-        XCTAssertEqual(app.buttons["capture.pin"].label, "Pin")
+        let pin = app.buttons["capture.pin"]
+        XCTAssertEqual(pin.label, "Pin")
+        XCTAssertGreaterThan(input.frame.width, 0)
+        XCTAssertGreaterThan(input.frame.height, 0)
+        XCTAssertTrue(pin.isEnabled)
+        XCTAssertTrue(pin.isHittable)
 
         input.click()
         input.typeText("accessible idea")
@@ -26,6 +31,7 @@ final class LocalizationAccessibilityUITests: XCTestCase {
         XCTAssertEqual(firstButton(prefix: "inbox.item.complete.", in: app).label, "Complete and archive")
         XCTAssertEqual(firstButton(prefix: "inbox.item.favorite.", in: app).label, "Add to Favorites")
         XCTAssertEqual(firstButton(prefix: "inbox.item.delete.", in: app).label, "Delete permanently")
+        try app.performAccessibilityAudit(for: .action)
 
         idea.doubleClick()
         let editor = app.textViews.matching(
@@ -69,6 +75,19 @@ final class LocalizationAccessibilityUITests: XCTestCase {
         XCTAssertTrue(waitForLabel("记下想法", on: input))
         XCTAssertTrue(app.staticTexts["更改会立即应用于整个应用。"].waitForExistence(timeout: 2))
         XCTAssertTrue(waitForLabel("收件箱", on: app.buttons["nav.inbox"]))
+
+        input.click()
+        input.typeText("即时语言想法")
+        input.hover()
+        input.typeKey(.return, modifierFlags: [])
+        let idea = app.staticTexts["即时语言想法"]
+        XCTAssertTrue(idea.waitForExistence(timeout: 2))
+        idea.doubleClick()
+        let editor = app.textViews.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "inbox.item.editor.")
+        ).firstMatch
+        XCTAssertTrue(editor.waitForExistence(timeout: 2))
+        XCTAssertEqual(editor.label, "编辑想法")
     }
 
     func testSimplifiedChineseReminderHasNamedEnabledActions() {
