@@ -308,7 +308,7 @@ git commit -m "feat: version the SwiftData persistence schema"
 - Consumes: Xcode, `security`, `codesign`, `ditto`, `notarytool`, `stapler`, `spctl`, a Developer ID Application identity, and a named notarytool keychain profile.
 - Produces: `local-build`, `preflight`, `archive`, `notarize`, `install`, and `verify-installed` release commands plus auditable artifacts under `build/release`.
 
-- [ ] **Step 1: Write failing release contract tests**
+- [x] **Step 1: Write failing release contract tests**
 
 Use temporary fake command directories plus `CORNERPET_APPLICATIONS_DIR` and command-path environment overrides, so no test writes to the real `/Applications`. Assert:
 
@@ -323,7 +323,7 @@ unknown commands and unsafe artifact paths fail with usage
 
 Add a build-setting assertion that expects `MARKETING_VERSION = 0.1.0`, `CURRENT_PROJECT_VERSION = 1`, `ENABLE_HARDENED_RUNTIME = YES`, and Release `CODE_SIGN_IDENTITY = Developer ID Application`.
 
-- [ ] **Step 2: Run the release tests and verify RED**
+- [x] **Step 2: Run the release tests and verify RED**
 
 Run:
 
@@ -333,7 +333,7 @@ Run:
 
 Expected: FAIL because the release script and build settings do not exist.
 
-- [ ] **Step 3: Add the project release settings**
+- [x] **Step 3: Add the project release settings**
 
 For the CornerPet app target:
 
@@ -347,11 +347,11 @@ Release: CODE_SIGN_IDENTITY=Developer ID Application
 
 Keep Debug on Apple Development signing. Do not add hardened-runtime exceptions or unrelated entitlements.
 
-- [ ] **Step 4: Implement local-build and credential preflight**
+- [x] **Step 4: Implement local-build and credential preflight**
 
 `local-build` performs a clean unsigned Release arm64 build into an explicit artifact directory. `preflight` requires an exact Developer ID Application identity and validates the named keychain profile with `notarytool history`; it must stop before archiving if either prerequisite is absent.
 
-- [ ] **Step 5: Implement archive, verification, packaging, and notarization**
+- [x] **Step 5: Implement archive, verification, packaging, and notarization**
 
 The credentialed flow must:
 
@@ -369,11 +369,11 @@ repackage the stapled app
 
 On notarization failure, extract the submission ID from JSON and request `notarytool log` without hiding the original failure.
 
-- [ ] **Step 6: Implement recoverable installation and runtime inspection**
+- [x] **Step 6: Implement recoverable installation and runtime inspection**
 
 `install` requires a stapled, Gatekeeper-accepted app. If `/Applications/CornerPet.app` exists, reject by default; with `--replace`, move it to a timestamped backup under `build/release/backups` before copying the new bundle. `verify-installed` checks Info.plist version/build/LSUIElement, launches the app, and confirms the process exists. It reports login-after-restart as a manual gate rather than changing the user's setting.
 
-- [ ] **Step 7: Run release tests until GREEN**
+- [x] **Step 7: Run release tests until GREEN**
 
 Run:
 
@@ -382,7 +382,7 @@ Run:
 /bin/bash Scripts/Tests/release-tests.sh
 ```
 
-- [ ] **Step 8: Run the verifiable local release stages**
+- [x] **Step 8: Run the verifiable local release stages**
 
 Run:
 
@@ -393,11 +393,11 @@ Scripts/release.sh preflight
 
 Expected on this Mac: local build succeeds; preflight fails truthfully because no Developer ID Application identity is installed. Do not run notarization or `/Applications` replacement without the prerequisites.
 
-- [ ] **Step 9: Document the operator runbook**
+- [x] **Step 9: Document the operator runbook**
 
 In `docs/release.md`, record certificate creation, keychain-profile setup, commands for every stage, artifact layout, failure recovery, notarization-log inspection, installation backup behavior, and the manual logout/restart login-item checklist. Cite the Apple Developer ID, Hardened Runtime, and notarization documentation.
 
-- [ ] **Step 10: Review and commit the release increment**
+- [x] **Step 10: Review and commit the release increment**
 
 ```bash
 git diff --check
