@@ -114,6 +114,7 @@
 		A13000000000000000000008 /* AppLocaleScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000009 /* AppLocaleScope.swift */; };
 		A1300000000000000000000A /* ReminderAnimationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1300000000000000000000B /* ReminderAnimationPolicyTests.swift */; };
 		A1300000000000000000000C /* ReminderAnimationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1300000000000000000000D /* ReminderAnimationPolicy.swift */; };
+		A1300000000000000000000E /* LocalizationAccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1300000000000000000000F /* LocalizationAccessibilityUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -223,6 +224,7 @@
 		A13000000000000000000009 /* AppLocaleScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocaleScope.swift; sourceTree = "<group>"; };
 		A1300000000000000000000B /* ReminderAnimationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderAnimationPolicyTests.swift; sourceTree = "<group>"; };
 		A1300000000000000000000D /* ReminderAnimationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderAnimationPolicy.swift; sourceTree = "<group>"; };
+		A1300000000000000000000F /* LocalizationAccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationAccessibilityUITests.swift; sourceTree = "<group>"; };
 		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
 		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
 		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
@@ -468,6 +470,7 @@
 				20000000000000000000000E /* CaptureFlowUITests.swift */,
 				400000000000000000000018 /* LibraryFlowUITests.swift */,
 				50000000000000000000000F /* PinningFlowUITests.swift */,
+				A1300000000000000000000F /* LocalizationAccessibilityUITests.swift */,
 				800000000000000000000019 /* ReminderFlowUITests.swift */,
 			);
 			path = CornerPetUITests;
@@ -748,6 +751,7 @@
 				400000000000000000000017 /* LibraryFlowUITests.swift in Sources */,
 				50000000000000000000000E /* PinningFlowUITests.swift in Sources */,
 				800000000000000000000018 /* ReminderFlowUITests.swift in Sources */,
+				A1300000000000000000000E /* LocalizationAccessibilityUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

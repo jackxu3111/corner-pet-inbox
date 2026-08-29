@@ -10,10 +10,10 @@ final class PinningFlowUITests: XCTestCase {
         XCTAssertTrue(pin.waitForExistence(timeout: 5))
 
         pin.click()
-        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
+        XCTAssertTrue(waitForLabel("Unpin", on: pin))
 
         pin.click()
-        XCTAssertTrue(waitForLabel("置顶 / Pin", on: pin))
+        XCTAssertTrue(waitForLabel("Pin", on: pin))
     }
 
     func testCommandShiftPTogglesTheSamePinnedState() {
@@ -24,7 +24,7 @@ final class PinningFlowUITests: XCTestCase {
         XCTAssertTrue(pin.waitForExistence(timeout: 5))
 
         app.typeKey("p", modifierFlags: [.command, .shift])
-        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
+        XCTAssertTrue(waitForLabel("Unpin", on: pin))
     }
 
     func testPinnedPanelRemainsVisibleAfterPointerLeavesTriggerArea() {
@@ -37,7 +37,7 @@ final class PinningFlowUITests: XCTestCase {
         XCTAssertTrue(panel.exists)
 
         pin.click()
-        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
+        XCTAssertTrue(waitForLabel("Unpin", on: pin))
 
         let panelFrame = panel.frame
         let outsideX = panelFrame.minX > 100
@@ -52,7 +52,7 @@ final class PinningFlowUITests: XCTestCase {
 
         XCTAssertTrue(panel.waitForExistence(timeout: 1))
         XCTAssertTrue(pin.exists)
-        XCTAssertTrue(waitForLabel("取消置顶 / Unpin", on: pin))
+        XCTAssertTrue(waitForLabel("Unpin", on: pin))
     }
 
     private func launchApp() -> XCUIApplication {
@@ -60,6 +60,7 @@ final class PinningFlowUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en",
             "--cornerpet-memory-store",
             "--cornerpet-open-capture"
         ]

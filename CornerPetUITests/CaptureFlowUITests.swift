@@ -153,6 +153,7 @@ final class CaptureFlowUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en",
             "--cornerpet-memory-store",
             "--cornerpet-open-capture"
         ]
@@ -200,6 +201,7 @@ final class SettingsShortcutUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en",
             "--cornerpet-memory-store",
             "--cornerpet-ui-open-capture-without-activation",
             "--cornerpet-ui-keep-capture-open",

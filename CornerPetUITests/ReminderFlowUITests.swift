@@ -62,6 +62,7 @@ final class ReminderFlowUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en",
             "--cornerpet-memory-store",
             "--cornerpet-ui-show-reminder",
             "--cornerpet-ui-reminder-corner=\(corner)"
