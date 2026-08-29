@@ -10,9 +10,10 @@
 - [x] Task 9：八状态面板生命周期、唯一 120 ms 收回、置顶移动缩放与尺寸持久化
 - [x] Task 10–12：多显示器、设置、登录启动、每日提醒与小猫
 - [x] Task 12.5：UI 自动化、SwiftData 迁移与发布工程加固（已完成）
-- [ ] Task 13–14：双语无障碍、隐私安全指标、扩展 QA 与候选版验证
+- [x] Task 13：中英文、无障碍、Reduce Motion 与可执行错误文案最终基线
+- [ ] Task 14：隐私安全指标、扩展 QA 与候选版验证
 
-Task 12 合并前自动验收为 `CornerPetTests` 341/341、`CornerPetUITests` 21/21。Task 12.5 最终自动验收为 `CornerPetTests` 344/344、受保护的 `CornerPetUITests` 21/21、UI Runner 7/7、Release Workflow 11/11，并通过 Debug/Release 构建与静态分析。Runner 会临时选择 ABC、向未激活输入法进程定向发送 Escape 清理残留候选窗、在所有退出路径恢复原输入源，并区分环境失败与产品回归。完整证据和未执行的会话/凭据门槛见 `docs/verification/task-12-5-verification.md`。
+Task 12 合并前自动验收为 `CornerPetTests` 341/341、`CornerPetUITests` 21/21。Task 12.5 最终自动验收为 `CornerPetTests` 344/344、受保护的 `CornerPetUITests` 21/21、UI Runner 7/7、Release Workflow 11/11。Task 13 最终自动验收为隔离 VM `CornerPetTests` 354/354、受保护的 `CornerPetUITests` 25/25、UI Runner 13/13、Release Workflow 11/11，并通过 Debug/Release 构建、静态分析和 82×2 本地化资源检查。完整证据与仍需真机执行的 VoiceOver、大字号、Reduce Motion、IME 和系统会话矩阵见 `docs/verification/task-13-verification.md`。
 
 ## Task 1: Project Baseline
 **Outcome:** macOS 14、arm64 App 和两类测试目标可构建，隐藏启动。
@@ -100,7 +101,9 @@ Task 12 合并前自动验收为 `CornerPetTests` 341/341、`CornerPetUITests` 2
 **Outcome:** 中英文、VoiceOver、Reduce Motion 和错误文案完整。
 **Acceptance:** 无 raw key/截断；控件有 identifier；Reduce Motion 120 ms 无过冲。
 **Verification:** LocalizationUITests + accessibility audit。
-**Dependencies:** Tasks 7–12 · **Scope:** M
+**Dependencies:** Tasks 7–12 · **Scope:** M · **Status:** 自动化基线已完成；真机感知/会话矩阵待验收
+
+**Verification evidence:** `docs/verification/task-13-verification.md`。自动化已覆盖完整资源、双语启动与实时切换、AppKit 标签、可访问动作、关键控件可点击性和 120 ms 动画策略；VoiceOver 实际朗读、大字号截断、Reduce Motion 观感、中文 IME 与物理系统矩阵仍需人工执行。
 
 ## Task 14: Metrics, QA, and Release
 **Outcome:** 无内容指标、自动化、兼容矩阵和 arm64 Release 形成证据。
