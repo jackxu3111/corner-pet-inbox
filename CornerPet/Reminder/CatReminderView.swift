@@ -10,11 +10,16 @@ struct CatReminderView: View {
     @State private var isPresented = false
 
     var body: some View {
+        let animationProfile = ReminderAnimationPolicy.profile(
+            reduceMotion: reduceMotion,
+            corner: corner
+        )
+
         VStack(spacing: 12) {
             CatIllustrationView(facesRight: corner.isLeftEdge)
                 .frame(height: 86)
-                .scaleEffect(reduceMotion || isPresented ? 1 : 0.9)
-                .offset(y: reduceMotion || isPresented ? 0 : corner.isTopEdge ? -10 : 10)
+                .scaleEffect(isPresented ? 1 : animationProfile.initialScale)
+                .offset(y: isPresented ? 0 : animationProfile.initialYOffset)
 
             VStack(spacing: 3) {
                 Text(L10n.reminderTitle)
@@ -60,12 +65,15 @@ struct CatReminderView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reminder.panel")
         .onAppear {
-            if reduceMotion {
-                withAnimation(.easeOut(duration: 0.16)) {
+            if let springBounce = animationProfile.springBounce {
+                withAnimation(.spring(
+                    duration: animationProfile.duration,
+                    bounce: springBounce
+                )) {
                     isPresented = true
                 }
             } else {
-                withAnimation(.spring(duration: 0.42, bounce: 0.3)) {
+                withAnimation(.easeOut(duration: animationProfile.duration)) {
                     isPresented = true
                 }
             }

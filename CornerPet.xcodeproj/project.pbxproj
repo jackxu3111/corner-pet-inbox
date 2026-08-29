@@ -112,6 +112,8 @@
 		A13000000000000000000003 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000004 /* L10n.swift */; };
 		A13000000000000000000005 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000006 /* Localizable.xcstrings */; };
 		A13000000000000000000008 /* AppLocaleScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13000000000000000000009 /* AppLocaleScope.swift */; };
+		A1300000000000000000000A /* ReminderAnimationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1300000000000000000000B /* ReminderAnimationPolicyTests.swift */; };
+		A1300000000000000000000C /* ReminderAnimationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1300000000000000000000D /* ReminderAnimationPolicy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -219,6 +221,8 @@
 		A13000000000000000000004 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		A13000000000000000000006 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		A13000000000000000000009 /* AppLocaleScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLocaleScope.swift; sourceTree = "<group>"; };
+		A1300000000000000000000B /* ReminderAnimationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderAnimationPolicyTests.swift; sourceTree = "<group>"; };
+		A1300000000000000000000D /* ReminderAnimationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderAnimationPolicy.swift; sourceTree = "<group>"; };
 		600000000000000000000002 /* CornerPanelDragRegionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionTests.swift; sourceTree = "<group>"; };
 		600000000000000000000004 /* CornerPanelDragRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegion.swift; sourceTree = "<group>"; };
 		600000000000000000000006 /* CornerPanelDragRegionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerPanelDragRegionView.swift; sourceTree = "<group>"; };
@@ -340,6 +344,7 @@
 				800000000000000000000015 /* PetReminderPanel.swift */,
 				800000000000000000000017 /* PetReminderPanelController.swift */,
 				80000000000000000000001B /* CatReminderView.swift */,
+				A1300000000000000000000D /* ReminderAnimationPolicy.swift */,
 			);
 			path = Reminder;
 			sourceTree = "<group>";
@@ -451,6 +456,7 @@
 				80000000000000000000000F /* PetReminderPositionerTests.swift */,
 				800000000000000000000013 /* PetReminderPanelControllerTests.swift */,
 				A13000000000000000000002 /* LocalizationTests.swift */,
+				A1300000000000000000000B /* ReminderAnimationPolicyTests.swift */,
 			);
 			path = CornerPetTests;
 			sourceTree = "<group>";
@@ -683,6 +689,7 @@
 				800000000000000000000014 /* PetReminderPanel.swift in Sources */,
 				800000000000000000000016 /* PetReminderPanelController.swift in Sources */,
 				80000000000000000000001A /* CatReminderView.swift in Sources */,
+				A1300000000000000000000C /* ReminderAnimationPolicy.swift in Sources */,
 				A13000000000000000000003 /* L10n.swift in Sources */,
 				A13000000000000000000008 /* AppLocaleScope.swift in Sources */,
 			);
@@ -728,6 +735,7 @@
 				80000000000000000000000E /* PetReminderPositionerTests.swift in Sources */,
 				800000000000000000000012 /* PetReminderPanelControllerTests.swift in Sources */,
 				A13000000000000000000001 /* LocalizationTests.swift in Sources */,
+				A1300000000000000000000A /* ReminderAnimationPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

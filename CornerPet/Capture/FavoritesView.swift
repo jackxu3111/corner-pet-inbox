@@ -98,6 +98,7 @@ struct FavoritesView: View {
             Image(systemName: "star")
                 .font(.system(size: 24, weight: .light))
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
             Text(viewModel.query.isEmpty ? L10n.favoritesEmpty : L10n.noMatches)
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -112,6 +113,7 @@ struct FavoritesView: View {
             Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(.orange)
+                .accessibilityHidden(true)
             Text(L10n.favoritesLoadFailed)
                 .font(.callout)
             Button(action: viewModel.retryLoad) {

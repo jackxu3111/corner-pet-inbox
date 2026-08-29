@@ -71,6 +71,7 @@ struct InboxView: View {
             Image(systemName: "tray")
                 .font(.system(size: 24, weight: .light))
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
             Text(L10n.inboxEmpty)
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -85,6 +86,7 @@ struct InboxView: View {
             Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(.orange)
+                .accessibilityHidden(true)
             Text(L10n.inboxLoadFailed)
                 .font(.callout)
             Button(action: viewModel.retryLoad) {

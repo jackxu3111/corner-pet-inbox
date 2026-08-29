@@ -165,6 +165,7 @@ struct CapturePanelView: View {
             Image(systemName: destination.systemImage)
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
             Text(destination.title)
                 .font(.headline)
         }

@@ -65,6 +65,7 @@ struct CornerPetSettingsView: View {
                 Text(L10n.languageExplanation)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("settings.language.help")
             } header: {
                 Text(L10n.languageSection)
             }
@@ -83,9 +84,11 @@ struct CornerPetSettingsView: View {
                         Image(systemName: "exclamationmark.circle")
                     }
                     .foregroundStyle(.orange)
+                    .accessibilityIdentifier("settings.launch.approval")
                     Button(action: launchAtLogin.openSystemSettings) {
                         Text(L10n.openLoginItems)
                     }
+                    .accessibilityIdentifier("settings.launch.openLoginItems")
                 } else if launchAtLogin.state == .unavailable {
                     Label {
                         Text(L10n.launchUnavailable)
@@ -93,6 +96,7 @@ struct CornerPetSettingsView: View {
                         Image(systemName: "xmark.circle")
                     }
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("settings.launch.unavailable")
                 }
 
                 if launchAtLogin.errorMessage != nil {
@@ -100,6 +104,7 @@ struct CornerPetSettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .textSelection(.enabled)
+                        .accessibilityIdentifier("settings.launch.error")
                 }
             } header: {
                 Text(L10n.startupSection)

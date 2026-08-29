@@ -500,6 +500,7 @@ private struct CapturePersistenceErrorView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.orange)
+                .accessibilityHidden(true)
             Text(L10n.persistenceTitle)
                 .font(.headline)
             Text(L10n.persistenceRecovery)
