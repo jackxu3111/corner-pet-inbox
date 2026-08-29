@@ -489,7 +489,7 @@ git commit -m "docs: record Task 12.5 verification evidence"
 - Consumes: the complete Task 12.5 branch and all recorded evidence.
 - Produces: a clean, pushed `origin/codex/cornerpet-task-12-5` ready for Jack's acceptance.
 
-- [ ] **Step 1: Verify repository state and scope**
+- [x] **Step 1: Verify repository state and scope**
 
 ```bash
 git status --short --branch
@@ -498,11 +498,11 @@ git diff --stat origin/main...HEAD
 git diff --check origin/main...HEAD
 ```
 
-- [ ] **Step 2: Run the final changed-code gate**
+- [x] **Step 2: Run the final changed-code gate**
 
 Run the full unit suite, guarded UI suite, unsigned Release build, script tests, and static scans again only if code changed after Task 5 evidence. Read each exit status and failure count before making completion claims.
 
-- [ ] **Step 3: Push without rewriting history**
+- [x] **Step 3: Push without rewriting history**
 
 ```bash
 git push -u origin codex/cornerpet-task-12-5
@@ -510,6 +510,6 @@ git push -u origin codex/cornerpet-task-12-5
 
 Confirm the remote ref resolves to local `HEAD`. Do not force-push and do not delete Task 12 or Task 12.5 branches.
 
-- [ ] **Step 4: Hand off to Task 13**
+- [x] **Step 4: Hand off to Task 13**
 
 Report completed items, evidence, branch/commit/remote state, missing Developer ID/notary/manual-session prerequisites, and recommend Task 13 localization/accessibility work next. Task 14 remains responsible for privacy-safe metrics, extended QA, and the seven-day release-candidate record.
