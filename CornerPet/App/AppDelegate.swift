@@ -11,6 +11,7 @@ struct AppLaunchOptions: Equatable {
     let keepsCaptureOpen: Bool
     let showsReminder: Bool
     let reminderCorner: TriggerCorner?
+    let languageOverride: AppLanguage?
 
     init(arguments: [String]) {
         let isUITesting = arguments.contains("--cornerpet-ui-testing")
@@ -33,6 +34,14 @@ struct AppLaunchOptions: Equatable {
                 $0.hasPrefix("--cornerpet-ui-reminder-corner=")
             })?.split(separator: "=", maxSplits: 1).last {
             TriggerCorner(rawValue: String(rawValue))
+        } else {
+            nil
+        }
+        languageOverride = if isUITesting,
+            let rawValue = arguments.first(where: {
+                $0.hasPrefix("--cornerpet-ui-language=")
+            })?.split(separator: "=", maxSplits: 1).last {
+            AppLanguage(rawValue: String(rawValue))
         } else {
             nil
         }
@@ -75,6 +84,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             UserDefaults.standard
         }
         let appSettings = AppSettings(defaults: defaults)
+        if let languageOverride = launchOptions.languageOverride {
+            appSettings.applyTransientLanguageOverride(languageOverride)
+        }
         let launchAtLoginController = LaunchAtLoginController()
         let screenCoordinator = ScreenCoordinator()
         self.launchOptions = launchOptions
@@ -150,11 +162,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             PanelLifecycleCoordinator(panelController: panelController)
         }
     ) {
-        self.panelControllerFactory = panelControllerFactory
-        self.triggerCoordinatorFactory = triggerCoordinatorFactory
-        self.appSettings = appSettings ?? AppSettings(defaults: UserDefaults(
+        let appSettings = appSettings ?? AppSettings(defaults: UserDefaults(
             suiteName: "CornerPet.AppDelegate.Isolated.\(UUID().uuidString)"
         ) ?? .standard)
+        if let languageOverride = launchOptions.languageOverride {
+            appSettings.applyTransientLanguageOverride(languageOverride)
+        }
+        self.panelControllerFactory = panelControllerFactory
+        self.triggerCoordinatorFactory = triggerCoordinatorFactory
+        self.appSettings = appSettings
         self.launchAtLoginController = launchAtLoginController
         self.screenCoordinator = screenCoordinator
         self.lifecycleCoordinatorFactory = lifecycleCoordinatorFactory
@@ -180,20 +196,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             composition = try compositionFactory(panelController)
             if let composition {
-                panelController.installHostedContentFactory {
-                    NSHostingView(rootView: composition.makeRootView())
+                panelController.installHostedContentFactory { [appSettings] in
+                    NSHostingView(rootView: AppLocaleScope(settings: appSettings) {
+                        composition.makeRootView()
+                    })
                 }
             }
         } catch {
             composition = nil
             NSLog("CornerPet persistence initialization failed: %@", String(describing: error))
-            panelController.installHostedContentFactory {
-                NSHostingView(rootView: CapturePersistenceErrorView())
+            panelController.installHostedContentFactory { [appSettings] in
+                NSHostingView(rootView: AppLocaleScope(settings: appSettings) {
+                    CapturePersistenceErrorView()
+                })
             }
         }
         let lifecycleCoordinator = lifecycleCoordinatorFactory(panelController)
         let triggerCoordinator = triggerCoordinatorFactory(panelController)
         let petReminderPanelController = PetReminderPanelController(
+            settings: appSettings,
             onOpenInbox: { [weak self] in
                 self?.openInboxFromReminder()
             },
@@ -479,11 +500,10 @@ private struct CapturePersistenceErrorView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.orange)
-            Text("无法打开本地存储")
+                .accessibilityHidden(true)
+            Text(L10n.persistenceTitle)
                 .font(.headline)
-            Text("Local storage is unavailable")
-                .foregroundStyle(.secondary)
-            Text("请重新启动 CornerPet 后再试 / Restart CornerPet and try again")
+            Text(L10n.persistenceRecovery)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

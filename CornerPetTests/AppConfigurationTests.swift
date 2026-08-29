@@ -90,10 +90,78 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertFalse(reminderWithoutMemoryStore.showsReminder)
         XCTAssertNil(reminderWithoutMemoryStore.reminderCorner)
     }
+
+    func testUITestLanguageOverrideRequiresMasterGateAndKnownLanguage() {
+        let ungated = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-language=zh-Hans"
+        ])
+        let english = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en"
+        ])
+        let simplifiedChinese = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=zh-Hans"
+        ])
+        let system = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=system"
+        ])
+        let unknown = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=fr"
+        ])
+
+        XCTAssertNil(ungated.languageOverride)
+        XCTAssertEqual(english.languageOverride, .english)
+        XCTAssertEqual(simplifiedChinese.languageOverride, .simplifiedChinese)
+        XCTAssertEqual(system.languageOverride, .system)
+        XCTAssertNil(unknown.languageOverride)
+    }
 }
 
 @MainActor
 final class AppDelegateIntegrationTests: XCTestCase {
+    func testUITestLanguageOverrideIsAppliedTransientlyBeforeRuntimeComposition() {
+        let defaults = UserDefaults(
+            suiteName: "CornerPet.AppDelegateLanguage.\(UUID().uuidString)"
+        )!
+        defaults.set(
+            AppLanguage.simplifiedChinese.rawValue,
+            forKey: AppSettingsStorageKey.language
+        )
+        let settings = AppSettings(defaults: defaults)
+        let launchOptions = AppLaunchOptions(arguments: [
+            "CornerPet",
+            "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en"
+        ])
+
+        _ = AppDelegate(
+            panelControllerFactory: { self.makePanelController() },
+            triggerCoordinatorFactory: { _ in
+                CornerTriggerCoordinator(
+                    screenSnapshotsProvider: { [] },
+                    presentPanel: { _ in },
+                    reverseClosingPanel: { _ in }
+                )
+            },
+            appSettings: settings,
+            launchOptions: launchOptions
+        )
+
+        XCTAssertEqual(settings.language, .english)
+        XCTAssertEqual(
+            defaults.string(forKey: AppSettingsStorageKey.language),
+            AppLanguage.simplifiedChinese.rawValue
+        )
+    }
+
     func testDisplayScopeChangesImmediatelyReconfigureRuntimeTriggerScreens() {
         let first = ScreenSnapshot(
             id: 101,

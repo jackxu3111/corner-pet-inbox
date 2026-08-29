@@ -6,20 +6,25 @@ struct CornerPetApp: App {
 
     var body: some Scene {
         Settings {
-            CornerPetSettingsView(
-                settings: appDelegate.appSettings,
-                launchAtLogin: appDelegate.launchAtLoginController
-            )
+            AppLocaleScope(settings: appDelegate.appSettings) {
+                CornerPetSettingsView(
+                    settings: appDelegate.appSettings,
+                    launchAtLogin: appDelegate.launchAtLoginController
+                )
+            }
         }
+        .environment(\.locale, appDelegate.appSettings.language.locale)
         .commands {
             CommandGroup(replacing: .appSettings) {
                 SettingsLink {
-                    Text("CornerPet 设置… / Settings…")
+                    Text(L10n.appSettings)
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
             CommandGroup(after: .textEditing) {
-                Button("搜索 / Find", action: appDelegate.focusLibrarySearch)
+                Button(action: appDelegate.focusLibrarySearch) {
+                    Text(L10n.appFind)
+                }
                 .keyboardShortcut("f", modifiers: .command)
             }
         }

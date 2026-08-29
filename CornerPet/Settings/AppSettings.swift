@@ -15,6 +15,17 @@ enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
     case english = "en"
 
     var id: String { rawValue }
+
+    var locale: Locale {
+        switch self {
+        case .system:
+            .autoupdatingCurrent
+        case .simplifiedChinese:
+            Locale(identifier: rawValue)
+        case .english:
+            Locale(identifier: rawValue)
+        }
+    }
 }
 
 enum AppSettingsStorageKey {
@@ -139,6 +150,12 @@ final class AppSettings {
     func setLanguage(_ language: AppLanguage) {
         guard self.language != language else { return }
         defaults.set(language.rawValue, forKey: AppSettingsStorageKey.language)
+        self.language = language
+        publish(.language)
+    }
+
+    func applyTransientLanguageOverride(_ language: AppLanguage) {
+        guard self.language != language else { return }
         self.language = language
         publish(.language)
     }

@@ -15,13 +15,13 @@ fail() {
 assert_contains() {
     local file="$1"
     local expected="$2"
-    grep -Fq "$expected" "$file" || fail "expected '$expected' in $file"
+    grep -Fq -- "$expected" "$file" || fail "expected '$expected' in $file"
 }
 
 assert_not_contains() {
     local file="$1"
     local unexpected="$2"
-    if grep -Fq "$unexpected" "$file"; then
+    if grep -Fq -- "$unexpected" "$file"; then
         fail "did not expect '$unexpected' in $file"
     fi
 }
@@ -81,6 +81,9 @@ printf '%s\n' "$*" > "$FAKE_XCODE_ARGS"
 if [[ -n "${FAKE_XCODE_OUTPUT:-}" ]]; then
     printf '%s\n' "$FAKE_XCODE_OUTPUT"
 fi
+if [[ -n "${FAKE_XCODE_DRIFT_INPUT_SOURCE:-}" ]]; then
+    printf '%s\n' "$FAKE_XCODE_DRIFT_INPUT_SOURCE" > "$FAKE_INPUT_STATE"
+fi
 if [[ "${FAKE_XCODE_SIGNAL_PARENT:-0}" == "1" ]]; then
     kill -TERM "$PPID"
     exit 143
@@ -96,6 +99,11 @@ cleanup_fixture() {
 }
 
 run_fixture() {
+    local runner_command=(/bin/bash "$RUNNER")
+    if [[ -n "${RUNNER_OPTION:-}" ]]; then
+        runner_command+=("$RUNNER_OPTION")
+    fi
+
     set +e
     FAKE_INPUT_STATE="$INPUT_STATE" \
     FAKE_INPUT_CALLS="$INPUT_CALLS" \
@@ -105,11 +113,13 @@ run_fixture() {
     FAKE_XCODE_OUTPUT="${FAKE_XCODE_OUTPUT:-}" \
     FAKE_XCODE_EXIT="${FAKE_XCODE_EXIT:-0}" \
     FAKE_XCODE_SIGNAL_PARENT="${FAKE_XCODE_SIGNAL_PARENT:-0}" \
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="${FAKE_XCODE_DRIFT_INPUT_SOURCE:-}" \
+    CORNERPET_AD_HOC_SIGNING="${CORNERPET_AD_HOC_SIGNING:-0}" \
     CORNERPET_INPUT_SOURCE_TOOL="$FIXTURE_DIR/input-source" \
     CORNERPET_XCODEBUILD="$FIXTURE_DIR/xcodebuild" \
     CORNERPET_DEVELOPER_DIR="$FIXTURE_DIR/Developer" \
     CORNERPET_TEST_EVIDENCE_DIR="$FIXTURE_DIR/evidence" \
-    /bin/bash "$RUNNER" > "$RUN_OUTPUT" 2>&1
+    "${runner_command[@]}" > "$RUN_OUTPUT" 2>&1
     RUN_STATUS=$?
     set -e
 }
@@ -210,6 +220,106 @@ test_restore_failure_overrides_status() {
     PASS_COUNT=$((PASS_COUNT + 1))
 }
 
+test_input_source_drift_visible_at_suite_end_overrides_success() {
+    make_fixture
+    printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "75" "input-source drift status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.inputmethod.SCIM.ITABC" "drift restoration"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=input-source-drift"
+    cleanup_fixture
+    unset FAKE_XCODE_DRIFT_INPUT_SOURCE
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+test_input_source_drift_restores_abc_when_abc_was_original() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "75" "input-source drift status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.keylayout.ABC" "ABC restoration after drift"
+    assert_equals "$(tail -n 1 "$INPUT_CALLS")" "select:com.apple.keylayout.ABC" "drift restoration selection"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=input-source-drift"
+    cleanup_fixture
+    unset FAKE_XCODE_DRIFT_INPUT_SOURCE
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+test_product_failure_has_priority_over_input_source_drift() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    FAKE_XCODE_EXIT=65
+    FAKE_XCODE_OUTPUT="XCTAssertEqual failed: product assertion"
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "65" "product failure with drift status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.keylayout.ABC" "product failure drift restoration"
+    assert_contains "$RUN_OUTPUT" "warning: input source changed during UI automation"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=product-regression"
+    cleanup_fixture
+    unset FAKE_XCODE_EXIT FAKE_XCODE_OUTPUT FAKE_XCODE_DRIFT_INPUT_SOURCE
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+test_interruption_has_priority_over_input_source_drift() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    FAKE_XCODE_SIGNAL_PARENT=1
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "143" "interruption with drift status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.keylayout.ABC" "interruption drift restoration"
+    assert_contains "$RUN_OUTPUT" "warning: input source changed during UI automation"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=interrupted"
+    cleanup_fixture
+    unset FAKE_XCODE_SIGNAL_PARENT FAKE_XCODE_DRIFT_INPUT_SOURCE
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+test_probe_mode_runs_only_launch_probe() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    RUNNER_OPTION="--probe-only"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "0" "probe run status"
+    assert_contains "$XCODE_ARGS" "-only-testing:CornerPetUITests/CornerPetLaunchTests/testApplicationLaunchesWithoutMainWindow"
+    assert_not_contains "$XCODE_ARGS" "-only-testing:CornerPetUITests "
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_MODE=probe"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=passed"
+    cleanup_fixture
+    unset RUNNER_OPTION
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
+test_ad_hoc_signing_mode_uses_local_signing_without_a_team() {
+    make_fixture
+    printf '%s\n' "com.apple.keylayout.ABC" > "$INPUT_STATE"
+    CORNERPET_AD_HOC_SIGNING=1
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "0" "ad-hoc signing run status"
+    assert_contains "$XCODE_ARGS" "CODE_SIGN_STYLE=Manual"
+    assert_contains "$XCODE_ARGS" "CODE_SIGN_IDENTITY=-"
+    assert_contains "$XCODE_ARGS" "DEVELOPMENT_TEAM="
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_SIGNING=ad-hoc"
+    cleanup_fixture
+    unset CORNERPET_AD_HOC_SIGNING
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
 test_quiesce_failure_stops_before_xcode_and_restores() {
     make_fixture
     printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
@@ -235,6 +345,12 @@ test_product_failure_restores_and_preserves_status
 test_automation_failure_restores_and_uses_infrastructure_status
 test_signal_restores_original_source
 test_restore_failure_overrides_status
+test_input_source_drift_visible_at_suite_end_overrides_success
+test_input_source_drift_restores_abc_when_abc_was_original
+test_product_failure_has_priority_over_input_source_drift
+test_interruption_has_priority_over_input_source_drift
 test_quiesce_failure_stops_before_xcode_and_restores
+test_probe_mode_runs_only_launch_probe
+test_ad_hoc_signing_mode_uses_local_signing_without_a_team
 
 echo "PASS: $PASS_COUNT UI automation runner tests"

@@ -42,8 +42,10 @@ struct ItemRow: View {
                     .contentShape(.circle)
             }
             .buttonStyle(.plain)
-            .help(hasCompletionError ? "归档失败，点按重试 / Archive failed — click to retry" : "完成并归档 / Complete and archive")
-            .accessibilityLabel(hasCompletionError ? "归档失败，重试 / Retry archive" : "完成并归档 / Complete and archive")
+            .help(Text(hasCompletionError ? L10n.archiveFailedHelp : L10n.completeArchive))
+            .accessibilityLabel(
+                Text(hasCompletionError ? L10n.retryArchive : L10n.completeArchive)
+            )
             .accessibilityIdentifier("inbox.item.complete.\(item.id.uuidString)")
             .disabled(editViewModel?.isEditing(item.id) == true)
 
@@ -81,13 +83,15 @@ struct ItemRow: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
                         .onTapGesture(count: 2) {
-                            guard editViewModel?.beginEditing(item) == true else { return }
-                            focusRequest &+= 1
+                            beginEditing()
+                        }
+                        .accessibilityAction(named: Text(L10n.accessibilityEditAction)) {
+                            beginEditing()
                         }
                 }
 
                 Text(item.createdAt, format: .dateTime.month().day().hour().minute())
-                    .font(.caption2)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
 
                 if hasDeleteError {
@@ -105,8 +109,10 @@ struct ItemRow: View {
                         .foregroundStyle(hasFavoriteError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help("收藏 / Add to Favorites")
-                .accessibilityLabel("收藏 / Add to Favorites")
+                .help(Text(hasFavoriteError ? L10n.favoriteAddFailedHelp : L10n.favoriteAdd))
+                .accessibilityLabel(
+                    Text(hasFavoriteError ? L10n.favoriteRetryAdd : L10n.favoriteAdd)
+                )
                 .accessibilityIdentifier("inbox.item.favorite.\(item.id.uuidString)")
 
                 Button(action: onDelete) {
@@ -114,8 +120,8 @@ struct ItemRow: View {
                         .foregroundStyle(hasDeleteError ? .red : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help("永久删除 / Delete permanently")
-                .accessibilityLabel("永久删除 / Delete permanently")
+                .help(Text(L10n.deletePermanent))
+                .accessibilityLabel(Text(L10n.deletePermanent))
                 .accessibilityIdentifier("inbox.item.delete.\(item.id.uuidString)")
             }
             .disabled(editViewModel?.isEditing(item.id) == true)
@@ -129,5 +135,10 @@ struct ItemRow: View {
             guard activeID == item.id else { return }
             focusRequest &+= 1
         }
+    }
+
+    private func beginEditing() {
+        guard editViewModel?.beginEditing(item) == true else { return }
+        focusRequest &+= 1
     }
 }

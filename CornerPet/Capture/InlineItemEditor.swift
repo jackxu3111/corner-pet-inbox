@@ -11,15 +11,17 @@ struct ItemEditErrorMessage: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
                 .accessibilityHidden(true)
-            Text("保存失败 / Save failed")
+            Text(L10n.saveFailed)
                 .foregroundStyle(.red)
                 .accessibilityIdentifier(identifier)
             Spacer(minLength: 2)
-            Button("关闭 / Dismiss", action: onDismiss)
+            Button(action: onDismiss) {
+                Text(L10n.dismiss)
+            }
                 .buttonStyle(.link)
                 .accessibilityIdentifier(dismissIdentifier)
         }
-        .font(.caption2)
+        .font(.caption)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("\(identifier).banner")
     }
@@ -29,16 +31,18 @@ struct PermanentDeleteErrorMessage: View {
     let identifier: String
 
     var body: some View {
-        Text("删除失败 / Delete failed")
-            .font(.caption2)
+        Text(L10n.deleteFailed)
+            .font(.caption)
             .foregroundStyle(.red)
-            .accessibilityLabel("删除失败 / Delete failed")
+            .accessibilityLabel(Text(L10n.deleteFailed))
             .accessibilityIdentifier(identifier)
     }
 }
 
 struct InlineItemEditor: NSViewRepresentable {
     @Binding var text: String
+
+    @Environment(\.locale) private var locale
 
     let focusRequest: Int
     let identifier: String
@@ -97,7 +101,7 @@ struct InlineItemEditor: NSViewRepresentable {
             height: CGFloat.greatestFiniteMagnitude
         )
         textView.setAccessibilityIdentifier(identifier)
-        textView.setAccessibilityLabel("编辑想法 / Edit idea")
+        updateAccessibility(on: textView)
 
         scrollView.documentView = textView
         context.coordinator.update(parent: self)
@@ -111,10 +115,17 @@ struct InlineItemEditor: NSViewRepresentable {
         textView.onCommit = onCommit
         textView.onCancel = onCancel
         textView.onFocusLoss = onFocusLoss
+        updateAccessibility(on: textView)
         if textView.string != text {
             textView.string = text
         }
         textView.applyFocusRequest(focusRequest)
+    }
+
+    private func updateAccessibility(on textView: InlineItemTextView) {
+        textView.setAccessibilityLabel(
+            L10n.localized(L10n.editIdea, locale: locale)
+        )
     }
 
     @MainActor

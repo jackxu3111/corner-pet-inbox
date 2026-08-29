@@ -10,31 +10,39 @@ struct CatReminderView: View {
     @State private var isPresented = false
 
     var body: some View {
+        let animationProfile = ReminderAnimationPolicy.profile(
+            reduceMotion: reduceMotion,
+            corner: corner
+        )
+
         VStack(spacing: 12) {
             CatIllustrationView(facesRight: corner.isLeftEdge)
                 .frame(height: 86)
-                .scaleEffect(reduceMotion || isPresented ? 1 : 0.9)
-                .offset(y: reduceMotion || isPresented ? 0 : corner.isTopEdge ? -10 : 10)
+                .scaleEffect(isPresented ? 1 : animationProfile.initialScale)
+                .offset(y: isPresented ? 0 : animationProfile.initialYOffset)
 
             VStack(spacing: 3) {
-                Text("该看看收件箱啦")
+                Text(L10n.reminderTitle)
                     .font(.headline)
-                Text("Time to check your inbox")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.center)
 
-            Button("打开收件箱 / Open Inbox", action: onOpenInbox)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityIdentifier("reminder.openInbox")
+            Button(action: onOpenInbox) {
+                Text(L10n.reminderOpenInbox)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityIdentifier("reminder.openInbox")
 
             VStack(spacing: 6) {
-                Button("10 分钟后提醒 / Remind in 10 Minutes", action: onSnooze)
-                    .accessibilityIdentifier("reminder.snooze")
-                Button("关闭 / 今天不再提醒 / Dismiss for Today", action: onDismissToday)
-                    .accessibilityIdentifier("reminder.dismissToday")
+                Button(action: onSnooze) {
+                    Text(L10n.reminderSnooze)
+                }
+                .accessibilityIdentifier("reminder.snooze")
+                Button(action: onDismissToday) {
+                    Text(L10n.reminderDismissToday)
+                }
+                .accessibilityIdentifier("reminder.dismissToday")
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
@@ -57,12 +65,15 @@ struct CatReminderView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reminder.panel")
         .onAppear {
-            if reduceMotion {
-                withAnimation(.easeOut(duration: 0.16)) {
+            if let springBounce = animationProfile.springBounce {
+                withAnimation(.spring(
+                    duration: animationProfile.duration,
+                    bounce: springBounce
+                )) {
                     isPresented = true
                 }
             } else {
-                withAnimation(.spring(duration: 0.42, bounce: 0.3)) {
+                withAnimation(.easeOut(duration: animationProfile.duration)) {
                     isPresented = true
                 }
             }

@@ -225,7 +225,7 @@ final class LibraryFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["inbox.delete.confirm"].waitForExistence(timeout: 2))
         app.buttons["inbox.delete.confirm"].click()
 
-        XCTAssertTrue(app.staticTexts["删除失败 / Delete failed"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Delete failed"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["delete failure"].exists)
         XCTAssertFalse(app.buttons["inbox.delete.confirm"].exists)
     }
@@ -235,6 +235,7 @@ final class LibraryFlowUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--cornerpet-ui-testing",
+            "--cornerpet-ui-language=en",
             "--cornerpet-memory-store",
             "--cornerpet-open-capture",
             "--cornerpet-ui-keep-capture-open"

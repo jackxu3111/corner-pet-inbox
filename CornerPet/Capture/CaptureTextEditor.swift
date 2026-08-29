@@ -15,6 +15,8 @@ struct CaptureTextEditor: NSViewRepresentable {
     @Binding var text: String
     @Binding var measuredHeight: CGFloat
 
+    @Environment(\.locale) private var locale
+
     let focusRequest: Int
     let onSubmit: () -> Void
     let onEscape: () -> Void
@@ -50,8 +52,7 @@ struct CaptureTextEditor: NSViewRepresentable {
             height: CGFloat.greatestFiniteMagnitude
         )
         textView.setAccessibilityIdentifier("capture.input")
-        textView.setAccessibilityLabel("记下想法 / Capture a thought")
-        textView.setAccessibilityPlaceholderValue("记下想法… / Capture a thought…")
+        updateAccessibility(on: textView)
 
         scrollView.documentView = textView
         context.coordinator.update(parent: self)
@@ -67,6 +68,7 @@ struct CaptureTextEditor: NSViewRepresentable {
 
         textView.onSubmit = onSubmit
         textView.onEscape = onEscape
+        updateAccessibility(on: textView)
 
         if textView.string != text {
             textView.string = text
@@ -82,6 +84,15 @@ struct CaptureTextEditor: NSViewRepresentable {
 
         context.coordinator.measure(textView, publishesText: false)
         textView.applyFocusRequest(focusRequest)
+    }
+
+    private func updateAccessibility(on textView: CaptureTextView) {
+        textView.setAccessibilityLabel(
+            L10n.localized(L10n.captureInputLabel, locale: locale)
+        )
+        textView.setAccessibilityPlaceholderValue(
+            L10n.localized(L10n.captureInputPlaceholder, locale: locale)
+        )
     }
 
     @MainActor

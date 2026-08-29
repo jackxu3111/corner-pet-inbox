@@ -13,14 +13,6 @@ enum CapturePanelCommand: Equatable {
 
 enum CaptureSaveError: Equatable {
     case saveFailed
-
-    var englishMessage: String {
-        "Save failed. Try again."
-    }
-
-    var chineseMessage: String {
-        "保存失败，请重试。"
-    }
 }
 
 enum CaptureRetryIntent: Equatable {

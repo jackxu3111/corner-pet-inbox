@@ -6,6 +6,12 @@ import XCTest
 
 @MainActor
 final class AppSettingsTests: XCTestCase {
+    func testAppLanguagesResolveToTheirEffectiveLocales() {
+        XCTAssertEqual(AppLanguage.english.locale.identifier, "en")
+        XCTAssertEqual(AppLanguage.simplifiedChinese.locale.identifier, "zh-Hans")
+        XCTAssertEqual(AppLanguage.system.locale, .autoupdatingCurrent)
+    }
+
     func testDefaultsMatchAcceptedTaskElevenBehavior() {
         let settings = AppSettings(defaults: isolatedDefaults())
 

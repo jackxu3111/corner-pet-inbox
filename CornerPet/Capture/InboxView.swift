@@ -3,6 +3,8 @@ import SwiftUI
 struct InboxView: View {
     let viewModel: InboxViewModel
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(spacing: 8) {
             if let offer = viewModel.archiveUndoOffer {
@@ -42,19 +44,23 @@ struct InboxView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("inbox.list")
         .confirmationDialog(
-            "永久删除此想法？ / Delete this idea permanently?",
+            L10n.localized(L10n.deleteConfirmation, locale: locale),
             isPresented: Binding(
                 get: { viewModel.pendingDeletion != nil },
                 set: { if !$0 { viewModel.dismissDeleteConfirmation() } }
             ),
             titleVisibility: .visible
         ) {
-            Button("永久删除 / Delete", role: .destructive) {
+            Button(role: .destructive) {
                 _ = viewModel.confirmDelete()
+            } label: {
+                Text(L10n.delete)
             }
             .accessibilityIdentifier("inbox.delete.confirm")
-            Button("取消 / Cancel", role: .cancel) {
+            Button(role: .cancel) {
                 viewModel.cancelDelete()
+            } label: {
+                Text(L10n.cancel)
             }
             .accessibilityIdentifier("inbox.delete.cancel")
         }
@@ -65,7 +71,8 @@ struct InboxView: View {
             Image(systemName: "tray")
                 .font(.system(size: 24, weight: .light))
                 .foregroundStyle(.tertiary)
-            Text("还没有想法 / No ideas yet")
+                .accessibilityHidden(true)
+            Text(L10n.inboxEmpty)
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -79,9 +86,12 @@ struct InboxView: View {
             Image(systemName: "exclamationmark.arrow.triangle.2.circlepath")
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(.orange)
-            Text("收件箱加载失败 / Couldn’t load Inbox")
+                .accessibilityHidden(true)
+            Text(L10n.inboxLoadFailed)
                 .font(.callout)
-            Button("重试 / Retry", action: viewModel.retryLoad)
+            Button(action: viewModel.retryLoad) {
+                Text(L10n.retry)
+            }
             .accessibilityIdentifier("inbox.error.retry")
         }
         .frame(maxWidth: .infinity, minHeight: 150)
@@ -102,12 +112,12 @@ private struct ArchiveUndoBanner: View {
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("已归档 / Archived")
+                Text(L10n.inboxArchived)
                 Text(offer.item.text)
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
                 if error != nil {
-                    Text("恢复失败，请重试 / Restore failed — try again")
+                    Text(L10n.restoreFailed)
                         .foregroundStyle(.red)
                 }
             }
@@ -115,7 +125,9 @@ private struct ArchiveUndoBanner: View {
 
             Spacer(minLength: 4)
 
-            Button("撤销 / Undo", action: onUndo)
+            Button(action: onUndo) {
+                Text(L10n.undo)
+            }
                 .accessibilityIdentifier("inbox.archive.undo")
         }
         .padding(8)

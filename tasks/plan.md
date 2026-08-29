@@ -78,17 +78,17 @@
 
 ## Phase 3: Release Candidate
 
-- [ ] Task 13: 中英文、无障碍、Reduce Motion、错误文案
+- [x] Task 13: 中英文、无障碍、Reduce Motion、错误文案
 - [ ] Task 14: 本地指标、自动化、QA、arm64 Release
 
-Task 12 已通过 PR #1 合并到 `main`（`9ede8d7`）。Task 12.5 已建立可恢复的 UI 自动化防护、SwiftData V1 迁移基线和可执行发布流程；本机可执行门槛见 `docs/verification/task-12-5-verification.md`。下一步是 Task 13；Task 14 仍负责隐私安全指标、扩展 QA 和七天候选版验证。
+Task 12 已通过 PR #1 合并到 `main`（`9ede8d7`）。Task 12.5 已建立可恢复的 UI 自动化防护、SwiftData V1 迁移基线和可执行发布流程。Task 13 已完成双语、无障碍和 Reduce Motion 自动化基线，证据见 `docs/verification/task-13-verification.md`；下一步 Task 14 仍负责隐私安全指标、扩展 QA、真机会话矩阵和七天候选版验证。
 
 ### Checkpoint D
 
-- [ ] 全自动化通过
-- [ ] 双语无 raw key、截断或不可点控件
-- [ ] Reduce Motion 行为一致
-- [ ] Release arm64 构建成功
+- [x] 全自动化通过
+- [x] 双语自动化无 raw key，关键控件有非空 frame 且可操作；大字号截断保留真机手测
+- [x] Reduce Motion 策略为 120 ms、无过冲/位移；真实观感保留真机手测
+- [x] Release arm64 构建成功
 - [ ] 启动七天自用验证
 
 ## Risks

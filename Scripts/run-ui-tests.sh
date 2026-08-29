@@ -7,13 +7,19 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 ABC_INPUT_SOURCE="com.apple.keylayout.ABC"
 MODE="run"
 
-if [[ "${1:-}" == "--preflight-only" ]]; then
-    MODE="preflight"
-    shift
-fi
+case "${1:-}" in
+    --preflight-only)
+        MODE="preflight"
+        shift
+        ;;
+    --probe-only)
+        MODE="probe"
+        shift
+        ;;
+esac
 
 if [[ $# -ne 0 ]]; then
-    echo "usage: Scripts/run-ui-tests.sh [--preflight-only]" >&2
+    echo "usage: Scripts/run-ui-tests.sh [--preflight-only|--probe-only]" >&2
     exit 64
 fi
 
@@ -24,6 +30,7 @@ FINAL_REPORTED=0
 LOG_PATH=""
 RESULT_BUNDLE_PATH=""
 QUIESCED_INPUT_SOURCE_STATE=""
+INPUT_SOURCE_EXPECTATION_ESTABLISHED=0
 
 resolve_developer_dir() {
     if [[ -n "${CORNERPET_DEVELOPER_DIR:-}" ]]; then
@@ -71,10 +78,24 @@ restore_input_source() {
 
 finish() {
     local observed_status=$?
+    local final_active_input_source=""
     trap - EXIT INT TERM
 
     if [[ "$FINAL_STATUS" -eq 0 && "$observed_status" -ne 0 ]]; then
         FINAL_STATUS="$observed_status"
+    fi
+
+    if [[ "$INPUT_SOURCE_EXPECTATION_ESTABLISHED" -eq 1 ]]; then
+        final_active_input_source="$($INPUT_SOURCE_TOOL current 2>/dev/null)" || true
+        if [[ "$final_active_input_source" != "$ABC_INPUT_SOURCE" ]]; then
+            if [[ "$FINAL_STATUS" -eq 0 ]]; then
+                echo "error: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
+                CLASSIFICATION="input-source-drift"
+                FINAL_STATUS=75
+            else
+                echo "warning: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
+            fi
+        fi
     fi
 
     if ! restore_input_source; then
@@ -180,6 +201,8 @@ if [[ "$ACTIVE_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
 fi
 
 echo "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=$ACTIVE_INPUT_SOURCE"
+echo "CORNERPET_UI_TEST_MODE=$MODE"
+INPUT_SOURCE_EXPECTATION_ESTABLISHED=1
 
 if [[ "$ORIGINAL_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
     QUIESCED_INPUT_SOURCE_STATE="$($INPUT_SOURCE_TOOL quiesce "$ORIGINAL_INPUT_SOURCE")" || {
@@ -204,6 +227,22 @@ if [[ "$MODE" == "preflight" ]]; then
     exit 0
 fi
 
+AD_HOC_SIGNING=0
+case "${CORNERPET_AD_HOC_SIGNING:-0}" in
+    0|"")
+        ;;
+    1)
+        AD_HOC_SIGNING=1
+        echo "CORNERPET_UI_TEST_SIGNING=ad-hoc"
+        ;;
+    *)
+        echo "error: CORNERPET_AD_HOC_SIGNING must be 0 or 1" >&2
+        CLASSIFICATION="environment-preflight"
+        FINAL_STATUS=64
+        exit "$FINAL_STATUS"
+        ;;
+esac
+
 TIMESTAMP="$(date '+%Y%m%d-%H%M%S')"
 EVIDENCE_DIR="${CORNERPET_TEST_EVIDENCE_DIR:-$PROJECT_ROOT/build/test-evidence/$TIMESTAMP}"
 mkdir -p "$EVIDENCE_DIR"
@@ -211,14 +250,30 @@ LOG_PATH="$EVIDENCE_DIR/CornerPetUITests.log"
 RESULT_BUNDLE_PATH="$EVIDENCE_DIR/CornerPetUITests.xcresult"
 
 set +e
-DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" "$XCODEBUILD" test \
-    -project "$PROJECT_ROOT/CornerPet.xcodeproj" \
-    -scheme CornerPet \
-    -configuration Debug \
-    -destination "platform=macOS,arch=arm64" \
-    -parallel-testing-enabled NO \
-    -only-testing:CornerPetUITests \
-    -resultBundlePath "$RESULT_BUNDLE_PATH" \
+ONLY_TESTING_TARGET="CornerPetUITests"
+if [[ "$MODE" == "probe" ]]; then
+    ONLY_TESTING_TARGET="CornerPetUITests/CornerPetLaunchTests/testApplicationLaunchesWithoutMainWindow"
+fi
+
+XCODEBUILD_ARGS=(
+    test
+    -project "$PROJECT_ROOT/CornerPet.xcodeproj"
+    -scheme CornerPet
+    -configuration Debug
+    -destination "platform=macOS,arch=arm64"
+    -parallel-testing-enabled NO
+    "-only-testing:$ONLY_TESTING_TARGET"
+    -resultBundlePath "$RESULT_BUNDLE_PATH"
+)
+if [[ "$AD_HOC_SIGNING" -eq 1 ]]; then
+    XCODEBUILD_ARGS+=(
+        "CODE_SIGN_STYLE=Manual"
+        "CODE_SIGN_IDENTITY=-"
+        "DEVELOPMENT_TEAM="
+    )
+fi
+
+DEVELOPER_DIR="$DEVELOPER_DIR_RESOLVED" "$XCODEBUILD" "${XCODEBUILD_ARGS[@]}" \
     2>&1 | tee "$LOG_PATH"
 XCODE_STATUS=${PIPESTATUS[0]}
 set -e

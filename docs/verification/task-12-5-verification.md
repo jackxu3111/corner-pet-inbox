@@ -2,8 +2,15 @@
 
 **Date:** 2026-08-29
 **Branch:** `codex/cornerpet-task-12-5`
-**Base:** `origin/main` at Task 12 merge `9ede8d7`
-**Result:** Executable local gates passed. Credentialed distribution and session-dependent checks remain explicit external gates.
+**Original base:** `origin/main` at Task 12 merge `9ede8d7`
+**Current remote state:** `origin/main` remains at the earlier Task 12.5 merge `930d3df`; the verified follow-up drift guard and isolated-VM work at `1ef99aa` are not integrated.
+**Result:** The local Task 12.5 follow-up passed the reopened gate in the dedicated VM: 13 runner contracts, a 1-test background probe, and exactly 21 guarded UI tests all passed with zero failures. Task 13 remains blocked only until this verified follow-up history is safely integrated into `origin/main`.
+
+## Post-verification merge audit
+
+The merge audit reproduced two guarded UI failures on the unchanged Task 12.5 tree. The immediate `TISSelectInputSource` check reported ABC, but `com.bytedance.inputmethod.doubaoime.pinyin` selected itself again during the XCUITest session and exposed candidate/input-source UI that captured focus. The two completed runs each executed 21 tests with 19 passes and 2 failures and were classified as automation infrastructure.
+
+A new runner contract treats a source found away from ABC at suite end as `input-source-drift` (exit 75), restores the captured source, and rejects an otherwise successful Xcode result. That runner and the unchanged product suite have now passed in an isolated ABC-only VM at `1ef99aa`.
 
 ## Environment
 
@@ -15,7 +22,7 @@ Swift:       6.4
 Deployment:  macOS 14.0, arm64
 ```
 
-The host's system developer directory initially pointed to Command Line Tools. Every project command selected `/Applications/Xcode-beta.app/Contents/Developer` only for that process; Task 12.5 did not change the machine-wide `xcode-select` value.
+The isolated guest selected `/Applications/XcodeCLI.app/Contents/Developer`, a compatibility link to an extended-attribute-free clone of the verified Xcode 27 toolchain. The original damaged `/Applications/Xcode-beta.app` remains preserved and unselected. No Gatekeeper setting was weakened.
 
 ## Task 12 integration
 
@@ -25,18 +32,30 @@ Task 12 was reviewed and freshly verified before integration: 341 unit tests and
 
 | Gate | Result | Evidence |
 |---|---|---|
-| UI runner contract | 7 passed | `build/test-evidence/task12-5-final/ui-runner-contract.log` |
+| UI runner contract | 13 passed | Guest `ui-runner-contract.log` under the external `1ef99aa-vm-final` evidence directory |
 | Release workflow contract | 11 passed | `build/test-evidence/task12-5-final/release-contract.log` |
 | SwiftData focused persistence regression | 37 passed, 0 failed | Xcode result bundle `Test-CornerPet-2026.08.29_13-53-36-+0800.xcresult` under DerivedData |
 | Full unit suite | 344 passed, 0 failed | `build/test-evidence/task12-5-final/CornerPetUnitTests.xcresult` and `unit-tests.log` |
-| Final guarded UI suite | 21 passed, 0 failed | `build/test-evidence/20260829-142402/CornerPetUITests.xcresult` and `CornerPetUITests.log` |
+| Historical guarded UI suite | 21 passed, 0 failed | `build/test-evidence/20260829-142402/CornerPetUITests.xcresult` and `CornerPetUITests.log`; invalidated as the current release gate by the later reproducible drift |
+| Isolated-VM unit smoke | 4 passed, 0 failed | `AppConfigurationTests.xcresult` and `unit-smoke.log` under the external `1ef99aa-vm-final` evidence directory |
+| Isolated-VM background probe | 1 passed, 0 failed | External evidence directory `1ef99aa-20260829-024510-probe`; VirtualBuddy was hidden and the run used SSH only |
+| Current isolated-VM guarded UI suite | **21 passed, 0 failed** | External evidence directory `1ef99aa-20260829-024030`; independently inspected `.xcresult` reports exactly 21 tests |
 | Debug clean build | `CLEAN SUCCEEDED`, `BUILD SUCCEEDED` | `build/test-evidence/task12-5-final/debug-build.log` |
 | Static analysis | `ANALYZE SUCCEEDED` | `build/test-evidence/task12-5-final/analyze.log` |
 | Unsigned Release arm64 build | `CLEAN SUCCEEDED`, `BUILD SUCCEEDED` | `build/test-evidence/task12-5-final/release-build.log` |
+| Isolated-VM unsigned Release arm64 build | `CLEAN SUCCEEDED`, `BUILD SUCCEEDED` | External `1ef99aa-vm-final/release-build-after-reboot.log`; version 0.1.0 (1), bundle ID `com.jack.CornerPet`, `LSUIElement=true` |
 | Shell syntax and Swift helper warnings-as-errors | passed | final verification console output |
 | Whitespace, scope, credential-filename, and excluded-SDK scans | passed | `build/test-evidence/task12-5-final/static-scan.log` and final branch gate |
 
 Build evidence under `build/` is intentionally ignored by Git. Result-bundle and log paths identify the local artifacts used for this acceptance; they are not release packages.
+
+### Isolated VM acceptance
+
+The final isolated run tested `1ef99aa0977759474ddc9eb6142ea6c19f30f8e8` on macOS 27.0 (26A5421a), Xcode 27.0 (27A5228h), and Swift 6.4. The guest had four virtual CPUs, 8 GiB RAM, NAT networking, automatic login, SSH, Developer Mode, unattended Automation Mode enablement, and only `com.apple.keylayout.ABC` installed and selected.
+
+`CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh --probe-only` passed 1/1 after VirtualBuddy was hidden. No host UI automation was used during that probe. The full `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh` run then passed exactly 21/21, with zero failed, skipped, or expected-failure tests and runner classification `passed`. ABC was selected before and after the run. Local ad-hoc signing was used only for VM test products and does not alter the production Release signing configuration.
+
+The independent `.xcresult` summary contains one Xcode QoS priority-inversion runtime warning and no test failure. Binary evidence remains outside Git at `/Users/jack/.codex/vm/CornerPet-UI-Test/exchange/task-12-5-evidence/`; each accepted run has a text summary alongside its log and result bundle.
 
 ### Input-method failure reproduction and fix
 
@@ -75,7 +94,9 @@ ENABLE_TESTABILITY = NO
 
 `Scripts/release.sh preflight` stopped with `no Developer ID Application identity is installed` before calling `notarytool`. This is the expected truthful result on this Mac. No signed, notarized, stapled, Gatekeeper-approved, or installed release is claimed.
 
-## Regression matrix
+## Historical regression matrix
+
+These entries describe the earlier recorded run and do not close the reopened isolated-VM gate.
 
 | Path | Status | Evidence or boundary |
 |---|---|---|
@@ -107,6 +128,10 @@ The Task 12.5 diff was reviewed in test-first order across correctness, readabil
 - **Required, resolved:** installed-process verification could match an unrelated `CornerPet` process; it now matches the installed executable's full path.
 - **Required, resolved:** Release had testability enabled; it is now explicitly disabled.
 - **Required, resolved:** switching to ABC alone did not dismiss a stale candidate window. Directed Escape cleanup removes it without terminating the input method, and the exact source is restored.
+- **Required, resolved:** end-of-suite input-source drift could replace a product or interruption exit status. Drift now overrides only an otherwise successful Xcode result while restoration still runs on every exit path.
+- **Required, resolved:** drift restoration was insufficiently covered. Contracts now cover ABC-original restoration, product failure plus drift, and interruption plus drift.
+- **Required, resolved:** the documented guarded probe was not executable. `--probe-only` now selects the single launch test through the production guard.
+- **Required, resolved:** the status document described the reopened gate inconsistently. Current and historical evidence are now separated explicitly.
 - **Required, resolved:** two specification lines had trailing whitespace and a stale approval status.
 - **Optional, pre-existing:** Xcode 27 beta emits 50 Swift 6 concurrency warnings in unchanged test files and 21 XCUITest main-thread warnings plus one QoS warning. Product Debug/Release builds and analysis succeed; these warnings are retained as Task 14 toolchain-cleanup debt rather than expanded into an unrelated test refactor.
 - **Informational:** AppIntents metadata extraction reports that no AppIntents dependency exists. CornerPet does not use AppIntents, so this is an Xcode build-pipeline notice rather than a product defect.
@@ -124,4 +149,4 @@ To complete a real distribution acceptance, Jack still needs:
 5. a real logout or restart for Launch at Login verification;
 6. the interactive full-screen, physical multi-display, drag/resize, Chinese composition, and sleep/wake checks above.
 
-Task 13 is next: finish localization, accessibility, Reduce Motion, and user-facing error copy without redesigning the current UI. Task 14 should then add privacy-safe metrics, clean up Xcode 27 test warnings, execute the extended hardware/session matrix, and start the seven-day release-candidate record.
+After the verified follow-up is present on `origin/main`, Task 13 may begin localization, accessibility, Reduce Motion, and user-facing error-copy work without redesigning the current UI. Task 14 should then add privacy-safe metrics, clean up Xcode 27 test warnings, execute the extended hardware/session matrix, and start the seven-day release-candidate record.

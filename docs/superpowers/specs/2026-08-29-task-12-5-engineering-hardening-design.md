@@ -50,13 +50,15 @@ The runner will:
 3. Switch temporarily to the ABC keyboard layout only when the current source is unsuitable for deterministic UI automation.
 4. Register cleanup before changing the input source and restore the captured source on normal exit, test failure, interruption, or termination.
 5. Run UI tests serially and retain the build log and result-bundle path.
-6. Classify the final result as an environment preflight failure, automation infrastructure failure, or product test failure.
+6. Verify that ABC is still selected when the suite ends; persistent reselection by another input source invalidates the run even if Xcode reports success.
+7. Classify the final result as an environment preflight failure, input-source drift, automation infrastructure failure, or product test failure.
 
 The runner must not disable an input method, rewrite the user's enabled-input-source list, kill the input-method service, or persistently change system defaults.
 
 ### 4.2 Failure Classification
 
 - **Environment preflight:** no usable Xcode, input source cannot be queried or restored, automation permission is unavailable, or a stale test session prevents launch.
+- **Input-source drift:** the immediate ABC selection succeeds but another input source becomes current during the UI run; the result is not accepted as a pass and the captured source is still restored.
 - **Automation infrastructure:** test runner cannot establish or retain an application session, focus is captured outside the app, or candidate-window/input-service behavior prevents interaction before a product assertion runs.
 - **Product regression:** CornerPet launches and the test reaches a product assertion that fails.
 
@@ -71,6 +73,7 @@ Before the real system integration is implemented, test the orchestration agains
 - restore after test failure;
 - restore after interruption or early exit;
 - explicit failure if the original source cannot be restored;
+- explicit failure if the input source drifts after the immediate ABC check;
 - preservation of the underlying test command's exit status when cleanup succeeds.
 
 The real helper receives a read-only preflight check plus a reversible manual smoke test on the current Mac.

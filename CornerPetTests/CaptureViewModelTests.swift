@@ -388,9 +388,15 @@ final class CaptureViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.consumePanelCommand())
     }
 
-    func testSaveErrorProvidesStableEnglishAndChineseMessages() {
-        XCTAssertEqual(CaptureSaveError.saveFailed.englishMessage, "Save failed. Try again.")
-        XCTAssertEqual(CaptureSaveError.saveFailed.chineseMessage, "保存失败，请重试。")
+    func testSaveErrorUsesTheLocalizedActionableResource() {
+        XCTAssertEqual(
+            L10n.localized(L10n.captureSaveFailed, locale: Locale(identifier: "en")),
+            "Couldn’t save. Your draft is still here—try again."
+        )
+        XCTAssertEqual(
+            L10n.localized(L10n.captureSaveFailed, locale: Locale(identifier: "zh-Hans")),
+            "无法保存。草稿仍在，请重试。"
+        )
     }
 
     func testEmptyNormalizedReturnCreatesNothingAndRefocuses() {
