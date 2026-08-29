@@ -2,8 +2,9 @@
 
 **Date:** 2026-08-29
 **Branch:** `codex/cornerpet-task-12-5`
-**Base:** `origin/main` at Task 12 merge `9ede8d7`
-**Result:** Reopened after the merge audit found reproducible input-source drift. The historical evidence below remains valid for its recorded run, but Task 12.5 is not eligible for `origin/main` until the new drift guard and a fresh isolated UI run pass.
+**Original base:** `origin/main` at Task 12 merge `9ede8d7`
+**Current remote state:** `origin/main` contains the earlier Task 12.5 merge `930d3df`; the follow-up drift guard and isolated-VM work are not integrated.
+**Result:** Gate reopened after the merge audit found reproducible input-source drift. The historical evidence below remains valid only for its recorded run. Task 13 must remain blocked until the follow-up runner changes pass a fresh isolated 21-test UI run and the verified follow-up history is integrated into `origin/main`.
 
 ## Post-verification merge audit
 
@@ -31,11 +32,12 @@ Task 12 was reviewed and freshly verified before integration: 341 unit tests and
 
 | Gate | Result | Evidence |
 |---|---|---|
-| UI runner contract | Historical: 7 passed; current drift contract: 8 passed | Historical log plus fresh console evidence from the merge audit |
+| UI runner contract | Current follow-up: 12 passed | Fresh local contract run; isolated guest rerun still required |
 | Release workflow contract | 11 passed | `build/test-evidence/task12-5-final/release-contract.log` |
 | SwiftData focused persistence regression | 37 passed, 0 failed | Xcode result bundle `Test-CornerPet-2026.08.29_13-53-36-+0800.xcresult` under DerivedData |
 | Full unit suite | 344 passed, 0 failed | `build/test-evidence/task12-5-final/CornerPetUnitTests.xcresult` and `unit-tests.log` |
-| Final guarded UI suite | 21 passed, 0 failed | `build/test-evidence/20260829-142402/CornerPetUITests.xcresult` and `CornerPetUITests.log` |
+| Historical guarded UI suite | 21 passed, 0 failed | `build/test-evidence/20260829-142402/CornerPetUITests.xcresult` and `CornerPetUITests.log`; invalidated as the current release gate by the later reproducible drift |
+| Current isolated-VM guarded UI suite | **Pending** | Must execute exactly 21 tests with zero failures at the final follow-up commit |
 | Debug clean build | `CLEAN SUCCEEDED`, `BUILD SUCCEEDED` | `build/test-evidence/task12-5-final/debug-build.log` |
 | Static analysis | `ANALYZE SUCCEEDED` | `build/test-evidence/task12-5-final/analyze.log` |
 | Unsigned Release arm64 build | `CLEAN SUCCEEDED`, `BUILD SUCCEEDED` | `build/test-evidence/task12-5-final/release-build.log` |
@@ -81,7 +83,9 @@ ENABLE_TESTABILITY = NO
 
 `Scripts/release.sh preflight` stopped with `no Developer ID Application identity is installed` before calling `notarytool`. This is the expected truthful result on this Mac. No signed, notarized, stapled, Gatekeeper-approved, or installed release is claimed.
 
-## Regression matrix
+## Historical regression matrix
+
+These entries describe the earlier recorded run and do not close the reopened isolated-VM gate.
 
 | Path | Status | Evidence or boundary |
 |---|---|---|
@@ -130,4 +134,4 @@ To complete a real distribution acceptance, Jack still needs:
 5. a real logout or restart for Launch at Login verification;
 6. the interactive full-screen, physical multi-display, drag/resize, Chinese composition, and sleep/wake checks above.
 
-Task 13 is next: finish localization, accessibility, Reduce Motion, and user-facing error copy without redesigning the current UI. Task 14 should then add privacy-safe metrics, clean up Xcode 27 test warnings, execute the extended hardware/session matrix, and start the seven-day release-candidate record.
+After the isolated 21-test gate passes and the verified follow-up is present on `origin/main`, Task 13 may begin localization, accessibility, Reduce Motion, and user-facing error-copy work without redesigning the current UI. Task 14 should then add privacy-safe metrics, clean up Xcode 27 test warnings, execute the extended hardware/session matrix, and start the seven-day release-candidate record.

@@ -123,7 +123,7 @@ Confirm `cornerpet-test` owns the active console session, ABC is selected, no th
 
 - [ ] **Step 2: Run a harmless UI automation probe**
 
-Start the smallest guarded CornerPet UI test from the host over SSH while VirtualBuddy is not the host's focused app. Confirm the result succeeds without bringing VirtualBuddy forward or changing the host pointer position.
+From the host, run `Scripts/run-ui-tests.sh --probe-only` over SSH while VirtualBuddy is not the host's focused app. This executable mode uses the normal input-source guard and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. Confirm the result succeeds without bringing VirtualBuddy forward or changing the host pointer position; retain the command output as probe evidence.
 
 - [ ] **Step 3: Run the complete guarded suite**
 

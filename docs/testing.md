@@ -24,6 +24,14 @@ Run all UI tests:
 Scripts/run-ui-tests.sh
 ```
 
+Run the isolated-VM launch probe through the same input-source guard while selecting only the smallest launch test:
+
+```bash
+Scripts/run-ui-tests.sh --probe-only
+```
+
+The probe prints `CORNERPET_UI_TEST_MODE=probe` and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. It is a VM setup check, not a substitute for the complete 21-test gate.
+
 ### Exclusive desktop requirement
 
 Run the real UI suite only when the current macOS graphical session is available exclusively for automation. XCUITest sends keyboard and mouse interactions and moves the pointer in the active Aqua session, so using another Mission Control Space does not provide a separate cursor or focus owner. Unit tests, static analysis, and builds do not have this restriction.
