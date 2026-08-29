@@ -31,19 +31,19 @@
 - Consumes: Homebrew cask `virtualbuddy@beta`
 - Produces: signed VirtualBuddy 2.2 Beta 4 application and `vctool`
 
-- [ ] **Step 1: Record the clean host and Git baseline**
+- [x] **Step 1: Record the clean host and Git baseline**
 
 Run read-only host, disk, branch, worktree, and remote-ref checks. Save only non-secret environment metadata under `/Users/jack/.codex/vm/CornerPet-UI-Test/host-baseline.txt`.
 
-- [ ] **Step 2: Install VirtualBuddy**
+- [x] **Step 2: Install VirtualBuddy**
 
 Run `brew install --cask virtualbuddy@beta`.
 
-- [ ] **Step 3: Verify the installed artifact**
+- [x] **Step 3: Verify the installed artifact**
 
 Check the application version, Team Identifier or ad-hoc signature details, Gatekeeper assessment, quarantine state, and `vctool --help`. Stop if the installed version is not the expected 2.2 beta series or macOS rejects the app.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 No repository commit is required because this task changes only host tooling. Record the verified version in `host-baseline.txt`.
 
@@ -57,23 +57,23 @@ No repository commit is required because this task changes only host tooling. Re
 - Consumes: VirtualBuddy, Apple's macOS 27 restore image catalog
 - Produces: bootable VM `CornerPet-UI-Test`, account `cornerpet-test`, automatic login, Remote Login
 
-- [ ] **Step 1: Create the guest credential safely**
+- [x] **Step 1: Create the guest credential safely**
 
 Generate a random password directly into the host login keychain under service `CornerPet-UI-Test` and account `cornerpet-test`. Do not emit the password to stdout or any file.
 
-- [ ] **Step 2: Configure the VM**
+- [x] **Step 2: Configure the VM**
 
 Use VirtualBuddy's macOS 27 provisioning flow. Name the VM `CornerPet-UI-Test`; allocate four CPUs, 8 GiB RAM, a 120 GB boot disk, NAT networking, automatic login, and Remote Login.
 
-- [ ] **Step 3: Download and install macOS**
+- [x] **Step 3: Download and install macOS**
 
 Allow VirtualBuddy to fetch the restore image from Apple's catalog and complete installation. Preserve VirtualBuddy installation logs if provisioning fails; do not switch hypervisors or change host security settings.
 
-- [ ] **Step 4: Verify first boot**
+- [x] **Step 4: Verify first boot**
 
 Confirm the VM reaches an automatically logged-in macOS 27 desktop and identify its private address or Bonjour hostname without adding an Apple Account.
 
-- [ ] **Step 5: Verify host isolation**
+- [x] **Step 5: Verify host isolation**
 
 Move VirtualBuddy out of focus and confirm the guest remains available over SSH. Record guest macOS and hardware values in `guest-baseline.txt`.
 
@@ -87,23 +87,23 @@ Move VirtualBuddy out of focus and confirm the guest remains available over SSH.
 - Consumes: host Xcode 27 Beta, SSH access, Task 12.5 Git bundle
 - Produces: initialized Xcode toolchain and isolated CornerPet clone at the exact recorded Task 12.5 branch head
 
-- [ ] **Step 1: Transfer Xcode**
+- [x] **Step 1: Transfer Xcode**
 
 Copy the host Xcode application to the guest over the private VM network, preserving extended attributes and application-bundle structure.
 
-- [ ] **Step 2: Initialize Xcode**
+- [x] **Step 2: Initialize Xcode**
 
 Select the verified guest Xcode developer directory, accept its license, and run first-launch component installation in the guest. Verify `xcodebuild -version` and `swift --version` match the required Xcode 27 and Swift 6.4 toolchain family. Because this is a dedicated unattended UI-test machine, use the system-provided `automationmodetool enable-automationmode-without-authentication` command once with administrator authorization, then reboot and verify its status; do not weaken Gatekeeper or host security settings.
 
-- [ ] **Step 3: Prepare the exact source bundle**
+- [x] **Step 3: Prepare the exact source bundle**
 
 Resolve and record `codex/cornerpet-task-12-5` with `git rev-parse`, create `/Users/jack/.codex/vm/CornerPet-UI-Test/exchange/task-12-5.bundle` from that exact object, verify the bundle, and transfer it to the guest.
 
-- [ ] **Step 4: Clone and verify source isolation**
+- [x] **Step 4: Clone and verify source isolation**
 
 Clone the bundle to `~/CornerPet`, check out `codex/cornerpet-task-12-5`, verify `HEAD` equals the object recorded before bundle creation, and confirm a clean guest worktree with no writable host worktree mount.
 
-- [ ] **Step 5: Run non-UI smoke checks**
+- [x] **Step 5: Run non-UI smoke checks**
 
 Run the project runner contract tests and a unit-test smoke command inside the guest. Preserve their logs under the host exchange directory.
 
@@ -117,23 +117,23 @@ Run the project runner contract tests and a unit-test smoke command inside the g
 - Consumes: active guest Aqua session, ABC input source, guest Task 12.5 clone
 - Produces: isolated UI probe evidence and complete guarded UI-suite evidence
 
-- [ ] **Step 1: Verify guest GUI preconditions**
+- [x] **Step 1: Verify guest GUI preconditions**
 
 Confirm `cornerpet-test` owns the active console session, ABC is selected, no third-party input source is installed, and the guest screen is unlocked.
 
-- [ ] **Step 2: Run a harmless UI automation probe**
+- [x] **Step 2: Run a harmless UI automation probe**
 
-From the host, run `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh --probe-only` over SSH while VirtualBuddy is not the host's focused app. This executable mode uses the normal input-source guard, signs test products locally without a development team, and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. Confirm the result succeeds without bringing VirtualBuddy forward or changing the host pointer position; retain the command output as probe evidence.
+From the host, run `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh --probe-only` over SSH while VirtualBuddy is not the host's focused app. This executable mode uses the normal input-source guard, signs test products locally without a development team, and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. Confirm the result succeeds without bringing VirtualBuddy forward or invoking host UI automation; retain the command output as probe evidence.
 
-- [ ] **Step 3: Run the complete guarded suite**
+- [x] **Step 3: Run the complete guarded suite**
 
 Execute `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh` inside the guest. Require exactly 21 executed tests, zero failures, exit status zero, and no infrastructure classification.
 
-- [ ] **Step 4: Export and inspect evidence**
+- [x] **Step 4: Export and inspect evidence**
 
 Copy the `.xcresult`, summary, test count, failure count, tool versions, and tested commit back to the host exchange directory. Inspect the result bundle rather than relying only on process exit status.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 If verification documentation changes, update `docs/verification/task-12-5-verification.md`, run `git diff --check`, and commit only the evidence metadata with `docs: verify Task 12.5 in isolated VM`. Do not commit binary result bundles.
 
