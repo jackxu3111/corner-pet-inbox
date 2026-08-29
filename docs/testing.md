@@ -32,6 +32,15 @@ Scripts/run-ui-tests.sh --probe-only
 
 The probe prints `CORNERPET_UI_TEST_MODE=probe` and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. It is a VM setup check, not a substitute for the complete 21-test gate.
 
+On a dedicated local VM that intentionally has no development certificate, opt into Xcode's local ad-hoc signing for the test products:
+
+```bash
+CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh --probe-only
+CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh
+```
+
+This passes `CODE_SIGN_STYLE=Manual`, `CODE_SIGN_IDENTITY=-`, and an empty `DEVELOPMENT_TEAM` only to that `xcodebuild` invocation. It does not edit the Xcode project or claim a distributable signature. Leave the option unset on developer machines that have their normal signing identity.
+
 ### Exclusive desktop requirement
 
 Run the real UI suite only when the current macOS graphical session is available exclusively for automation. XCUITest sends keyboard and mouse interactions and moves the pointer in the active Aqua session, so using another Mission Control Space does not provide a separate cursor or focus owner. Unit tests, static analysis, and builds do not have this restriction.

@@ -32,7 +32,7 @@ Task 12 was reviewed and freshly verified before integration: 341 unit tests and
 
 | Gate | Result | Evidence |
 |---|---|---|
-| UI runner contract | Current follow-up: 12 passed | Fresh local contract run; isolated guest rerun still required |
+| UI runner contract | Current follow-up: 13 passed | Fresh local contract run; isolated guest rerun still required |
 | Release workflow contract | 11 passed | `build/test-evidence/task12-5-final/release-contract.log` |
 | SwiftData focused persistence regression | 37 passed, 0 failed | Xcode result bundle `Test-CornerPet-2026.08.29_13-53-36-+0800.xcresult` under DerivedData |
 | Full unit suite | 344 passed, 0 failed | `build/test-evidence/task12-5-final/CornerPetUnitTests.xcresult` and `unit-tests.log` |

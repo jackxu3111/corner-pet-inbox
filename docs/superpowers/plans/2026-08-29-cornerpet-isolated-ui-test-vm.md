@@ -93,7 +93,7 @@ Copy the host Xcode application to the guest over the private VM network, preser
 
 - [ ] **Step 2: Initialize Xcode**
 
-Select `/Applications/Xcode-beta.app/Contents/Developer`, accept its license, and run first-launch component installation in the guest. Verify `xcodebuild -version` and `swift --version` match the required Xcode 27 and Swift 6.4 toolchain family.
+Select the verified guest Xcode developer directory, accept its license, and run first-launch component installation in the guest. Verify `xcodebuild -version` and `swift --version` match the required Xcode 27 and Swift 6.4 toolchain family. Because this is a dedicated unattended UI-test machine, use the system-provided `automationmodetool enable-automationmode-without-authentication` command once with administrator authorization, then reboot and verify its status; do not weaken Gatekeeper or host security settings.
 
 - [ ] **Step 3: Prepare the exact source bundle**
 
@@ -123,11 +123,11 @@ Confirm `cornerpet-test` owns the active console session, ABC is selected, no th
 
 - [ ] **Step 2: Run a harmless UI automation probe**
 
-From the host, run `Scripts/run-ui-tests.sh --probe-only` over SSH while VirtualBuddy is not the host's focused app. This executable mode uses the normal input-source guard and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. Confirm the result succeeds without bringing VirtualBuddy forward or changing the host pointer position; retain the command output as probe evidence.
+From the host, run `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh --probe-only` over SSH while VirtualBuddy is not the host's focused app. This executable mode uses the normal input-source guard, signs test products locally without a development team, and selects only `CornerPetLaunchTests.testApplicationLaunchesWithoutMainWindow`. Confirm the result succeeds without bringing VirtualBuddy forward or changing the host pointer position; retain the command output as probe evidence.
 
 - [ ] **Step 3: Run the complete guarded suite**
 
-Execute `Scripts/run-ui-tests.sh` inside the guest with UI tests explicitly enabled. Require exactly 21 executed tests, zero failures, exit status zero, and no infrastructure classification.
+Execute `CORNERPET_AD_HOC_SIGNING=1 Scripts/run-ui-tests.sh` inside the guest. Require exactly 21 executed tests, zero failures, exit status zero, and no infrastructure classification.
 
 - [ ] **Step 4: Export and inspect evidence**
 
