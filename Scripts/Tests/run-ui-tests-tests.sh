@@ -85,6 +85,9 @@ if [[ "${FAKE_XCODE_SIGNAL_PARENT:-0}" == "1" ]]; then
     kill -TERM "$PPID"
     exit 143
 fi
+if [[ -n "${FAKE_XCODE_DRIFT_INPUT_SOURCE:-}" ]]; then
+    printf '%s\n' "$FAKE_XCODE_DRIFT_INPUT_SOURCE" > "$FAKE_INPUT_STATE"
+fi
 exit "${FAKE_XCODE_EXIT:-0}"
 FAKE_XCODE
 
@@ -105,6 +108,7 @@ run_fixture() {
     FAKE_XCODE_OUTPUT="${FAKE_XCODE_OUTPUT:-}" \
     FAKE_XCODE_EXIT="${FAKE_XCODE_EXIT:-0}" \
     FAKE_XCODE_SIGNAL_PARENT="${FAKE_XCODE_SIGNAL_PARENT:-0}" \
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="${FAKE_XCODE_DRIFT_INPUT_SOURCE:-}" \
     CORNERPET_INPUT_SOURCE_TOOL="$FIXTURE_DIR/input-source" \
     CORNERPET_XCODEBUILD="$FIXTURE_DIR/xcodebuild" \
     CORNERPET_DEVELOPER_DIR="$FIXTURE_DIR/Developer" \
@@ -210,6 +214,21 @@ test_restore_failure_overrides_status() {
     PASS_COUNT=$((PASS_COUNT + 1))
 }
 
+test_input_source_drift_visible_at_suite_end_overrides_success() {
+    make_fixture
+    printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
+    FAKE_XCODE_DRIFT_INPUT_SOURCE="com.apple.inputmethod.SCIM.ITABC"
+
+    run_fixture
+
+    assert_equals "$RUN_STATUS" "75" "input-source drift status"
+    assert_equals "$(cat "$INPUT_STATE")" "com.apple.inputmethod.SCIM.ITABC" "drift restoration"
+    assert_contains "$RUN_OUTPUT" "CORNERPET_UI_TEST_CLASSIFICATION=input-source-drift"
+    cleanup_fixture
+    unset FAKE_XCODE_DRIFT_INPUT_SOURCE
+    PASS_COUNT=$((PASS_COUNT + 1))
+}
+
 test_quiesce_failure_stops_before_xcode_and_restores() {
     make_fixture
     printf '%s\n' "com.apple.inputmethod.SCIM.ITABC" > "$INPUT_STATE"
@@ -235,6 +254,7 @@ test_product_failure_restores_and_preserves_status
 test_automation_failure_restores_and_uses_infrastructure_status
 test_signal_restores_original_source
 test_restore_failure_overrides_status
+test_input_source_drift_visible_at_suite_end_overrides_success
 test_quiesce_failure_stops_before_xcode_and_restores
 
 echo "PASS: $PASS_COUNT UI automation runner tests"

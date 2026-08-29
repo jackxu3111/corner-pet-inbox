@@ -24,6 +24,7 @@ FINAL_REPORTED=0
 LOG_PATH=""
 RESULT_BUNDLE_PATH=""
 QUIESCED_INPUT_SOURCE_STATE=""
+INPUT_SOURCE_EXPECTATION_ESTABLISHED=0
 
 resolve_developer_dir() {
     if [[ -n "${CORNERPET_DEVELOPER_DIR:-}" ]]; then
@@ -71,10 +72,20 @@ restore_input_source() {
 
 finish() {
     local observed_status=$?
+    local final_active_input_source=""
     trap - EXIT INT TERM
 
     if [[ "$FINAL_STATUS" -eq 0 && "$observed_status" -ne 0 ]]; then
         FINAL_STATUS="$observed_status"
+    fi
+
+    if [[ "$INPUT_SOURCE_EXPECTATION_ESTABLISHED" -eq 1 ]]; then
+        final_active_input_source="$($INPUT_SOURCE_TOOL current 2>/dev/null)" || true
+        if [[ "$final_active_input_source" != "$ABC_INPUT_SOURCE" ]]; then
+            echo "error: input source changed during UI automation: ${final_active_input_source:-unavailable}" >&2
+            CLASSIFICATION="input-source-drift"
+            FINAL_STATUS=75
+        fi
     fi
 
     if ! restore_input_source; then
@@ -180,6 +191,7 @@ if [[ "$ACTIVE_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
 fi
 
 echo "CORNERPET_UI_TEST_ACTIVE_INPUT_SOURCE=$ACTIVE_INPUT_SOURCE"
+INPUT_SOURCE_EXPECTATION_ESTABLISHED=1
 
 if [[ "$ORIGINAL_INPUT_SOURCE" != "$ABC_INPUT_SOURCE" ]]; then
     QUIESCED_INPUT_SOURCE_STATE="$($INPUT_SOURCE_TOOL quiesce "$ORIGINAL_INPUT_SOURCE")" || {

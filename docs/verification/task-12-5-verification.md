@@ -3,7 +3,13 @@
 **Date:** 2026-08-29
 **Branch:** `codex/cornerpet-task-12-5`
 **Base:** `origin/main` at Task 12 merge `9ede8d7`
-**Result:** Executable local gates passed. Credentialed distribution and session-dependent checks remain explicit external gates.
+**Result:** Reopened after the merge audit found reproducible input-source drift. The historical evidence below remains valid for its recorded run, but Task 12.5 is not eligible for `origin/main` until the new drift guard and a fresh isolated UI run pass.
+
+## Post-verification merge audit
+
+The merge audit reproduced two guarded UI failures on the unchanged Task 12.5 tree. The immediate `TISSelectInputSource` check reported ABC, but `com.bytedance.inputmethod.doubaoime.pinyin` selected itself again during the XCUITest session and exposed candidate/input-source UI that captured focus. The two completed runs each executed 21 tests with 19 passes and 2 failures and were classified as automation infrastructure.
+
+A new runner contract now treats a source found away from ABC at suite end as `input-source-drift` (exit 75), restores the captured source, and rejects an otherwise successful Xcode result. A fresh isolated ABC-only UI run is still required before this document can return to a passing result.
 
 ## Environment
 
@@ -25,7 +31,7 @@ Task 12 was reviewed and freshly verified before integration: 341 unit tests and
 
 | Gate | Result | Evidence |
 |---|---|---|
-| UI runner contract | 7 passed | `build/test-evidence/task12-5-final/ui-runner-contract.log` |
+| UI runner contract | Historical: 7 passed; current drift contract: 8 passed | Historical log plus fresh console evidence from the merge audit |
 | Release workflow contract | 11 passed | `build/test-evidence/task12-5-final/release-contract.log` |
 | SwiftData focused persistence regression | 37 passed, 0 failed | Xcode result bundle `Test-CornerPet-2026.08.29_13-53-36-+0800.xcresult` under DerivedData |
 | Full unit suite | 344 passed, 0 failed | `build/test-evidence/task12-5-final/CornerPetUnitTests.xcresult` and `unit-tests.log` |
