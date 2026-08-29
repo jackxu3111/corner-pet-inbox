@@ -82,7 +82,7 @@ git commit -m "docs: plan Task 12.5 engineering hardening"
 - Consumes: `TISCopyCurrentKeyboardInputSource`, `TISCreateInputSourceList`, `TISSelectInputSource`, a full Xcode developer directory, and `xcodebuild test`.
 - Produces: `InputSource current|select <id>`, `run-ui-tests.sh`, deterministic classification lines, retained logs/result bundles, and exact input-source restoration.
 
-- [ ] **Step 1: Write failing shell tests for the runner contract**
+- [x] **Step 1: Write failing shell tests for the runner contract**
 
 Use fake commands injected through `CORNERPET_INPUT_SOURCE_TOOL` and `CORNERPET_XCODEBUILD`. The fake input-source tool stores its current ID in a temporary file. Cover:
 
@@ -95,7 +95,7 @@ TERM while xcodebuild runs -> restore Chinese -> nonzero signal exit
 restore command fails -> input-source-restore-failed classification -> exit 74
 ```
 
-- [ ] **Step 2: Run the shell tests and verify RED**
+- [x] **Step 2: Run the shell tests and verify RED**
 
 Run:
 
@@ -105,7 +105,7 @@ Run:
 
 Expected: FAIL because `Scripts/run-ui-tests.sh` does not exist.
 
-- [ ] **Step 3: Implement the native input-source helper**
+- [x] **Step 3: Implement the native input-source helper**
 
 Provide this command surface:
 
@@ -118,7 +118,7 @@ enum Command {
 
 `current` prints only the current input-source identifier. `select` queries enabled sources by `kTISPropertyInputSourceID`, requires a selectable source, invokes `TISSelectInputSource`, then verifies the selected identifier. All failures write a concise error to stderr and return nonzero.
 
-- [ ] **Step 4: Implement the minimal runner**
+- [x] **Step 4: Implement the minimal runner**
 
 The runner must:
 
@@ -130,7 +130,7 @@ run serial CornerPetUITests -> classify failure -> restore original -> return tr
 
 Use exit codes 64 for preflight, 65 for product regression, 70 for automation infrastructure, and 74 for restoration failure. Print exactly one final `CORNERPET_UI_TEST_CLASSIFICATION=<value>` line.
 
-- [ ] **Step 5: Run shell tests until GREEN**
+- [x] **Step 5: Run shell tests until GREEN**
 
 Run:
 
@@ -140,7 +140,7 @@ Run:
 
 Expected: every fake-environment scenario passes and the final line reports the test count.
 
-- [ ] **Step 6: Exercise the real helper reversibly**
+- [x] **Step 6: Exercise the real helper reversibly**
 
 Run:
 
@@ -150,7 +150,7 @@ Scripts/run-ui-tests.sh --preflight-only
 
 Capture the input-source ID before and after and require equality. Do not select a different source when ABC is already current.
 
-- [ ] **Step 7: Run the real guarded UI suite**
+- [x] **Step 7: Run the real guarded UI suite**
 
 Run:
 
@@ -160,11 +160,11 @@ Scripts/run-ui-tests.sh
 
 Expected: result classification reflects the actual suite outcome, the original input source is restored, and the output names the log and `.xcresult` paths.
 
-- [ ] **Step 8: Document environment versus product failures**
+- [x] **Step 8: Document environment versus product failures**
 
 In `docs/testing.md`, include normal usage, `--preflight-only`, exit-code meanings, retained evidence locations, Xcode resolution, non-persistent input-source behavior, and recovery commands when restoration fails.
 
-- [ ] **Step 9: Review and commit the UI-test increment**
+- [x] **Step 9: Review and commit the UI-test increment**
 
 ```bash
 git diff --check
